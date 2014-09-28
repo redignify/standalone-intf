@@ -26,7 +26,6 @@ Item {
            TableViewColumn{ role: "description" ; title: "Description" ; width: 118 }
            model: scenelistmodel
            sortIndicatorVisible: true
-           Component.onCompleted: show_scenes()
            onDoubleClicked: toogle_selection()
         }
 
@@ -103,34 +102,6 @@ Item {
             scenelistmodel.get( playtableview.currentRow ).skip = "Yes"
         }else{
             scenelistmodel.get( playtableview.currentRow ).skip = "No"
-        }
-    }
-
-    function show_scenes()
-    {
-        if( movie.data == "" )
-        {
-            //loader.source = "Open.qml"
-            return
-        }
-        console.log( movie.data )
-        var data = JSON.parse( movie.data )
-        scenelistmodel.clear()
-        var Scenes = data["Scenes"]
-        for ( var i = 0; i < Scenes.length; ++i) {
-            if( Scenes[i]["Category"] == "syn" ){continue;}
-            var item = {
-                "type": Scenes[i]["Category"],
-                "subtype": Scenes[i]["SubCategory"],
-                "severity": Scenes[i]["Severity"],
-                "start": Scenes[i]["Start"],
-                "duration": Scenes[i]["End"],
-                "description": Scenes[i]["AdditionalInfo"],
-                "stop": Scenes[i]["End"],
-                "skip": "Yes"
-            }
-            scenelistmodel.append( item )
-            apply_filters()
         }
     }
 

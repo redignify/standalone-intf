@@ -52,15 +52,98 @@ Item {
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
-        columns: 5
-        Component.onCompleted: { mainWindow.minimumWidth = 485;mainWindow.minimumHeight = 350}
+        columns: 6
+        Component.onCompleted: { mainWindow.minimumWidth = 600;mainWindow.minimumHeight = 330}
+
+        Component {
+            id: editableDelegate
+            Item {
+                Text {
+                    width: parent.width
+                    anchors.margins: 4
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    elide: styleData.elideMode
+                    text: styleData.value !== undefined ? styleData.value : ""
+                    color: styleData.textColor
+                    visible: !styleData.selected
+                }
+                Loader {
+                    id: loaderEditor
+                    anchors.fill: parent
+                    anchors.margins: 4
+                    Connections {
+                        target: loaderEditor.item
+                        onEditingFinished: {
+                            if (typeof styleData.value === 'number')
+                                var num = parseFloat(loaderEditor.item.text)
+                                if ( typeof num === 'number' && num > 0 ) {
+                                    scenelistmodel.setProperty(styleData.row, styleData.role, Number(num) )
+                                }
+                            else
+                                scenelistmodel.setProperty(styleData.row, styleData.role, loaderEditor.item.text)
+                        }
+                    }
+                    sourceComponent: styleData.selected ? editor : null
+                    Component {
+                        id: editor
+                        TextInput {
+                            id: textinput
+                            color: styleData.textColor
+                            text: styleData.value
+                            MouseArea {
+                                id: mouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: textinput.forceActiveFocus()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //Item {
+        //    id: optionlist
+        //    ComboBox {
+        //        anchors.verticalCenter: parent.verticalCenter
+        //        model: ListModel {
+        //            ListElement {  text: "Veggies" }
+        //            ListElement {  text: "Fruits" }
+        //            ListElement {  text: "Cars"  }
+        //        }
+        //    }
+        //}
+
+        TableView {
+           id: tableview
+           sortIndicatorOrder: 1
+           sortIndicatorColumn: 1
+           Layout.preferredWidth: 590
+           Layout.preferredHeight: 250
+           Layout.columnSpan : 6
+           //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
+           TableViewColumn{ role: "type"  ; title: "Type" ; width: 60 }
+           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
+           TableViewColumn{ role: "severity"; title: "Severity"; width: 80 }
+           TableViewColumn{ role: "action"; title: "Action"; width: 60; }
+           TableViewColumn{ role: "start" ; title: "Start" ; width: 60 }
+           TableViewColumn{ role: "stop" ; title: "Stop" ; width: 60 }
+           TableViewColumn{ role: "description" ; title: "Description" ; width: 189 }
+           model: scenelistmodel
+           sortIndicatorVisible: true
+           itemDelegate: {
+               return editableDelegate;
+           }
+        }
 
         Button {
-            id: watch
-            text: "Watch"
+            id: preview
+            text: "Preview"
             //tooltip:"This is an interesting tool tip"
             //Layout.fillWidth: true
-            onClicked: Player.launch( media.url )
+            onClicked: preview_scene()
         }
 
         Button {
@@ -68,7 +151,7 @@ Item {
             text: "Seek"
             //tooltip:"This is an interesting tool tip"
             Layout.fillWidth: true
-            onClicked: Player.seek( 20 )
+            onClicked: set_time()
         }
 
         Button {
@@ -83,121 +166,20 @@ Item {
             id: time
         }
 
-
-        TableView {
-           id: tableview
-           width: 480
-           height: 200
-           sortIndicatorOrder: 1
-           sortIndicatorColumn: 1
-           Layout.preferredWidth: 540
-           Layout.preferredHeight: 150
-           Layout.columnSpan : 5
-           //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
-           TableViewColumn{ role: "action"; title: "Action"; width: 50; }
-           TableViewColumn{ role: "type"  ; title: "Type" ; width: 60 }
-           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
-           TableViewColumn{ role: "severity" ; title: "Severity" ; width: 80 }
-           TableViewColumn{ role: "start" ; title: "Start" ; width: 60 }
-           TableViewColumn{ role: "stop" ; title: "Stop" ; width: 60 }
-           TableViewColumn{ role: "description" ; title: "Description" ; width: 100 }
-           model: scenelistmodel
-           sortIndicatorVisible: true
-           Component.onCompleted: show_scenes()
-           onCurrentRowChanged : update_values()
+        Button {
+            id: add
+            text: "Add scene"
+            //tooltip:"This is an interesting tool tip"
+            Layout.fillWidth: true
+            onClicked: time.text = get_time()
         }
 
-        ComboBox {
-            id: action_combo
-            width: 100
-            activeFocusOnPress: true
-            onCurrentIndexChanged: editor_end.focus = true
-            model: ["Skip", "Mute" ]
-        }
-
-        ComboBox {
-            id: type_combo
-            Layout.preferredWidth: 125
-            activeFocusOnPress: true
-            onCurrentIndexChanged: editor_end.focus = true
-            model: ["Sex & Nudity", "Violence & Gore", "Profanity", "Drugs"]
-        }
-
-        ComboBox {
-            id: subtype_combo
-            Layout.preferredWidth: 125
-            activeFocusOnPress: true
-            onCurrentIndexChanged: editor_end.focus = true
-            model: ["Sex & Nudity", "Violence & Gore", "Profanity", "Drugs"]
-        }
-
-        ComboBox {
-            id: severity_combo
-            width: 100
-            activeFocusOnPress: true
-            onCurrentIndexChanged: editor_end.focus = true
-            model: ["1", "2","3","4","5"]
-        }
-
-        TextField {
-            id: editor_start
-            placeholderText: "Start"
-            onTextChanged: scenelistmodel.set( tableview.currentRow, {"start": text } )
-        }
-
-        TextField {
-            id: editor_end
-            placeholderText: "End"
-            onTextChanged: scenelistmodel.set( tableview.currentRow, {"stop": text } )
-        }
-
-        TextField {
-            id: editor_description
-            placeholderText: "Description"
-            onTextChanged: scenelistmodel.set( tableview.currentRow, { "description": text })
-        }
-
-    }
-
-    function update_list()
-    {
-        var item = scenelistmodel.get( tableview.currentRow )
-        item.description = editor_description.text
-        item.start = editor_start.text
-        item.stop = editor_end.text
-        //item.severity = severity_combo.currentText
-    }
-
-    function update_values()
-    {
-        var item = scenelistmodel.get( tableview.currentRow )
-        editor_description.text = item.description
-        editor_start.text = item.start
-        editor_end.text = item.stop
-        //severity_combo.currentText = item.severity
-    }
-
-    function show_scenes()
-    {
-        if( movie.data == "" )
-        {
-            //loader.source = "Open.qml"
-            return
-        }
-        console.log( movie.data )
-        var data = JSON.parse( movie.data )
-        scenelistmodel.clear()
-        var Scenes = data["Scenes"]
-        for ( var i = 0; i < Scenes.length; ++i) {
-            var item = {
-                "type": Scenes[i]["Category"],
-                "subtype": Scenes[i]["SubCategory"],
-                "severity": Scenes[i]["Severity"],
-                "start": Scenes[i]["Start"],
-                "stop": Scenes[i]["End"],
-                "description": Scenes[i]["AdditionalInfo"],
-            }
-            scenelistmodel.append( item )
+        Button {
+            id: remove
+            text: "Remove scene"
+            //tooltip:"This is an interesting tool tip"
+            Layout.fillWidth: true
+            onClicked: time.text = get_time()
         }
     }
 

@@ -193,5 +193,8 @@ ApplicationWindow {
         Player.seek( time + 1 )
     }
 
+    function preview_scene( )
+    {
 
+    }
 }

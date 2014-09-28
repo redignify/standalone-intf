@@ -90,6 +90,35 @@ Item {
         post( "action=search&filename="+ title.text + "&hash=" + media.hash, show_list )
     }
 
+
+    function show_scenes()
+    {
+        if( movie.data == "" )
+        {
+            //loader.source = "Open.qml"
+            return
+        }
+        console.log( movie.data )
+        var data = JSON.parse( movie.data )
+        scenelistmodel.clear()
+        var Scenes = data["Scenes"]
+        for ( var i = 0; i < Scenes.length; ++i) {
+            if( Scenes[i]["Category"] == "syn" ){continue;}
+            var item = {
+                "type": Scenes[i]["Category"],
+                "subtype": Scenes[i]["SubCategory"],
+                "severity": Scenes[i]["Severity"],
+                "start": Scenes[i]["Start"],
+                "duration": Scenes[i]["End"],
+                "description": Scenes[i]["AdditionalInfo"],
+                "stop": Scenes[i]["End"],
+                "action": Scenes[i]["Action"],
+                "skip": "Yes"
+            }
+            scenelistmodel.append( item )
+        }
+    }
+
     function show_list( str )
     {
         var jsonObject = JSON.parse( str );
@@ -98,6 +127,7 @@ Item {
         } else if ( jsonObject['ImdbCode'] ){
             movie.data = str
             loader.source = "Play.qml"
+            show_scenes()
         } else if ( jsonObject['IDs'] ){
             movie.list = str
             movielistmodel.clear()
