@@ -126,6 +126,7 @@ Item {
                 "start": Scenes[i]["Start"],
                 "duration": Scenes[i]["End"],
                 "description": Scenes[i]["AdditionalInfo"],
+                "stop": Scenes[i]["End"],
                 "skip": "Yes"
             }
             scenelistmodel.append( item )

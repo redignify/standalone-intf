@@ -12,7 +12,7 @@ class Player : public QObject
 public:
     explicit Player(QObject *parent = 0);
     Q_INVOKABLE void launch( QString );
-    Q_INVOKABLE void seek( int );
+    Q_INVOKABLE void seek(int );
     Q_INVOKABLE QString get_time( );
 
 private:

@@ -157,13 +157,16 @@ ApplicationWindow {
     function edl_check()
     {
         var time = get_time()
+        console.log( time )
         if( !scenelistmodel.get(0) ) return
         var start, stop
         for( var i = 0; i < scenelistmodel.count; ++i){
             if( scenelistmodel.get(i).skip == "Yes" )
                 start = scenelistmodel.get(i).start;
                 stop = scenelistmodel.get(i).stop;
+                console.log( "comparing", time, start, stop)
                 if( time > start & time < stop ) {
+                    console.log( "jumping")
                     set_time(stop)
                 }
         }
@@ -185,9 +188,9 @@ ApplicationWindow {
         return found[0]
     }
 
-    function set_time()
+    function set_time( time )
     {
-
+        Player.seek( time + 1 )
     }
 
 

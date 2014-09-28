@@ -21,8 +21,8 @@ void Player::seek( int sec )
     QString output = m_process->readAllStandardOutput();
 
     qDebug() << output;
-
-    m_process->write( "seek 20\n" );
+    QString cmd = QString("seek %1\n").arg(sec);
+    m_process->write( cmd.toStdString().c_str() );
 }
 
 QString Player::get_time()
