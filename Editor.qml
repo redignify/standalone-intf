@@ -171,7 +171,17 @@ Item {
             text: "Add scene"
             //tooltip:"This is an interesting tool tip"
             Layout.fillWidth: true
-            onClicked: time.text = get_time()
+            onClicked: scenelistmodel.append({
+                "type":"Unknown",
+                "subtype":"Unknown",
+                "severity":0,
+                "start":0,
+                "duration":0,
+                "description":"",
+                "stop":0,
+                "action":"",
+                "skip": "No"
+            })
         }
 
         Button {
@@ -179,7 +189,7 @@ Item {
             text: "Remove scene"
             //tooltip:"This is an interesting tool tip"
             Layout.fillWidth: true
-            onClicked: time.text = get_time()
+            onClicked: scenelistmodel.remove(tableview.currentRow);
         }
     }
 
