@@ -46,13 +46,15 @@ import QtQuick 2.2
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.1
+import QtQuick.Dialogs 1.2
+
 
 Item {
 
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
-        columns: 6
+        columns: 7
         Component.onCompleted: { mainWindow.minimumWidth = 600;mainWindow.minimumHeight = 330}
 
         Component {
@@ -122,7 +124,7 @@ Item {
            sortIndicatorColumn: 1
            Layout.preferredWidth: 590
            Layout.preferredHeight: 250
-           Layout.columnSpan : 6
+           Layout.columnSpan : 7
            //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
            TableViewColumn{ role: "type"  ; title: "Type" ; width: 60 }
            TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
@@ -191,6 +193,80 @@ Item {
             Layout.fillWidth: true
             onClicked: scenelistmodel.remove(tableview.currentRow);
         }
+
+        Button {
+            id: b_share
+            text: "Share"
+            //tooltip:"This is an interesting tool tip"
+            Layout.fillWidth: true
+            onClicked: requestPass.visible = true
+        }
+    }
+
+    Dialog {
+        id: requestPass
+        width: 200
+        height: 100
+        //title: "Identification required"
+        GridLayout {
+            columns: 2
+            Label{
+                text: "Username"
+            }
+            TextField {
+                id:name
+                //placeholderText: "Username"
+            }
+            Label{
+                text: "Password"
+            }
+            TextField {
+                id:pass
+                echoMode: TextInput.Password
+                //placeholderText: "Password"
+            }
+            Button {
+                text: "Share"
+                //tooltip:"This is an interesting tool tip"
+                onClicked: {
+                    share( name.text, pass.text )
+                    requestPass.visible = false
+                }
+            }
+            Button {
+                text: "Cancel"
+                //tooltip:"This is an interesting tool tip"
+                onClicked: requestPass.visible = false
+            }
+        }
+        onAccepted: {
+            share( name.text, pass.text )
+            requestPass.visible = false
+        }
+    }
+
+    function share( user, pass)
+    {
+        // Recover original file
+        var jsonObject = JSON.parse( movie.data );
+        if ( !jsonObject ) { return }
+
+        // Update data
+        jsonObject['Scenes'] = [];
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            jsonObject['Scenes'][i] = {}
+            var scene = scenelistmodel.get(i)
+            jsonObject['Scenes'][i]["Category"] = scene.type
+            jsonObject['Scenes'][i]["SubCategory"] = scene.subtype
+            jsonObject['Scenes'][i]["Severity"] = scene.severity
+            jsonObject['Scenes'][i]["Start"] = scene.start
+            jsonObject['Scenes'][i]["End"] = scene.stop
+            jsonObject['Scenes'][i]["Action"] = scene.action
+            jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
+        }
+        var str = JSON.stringify( jsonObject, "", 2 );
+        console.log( str )
+        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){} )
     }
 
 }
