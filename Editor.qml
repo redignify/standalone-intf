@@ -246,8 +246,8 @@ Item {
             jsonObject['Scenes'][i]["Category"] = scene.type
             jsonObject['Scenes'][i]["SubCategory"] = scene.subtype
             jsonObject['Scenes'][i]["Severity"] = scene.severity
-            jsonObject['Scenes'][i]["Start"] = scene.start
-            jsonObject['Scenes'][i]["End"] = scene.stop
+            jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
+            jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
             jsonObject['Scenes'][i]["Action"] = scene.action
             jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
         }
