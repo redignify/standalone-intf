@@ -105,19 +105,6 @@ Item {
             }
         }
 
-
-        //Item {
-        //    id: optionlist
-        //    ComboBox {
-        //        anchors.verticalCenter: parent.verticalCenter
-        //        model: ListModel {
-        //            ListElement {  text: "Veggies" }
-        //            ListElement {  text: "Fruits" }
-        //            ListElement {  text: "Cars"  }
-        //        }
-        //    }
-        //}
-
         TableView {
            id: tableview
            sortIndicatorOrder: 1

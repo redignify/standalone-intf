@@ -27,7 +27,14 @@ ApplicationWindow {
         id: movie
         property string scenes
         property string data
-        property string list
+        property string list       
+    }
+
+    Item {
+        id: sync
+        property int applied_speed: 1
+        property int applied_offset: 0
+        property int confidence: 0
     }
 
 
@@ -196,5 +203,25 @@ ApplicationWindow {
     function preview_scene( )
     {
 
+    }
+
+    function apply_sync( offset, speed, confidence )
+    {
+        // Apply desired sync (first unsync)
+        offset = parseFloat(offset)
+        speed = parseFloat(speed)
+        if ( typeof offset !== 'number' || typeof speed !== 'number' ) return;
+        var raw_start, raw_end, scene;
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            scene = scenelistmodel.get(i)
+            raw_start =  (scene.start - sync.applied_offset)/sync.applied_speed
+            raw_end = (scene.stop - sync.applied_offset)/sync.applied_speed
+            scene.start = raw_start*speed + offset
+            scene.stop = raw_end*speed + offset
+        }
+        // Update values
+        sync.applied_offset = offset
+        sync.applied_speed = speed
+        sync.confidence = confidence
     }
 }
