@@ -22,7 +22,7 @@ Item {
            TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
            TableViewColumn{ role: "severity" ; title: "Severity" ; width: 80 }
            TableViewColumn{ role: "start" ; title: "Position" ; width: 70 }
-           TableViewColumn{ role: "len" ; title: "Duration" ; width: 80 }
+           TableViewColumn{ role: "duration" ; title: "Duration" ; width: 80 }
            TableViewColumn{ role: "description" ; title: "Description" ; width: 118 }
            model: scenelistmodel
            sortIndicatorVisible: true

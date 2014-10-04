@@ -80,25 +80,6 @@ ApplicationWindow {
         }
     }
 
-
-    FileDialog {
-        id: fileDialog
-        //visible: fileDialogVisible.checked
-        //modality: fileDialogModal.checked ? Qt.WindowModal : Qt.NonModal
-        title: "Choose a media"
-        selectExisting: true //fileDialogSelectExisting.checked
-        //selectMultiple: fileDialogSelectMultiple.checked
-        //selectFolder: true
-        //nameFilters: [ "Image files (*.png *.jpg)", "All files (*)" ]
-        //selectedNameFilter: "All files (*)"
-        onAccepted: {
-            console.log(fileUrl)
-            media.url = fileUrl
-        }
-        onRejected: { console.log("Rejected") }
-    }
-
-
     Loader {
         id:loader
         source: "Open.qml"
@@ -207,6 +188,7 @@ ApplicationWindow {
 
     function apply_sync( offset, speed, confidence )
     {
+        console.log( "Applying sync: ", offset, speed)
         // Apply desired sync (first unsync)
         offset = parseFloat(offset)
         speed = parseFloat(speed)

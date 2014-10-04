@@ -238,7 +238,7 @@ Item {
         var jsonObject = JSON.parse( movie.data );
         if ( !jsonObject ) { return }
 
-        // Update data
+        // Update scenes data
         jsonObject['Scenes'] = [];
         for( var i = 0; i < scenelistmodel.count; ++i){
             jsonObject['Scenes'][i] = {}
@@ -251,6 +251,30 @@ Item {
             jsonObject['Scenes'][i]["Action"] = scene.action
             jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
         }
+
+        if( media.hash ){
+            // Update sync data
+            if( !jsonObject["SyncInfo"] ) jsonObject["SyncInfo"] = []
+
+            var sync_updated_flag = 0
+            for( i=0; i<jsonObject["SyncInfo"].length; ++i ){
+                if( jsonObject["SyncInfo"][i]["Hash"] == media.hash ){
+                    jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
+                    jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
+                    jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
+                }
+            }
+            if (sync_updated_flag == 0) {
+                i = jsonObject["SyncInfo"].length
+                jsonObject["SyncInfo"][i] = {}
+                jsonObject["SyncInfo"][i]["Hash"] = media.hash
+                jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
+                jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
+                jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
+            }
+        }
+
+        // Format and share
         var str = JSON.stringify( jsonObject, "", 2 );
         console.log( str )
         post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){} )
