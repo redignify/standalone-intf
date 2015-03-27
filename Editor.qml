@@ -55,7 +55,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 7
-        Component.onCompleted: { mainWindow.minimumWidth = 600;mainWindow.minimumHeight = 330}
+        Component.onCompleted: { mainWindow.minimumWidth = 620;mainWindow.minimumHeight = 350}
 
         Component {
             id: editableDelegate
@@ -113,6 +113,80 @@ Item {
            Layout.preferredHeight: 250
            Layout.columnSpan : 7
            //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
+           /*TableViewColumn {
+               role:"type_drop"
+               title:"Type"
+               width: 120
+               delegate: Item {
+                   ComboBox {
+                       anchors.verticalCenter: parent.verticalCenter
+                       width: 120
+                       currentIndex: 1
+                       model: ListModel {
+                           id: type_list
+                           ListElement {  text: "Violence" }
+                           ListElement {  text: "Sex" }
+                           ListElement {  text: "Profanity"  }
+                       }
+                       onCurrentIndexChanged: scenelistmodel.set(styleData.row, {"type": type_list.get(currentIndex).text })
+                   }
+               }
+           }/*
+           TableViewColumn {
+               role:"subtype_drop"
+               title:"Subtype"
+               width: 120
+               delegate: Item {
+                   ComboBox {
+                       anchors.verticalCenter: parent.verticalCenter
+                       width: 120
+                       currentIndex: 1
+                       model: ListModel {
+                           id: subtype_list
+                           ListElement {  text: "Violence" }
+                           ListElement {  text: "Sex" }
+                           ListElement {  text: "Profanity"  }
+                       }
+                   }
+               }
+           }
+           TableViewColumn {
+               role:"severity_drop"
+               title:"Severity"
+               width: 80
+               delegate: Item {
+                   ComboBox {
+                       anchors.verticalCenter: parent.verticalCenter
+                       width: 80
+                       currentIndex: 1
+                       model: ListModel {
+                           id: severity_list
+                           ListElement {  text: "Low" }
+                           ListElement {  text: "Medium" }
+                           ListElement {  text: "High"  }
+                       }
+                       onCurrentIndexChanged: scenelistmodel.set(styleData.row, {"severity": severity_list.get(currentIndex).text })
+                   }
+               }
+           }
+           TableViewColumn {
+               role:"action_drop"
+               title:"Action"
+               width: 80
+               delegate: Item {
+                   ComboBox {
+                       anchors.verticalCenter: parent.verticalCenter
+                       width: 80
+                       currentIndex: 1
+                       model: ListModel {
+                           id: action_list
+                           ListElement {  text: "Skip" }
+                           ListElement {  text: "Mute" }
+                       }
+                       onCurrentIndexChanged: scenelistmodel.set(styleData.row, {"action": action_list.get(currentIndex).text })
+                   }
+               }
+           }*/
            TableViewColumn{ role: "type"  ; title: "Type" ; width: 60 }
            TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
            TableViewColumn{ role: "severity"; title: "Severity"; width: 80 }
@@ -132,7 +206,7 @@ Item {
             text: "Preview"
             //tooltip:"This is an interesting tool tip"
             //Layout.fillWidth: true
-            onClicked: preview_scene()
+            onClicked: preview_scene(scenelistmodel.get(tableview.currentRow).start, scenelistmodel.get(tableview.currentRow).stop )
         }
 
         Button {
@@ -262,6 +336,7 @@ Item {
                     jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
                     jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
                     jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
+                    sync_updated_flag = 1
                 }
             }
             if (sync_updated_flag == 0) {

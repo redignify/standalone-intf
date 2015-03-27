@@ -1,7 +1,7 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QObject>
-#include <QtDeclarative/QDeclarativeContext>
+//#include <QtDeclarative/QDeclarativeContext>
 
 #include <QString>
 

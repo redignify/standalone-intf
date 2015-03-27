@@ -11,7 +11,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 3
-        Component.onCompleted: { mainWindow.minimumWidth = 485;mainWindow.minimumHeight = 300}
+        Component.onCompleted: { mainWindow.minimumWidth = 500;mainWindow.minimumHeight = 300}
 
         TextField {
             id: fileurl
@@ -36,6 +36,7 @@ Item {
             Layout.preferredWidth: 400
             placeholderText: "Title"
             Layout.columnSpan : 2
+            text: movie.title
             onAccepted: search_movie()
             //onTextChanged: search_movie()
         }
@@ -82,7 +83,9 @@ Item {
         //selectedNameFilter: "All files (*)"
         onAccepted: {
             console.log(fileUrl)
-            media.url = fileUrl
+            media.url = fileUrl;
+            // TODO: regex might be better
+            title.text = fileUrl.toString().split("/").pop().split(".").shift();
             load_file()
         }
         onRejected: { console.log("Rejected") }
@@ -111,14 +114,17 @@ Item {
 
 
     function load_movie()
-    {
-        // Read data
+    {  
+    //
+        //save_to_file( "/home/miguel/probando.json" , movie.data)
+    // Read data
         if( movie.data == "" ) return;
         console.log( movie.data )
         var data = JSON.parse( movie.data )
 
-        // Parse scenes
+    // Parse scenes
         scenelistmodel.clear()
+        movie.title = data["Title"]
         var Scenes = data["Scenes"]
         for ( var i = 0; i < Scenes.length; ++i) {
             if( Scenes[i]["Category"] == "syn" ){continue;}
@@ -136,10 +142,10 @@ Item {
             scenelistmodel.append( item )
         }
 
-        // Sync (or at least try to)
+    // Sync (or at least try to)
         if( data["SyncInfo"] ){
             console.log( "Looking for sync info")
-            for( var i=0; i<data["SyncInfo"].length; ++i ){
+            for( i=0; i<data["SyncInfo"].length; ++i ){
                 console.log( "Checking ", i, data["SyncInfo"][i]["Hash"], media.hash)
                 if( data["SyncInfo"][i]["Hash"] == media.hash ){
                     apply_sync(data["SyncInfo"][i]["TimeOffset"],data["SyncInfo"][i]["SpeedFactor"],data["SyncInfo"][i]["Confidence"])
@@ -150,6 +156,7 @@ Item {
 
     function show_list( str )
     {
+    // Fill list of movies matching search or load movie if only one result
         var jsonObject = JSON.parse( str );
         if ( !jsonObject ) {
             return
@@ -161,7 +168,8 @@ Item {
             movie.list = str
             movielistmodel.clear()
             for ( var i = 0; i < jsonObject["Titles"].length; ++i) {
-                var item = {"title": jsonObject["Titles"][i], "director": jsonObject["Directors"][i] }
+                var year_director = jsonObject["Directors"][i].toString().split(",")
+                var item = {"title": jsonObject["Titles"][i], "year": year_director[0], "director": year_director[1] }
                 movielistmodel.append( item )
             }
         }

@@ -9,7 +9,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 4
-        Component.onCompleted: { mainWindow.minimumWidth = 550;mainWindow.minimumHeight = 300}
+        Component.onCompleted: { mainWindow.minimumWidth = 580;mainWindow.minimumHeight = 320}
 
         TableView {
            id: playtableview
@@ -17,15 +17,17 @@ Item {
            Layout.preferredHeight: 150
            Layout.columnSpan : 4
            //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
-           TableViewColumn{ role: "skip"; title: "Skip"; width: 50; }
-           TableViewColumn{ role: "type"  ; title: "Type" ; width: 60 }
-           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
-           TableViewColumn{ role: "severity" ; title: "Severity" ; width: 80 }
-           TableViewColumn{ role: "start" ; title: "Position" ; width: 70 }
-           TableViewColumn{ role: "duration" ; title: "Duration" ; width: 80 }
-           TableViewColumn{ role: "description" ; title: "Description" ; width: 118 }
+           TableViewColumn{ role: "skip"; title: "Skip"; width: 50; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "severity" ; title: "Severity" ; width: 80; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "description" ; title: "Description" ; width: 300; horizontalAlignment: Text.AlignLeft }
            model: scenelistmodel
            sortIndicatorVisible: true
+           //onSortIndicatorColumnChanged: scenelistmodelsort(sortIndicatorColumn, sortIndicatorOrder)
+           //onSortIndicatorOrderChanged: scenelistmodel.sort(sortIndicatorColumn, sortIndicatorOrder)
            onDoubleClicked: toogle_selection()
         }
 
@@ -112,13 +114,13 @@ Item {
         for( var i = 0; i < scenelistmodel.count; ++i){
             type = scenelistmodel.get(i).type;
             severity = scenelistmodel.get(i).severity;
-            if( type == "s"){
+            if( type == "Sex"){
                 selected_severity = slider_sn.value
-            }else if( type == "v"){
+            }else if( type == "Violence"){
                 selected_severity = slider_v.value
-            }else if( type == "d"){
+            }else if( type == "Drugs"){
                 selected_severity = slider_d.value
-            }else if( type == "p"){
+            }else if( type == "Profanity"){
                 selected_severity = slider_pro.value
             } else { continue; }
 

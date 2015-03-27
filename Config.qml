@@ -11,7 +11,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 2
-        Component.onCompleted: { mainWindow.minimumWidth = 485;mainWindow.minimumHeight = 350}
+        Component.onCompleted: { mainWindow.minimumWidth = 485; mainWindow.minimumHeight = 350 }
 
         Label{
             text: "Time offset"
@@ -19,7 +19,7 @@ Item {
         TextField {
             id:offset
             text: sync.applied_offset
-            onEditingFinished: apply_sync(text,sync.applied_speed,1)
+            onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
         Label{
             text: "Speed factor"
@@ -27,7 +27,7 @@ Item {
         TextField {
             id:speed
             text: sync.applied_speed
-            onEditingFinished: apply_sync(sync.applied_offset,text,1)
+            onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
     }
 }
