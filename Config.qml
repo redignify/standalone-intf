@@ -29,5 +29,14 @@ Item {
             text: sync.applied_speed
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
+        Button {
+            id: b_calibrate
+            text: "Guided calibration"
+            //tooltip:"This is an interesting tool tip"
+//            Layout.fillWidth: true
+            onClicked: calibrate.visible = true
+        }
     }
 }
+
+

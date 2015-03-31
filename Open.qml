@@ -58,6 +58,7 @@ Item {
            model: movielistmodel
            sortIndicatorVisible: true
            onDoubleClicked: get_movie_data( movielist.currentRow )
+           onActivated: get_movie_data( movielist.currentRow )
         }
 
         ListModel {
@@ -70,8 +71,6 @@ Item {
             text: "Select"
             onClicked: get_movie_data( movielist.currentRow )
         }
-
-
     }
 
     FileDialog {
@@ -96,7 +95,7 @@ Item {
         var data = JSON.parse( movie.list )
         if ( !data ) return;
         var imdbid = data["IDs"][id]
-        post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid, show_list )
+        post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash, show_list )
     }
 
     function load_file()
@@ -126,8 +125,7 @@ Item {
         scenelistmodel.clear()
         movie.title = data["Title"]
         var Scenes = data["Scenes"]
-        for ( var i = 0; i < Scenes.length; ++i) {
-            if( Scenes[i]["Category"] == "syn" ){continue;}
+        for ( var i = 0; i < Scenes.length; ++i ) {
             var item = {
                 "type": Scenes[i]["Category"],
                 "subtype": Scenes[i]["SubCategory"],
@@ -139,7 +137,30 @@ Item {
                 "action": Scenes[i]["Action"],
                 "skip": "Yes"
             }
-            scenelistmodel.append( item )
+            if( Scenes[i]["Category"] == "syn" ){
+                syncscenelistmodel.append( item )
+            } else {
+                scenelistmodel.append( item )
+            }
+        }
+    // Not yet defined if sync scenes go in "Scenes" or in "SyncScenes", lets be compatible with both
+        if ( data["SyncScenes"] )
+        {
+            var SyncScenes = data["SyncScenes"]
+            for ( var i = 0; i < SyncScenes.length; ++i) {
+                var item = {
+                    "type": SyncScenes[i]["Category"],
+                    "subtype": SyncScenes[i]["SubCategory"],
+                    "severity": SyncScenes[i]["Severity"],
+                    "start": SyncScenes[i]["Start"],
+                    "duration": SyncScenes[i]["End"] - Scenes[i]["Start"],
+                    "description": SyncScenes[i]["AdditionalInfo"],
+                    "stop": SyncScenes[i]["End"],
+                    "action": SyncScenes[i]["Action"],
+                    "skip": "Yes"
+                }
+                syncscenelistmodel.append( item )
+            }
         }
 
     // Sync (or at least try to)
@@ -149,6 +170,7 @@ Item {
                 console.log( "Checking ", i, data["SyncInfo"][i]["Hash"], media.hash)
                 if( data["SyncInfo"][i]["Hash"] == media.hash ){
                     apply_sync(data["SyncInfo"][i]["TimeOffset"],data["SyncInfo"][i]["SpeedFactor"],data["SyncInfo"][i]["Confidence"])
+                    break
                 }
             }
         }

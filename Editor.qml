@@ -54,7 +54,7 @@ Item {
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
-        columns: 7
+        columns: 8
         Component.onCompleted: { mainWindow.minimumWidth = 620;mainWindow.minimumHeight = 350}
 
         Component {
@@ -109,9 +109,10 @@ Item {
            id: tableview
            sortIndicatorOrder: 1
            sortIndicatorColumn: 1
-           Layout.preferredWidth: 590
+           Layout.preferredWidth: 450
            Layout.preferredHeight: 250
            Layout.columnSpan : 7
+           Layout.rowSpan: 7
            //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
            /*TableViewColumn {
                role:"type_drop"
@@ -187,64 +188,118 @@ Item {
                    }
                }
            }*/
-           TableViewColumn{ role: "type"  ; title: "Type" ; width: 60 }
-           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 80 }
+           TableViewColumn{ role: "type"  ; title: "Type" ; width: 90 }
+           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100 }
            TableViewColumn{ role: "severity"; title: "Severity"; width: 80 }
            TableViewColumn{ role: "action"; title: "Action"; width: 60; }
            TableViewColumn{ role: "start" ; title: "Start" ; width: 60 }
            TableViewColumn{ role: "stop" ; title: "Stop" ; width: 60 }
-           TableViewColumn{ role: "description" ; title: "Description" ; width: 189 }
+           TableViewColumn{ role: "description" ; title: "Why?" ; width: 189 }
            model: scenelistmodel
+           selectionMode: SelectionMode.SingleSelection
            sortIndicatorVisible: true
-           itemDelegate: {
-               return editableDelegate;
+           onClicked : {
+               var current_scene = scenelistmodel.get(tableview.currentRow)
+               type_combo.currentIndex     = type_combo.find( current_scene.type )
+               subtype_combo.currentIndex  = subtype_combo.find( current_scene.subtype )
+               action_combo.currentIndex   = action_combo.find( current_scene.action )
+               severity_combo.currentIndex = severity_combo.find( current_scene.severity.toString() )
+               start_input.text            = current_scene.start
+               stop_input.text             = current_scene.stop
+               description_input.text      = current_scene.description
            }
+
+           /*itemDelegate: {
+               return editableDelegate;
+           }*/
         }
 
+        ComboBox {
+            id: type_combo
+            width: 150
+            model: ListModel {
+                id: type_list
+                ListElement {  text: "Violence" }
+                ListElement {  text: "Sex" }
+                ListElement {  text: "Profanity"  }
+            }
+            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_list.get(currentIndex).text })
+        }
+
+        ComboBox {
+            id: subtype_combo
+            width: 150
+            model: ListModel {
+                id: subtype_list
+                ListElement {  text: "Explicit" }
+                ListElement {  text: "Implicit" }
+            }
+            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"subtype": subtype_list.get(currentIndex).text })
+        }
+        ComboBox {
+            width: 150
+            id: severity_combo
+            model: severity_list
+            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"severity": severity_list.get(currentIndex).text })
+        }
+        ComboBox {
+            width: 150
+            id: action_combo
+            model: action_list
+            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"action": action_list.get(currentIndex).text })
+        }
+
+        TextField {
+            id: start_input
+            Layout.preferredWidth: 150
+            placeholderText: "Start time"
+            onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
+            onAccepted: start_input.text = get_time()
+        }
+        TextField {
+            id: stop_input
+            Layout.preferredWidth: 150
+            placeholderText: "Stop time"
+            onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
+            onAccepted: stop_input.text = get_time()
+        }
+
+        TextField {
+            id: description_input
+            Layout.preferredWidth: 150
+            placeholderText: "Why inadecuate?"
+            onTextChanged: scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
+        }
+
+
         Button {
-            id: preview
+            id: b_preview
             text: "Preview"
             //tooltip:"This is an interesting tool tip"
             //Layout.fillWidth: true
-            onClicked: preview_scene(scenelistmodel.get(tableview.currentRow).start, scenelistmodel.get(tableview.currentRow).stop )
+            onClicked: preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) )
         }
 
         Button {
-            id: seek
-            text: "Seek"
-            //tooltip:"This is an interesting tool tip"
-            Layout.fillWidth: true
-            onClicked: set_time()
-        }
-
-        Button {
-            id: gettime
-            text: "Get time"
-            //tooltip:"This is an interesting tool tip"
-            Layout.fillWidth: true
-            onClicked: time.text = get_time()
-        }
-
-        Label {
-            id: time
-        }
-
-        Button {
-            id: add
+            id: b_add
             text: "Add scene"
             //tooltip:"This is an interesting tool tip"
             Layout.fillWidth: true
-            onClicked: scenelistmodel.append({
-                "type":"Unknown",
-                "subtype":"Unknown",
-                "severity":0,
-                "start":0,
-                "duration":0,
-                "description":"",
-                "stop":0,
-                "action":"",
-                "skip": "No"
-            })
+            onClicked: {
+                scenelistmodel.append({
+                    "type":type_list.get(type_combo.currentIndex).text,
+                    "subtype":subtype_list.get(subtype_combo.currentIndex).text,
+                    "severity":severity_list.get(severity_combo.currentIndex).text,
+                    "start": parseFloat( start_input.text ),
+                    "duration": parseFloat( stop_input.text ) - parseFloat( start_input.text ),
+                    "description": description_input.text,
+                    "stop": parseFloat( stop_input.text ),
+                    "action":action_list.get(action_combo.currentIndex).text,
+                    "skip": "No"
+                })
+                tableview.selection.deselect(0, tableview.rowCount - 1)
+                tableview.selection.select( tableview.rowCount - 1 )
+            }
         }
 
         Button {
@@ -252,7 +307,12 @@ Item {
             text: "Remove scene"
             //tooltip:"This is an interesting tool tip"
             Layout.fillWidth: true
-            onClicked: scenelistmodel.remove(tableview.currentRow);
+            onClicked: {
+                scenelistmodel.remove(tableview.currentRow);
+                tableview.selection.deselect( 0, tableview.rowCount - 1)
+                tableview.selection.select( tableview.rowCount - 1 )
+            }
+
         }
 
         Button {

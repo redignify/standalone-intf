@@ -44,6 +44,21 @@ ApplicationWindow {
         property int confidence: 0
     }
 
+    ListModel {
+        id: severity_list
+        ListElement {  text: 1 }
+        ListElement {  text: 2 }
+        ListElement {  text: 3 }
+        ListElement {  text: 4 }
+        ListElement {  text: 5 }
+    }
+
+    ListModel {
+        id: action_list
+        ListElement {  text: "Skip" }
+        ListElement {  text: "Mute" }
+    }
+
 
     toolBar: ToolBar {
         id: toolbar
@@ -95,7 +110,71 @@ ApplicationWindow {
     ListModel {
        id: scenelistmodel
     }
+    ListModel {
+       id: syncscenelistmodel
+    }
 
+    /*
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            jsonObject['Scenes'][i] = {}
+            var scene = scenelistmodel.get(i)
+            jsonObject['Scenes'][i]["Category"] = scene.type
+            jsonObject['Scenes'][i]["SubCategory"] = scene.subtype
+            jsonObject['Scenes'][i]["Severity"] = scene.severity
+            jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
+            jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
+            jsonObject['Scenes'][i]["Action"] = scene.action
+            jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
+        }
+    */
+    Dialog {
+        id: calibrate
+        width: 500
+        height: 200
+        title: "Guided calibration"
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        GridLayout {
+            columns: 1
+            Label{
+                id: user_instructions
+                text: "Click the button when the scene ends"
+            }
+            Button {
+                text: "Now it ends"
+                id: b_nowends
+                onClicked: {
+                    user_instructions.text = "Now click if ..."
+                    b_beg.visible = true
+                    b_end.visible = true
+                    visible = false
+                }
+            }
+            Button {
+                id: b_beg
+                visible: false
+                text: "Beginning"
+                //tooltip:"This is an interesting tool tip"
+                //onClicked: calibrate.visible = false
+            }
+            Button {
+                id: b_end
+                visible: false
+                text: "ending"
+                //tooltip:"This is an interesting tool tip"
+                //onClicked: calibrate.visible = false
+            }
+        }
+        Component.onCompleted: {
+            user_instructions.text = "working"
+        }
+
+        onAccepted: {
+            calibrate.visible = false
+        }
+        onRejected: {
+            calibrate.visible = false
+        }
+    }
 
     function load_movie( str )
     {
@@ -236,7 +315,7 @@ ApplicationWindow {
             timer.stop()
         }
 
-        return parseFloat(found[0])
+        return Math.round( parseFloat(found[0])*1000 ) / 1000
     }
 
     function set_time( time )
@@ -257,7 +336,7 @@ ApplicationWindow {
     function apply_sync( offset, speed, confidence )
     {
     // Prepare variables
-        console.log( "Applying sync: ", offset, speed )
+        console.log( "Applying sync: ", offset, speed, confidence )
         offset = parseFloat(offset)
         speed = parseFloat(speed)
         var applied_offset = parseFloat( sync.applied_offset )
@@ -276,6 +355,5 @@ ApplicationWindow {
         sync.applied_offset = offset
         sync.applied_speed  = speed
         sync.confidence     = confidence
-        console.log( sync.applied_speed )
     }
 }

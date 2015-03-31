@@ -23,7 +23,7 @@ Item {
            TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
            TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100; horizontalAlignment: Text.AlignLeft }
            TableViewColumn{ role: "severity" ; title: "Severity" ; width: 80; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "description" ; title: "Description" ; width: 300; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "description" ; title: "Why?" ; width: 300; horizontalAlignment: Text.AlignLeft }
            model: scenelistmodel
            sortIndicatorVisible: true
            //onSortIndicatorColumnChanged: scenelistmodelsort(sortIndicatorColumn, sortIndicatorOrder)
