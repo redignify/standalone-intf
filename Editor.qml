@@ -260,7 +260,7 @@ Item {
             id: stop_input
             Layout.preferredWidth: 150
             placeholderText: "Stop time"
-            onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
+            onEditingFinished: scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
             onAccepted: stop_input.text = get_time()
         }
 
