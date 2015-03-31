@@ -299,6 +299,7 @@ Item {
                 })
                 tableview.selection.deselect(0, tableview.rowCount - 1)
                 tableview.selection.select( tableview.rowCount - 1 )
+                tableview.currentRow = tableview.rowCount - 1
             }
         }
 
@@ -311,6 +312,7 @@ Item {
                 scenelistmodel.remove(tableview.currentRow);
                 tableview.selection.deselect( 0, tableview.rowCount - 1)
                 tableview.selection.select( tableview.rowCount - 1 )
+                tableview.currentRow = tableview.rowCount - 1
             }
 
         }
