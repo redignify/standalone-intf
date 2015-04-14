@@ -190,7 +190,7 @@ Item {
            }*/
            TableViewColumn{ role: "type"  ; title: "Type" ; width: 90 }
            TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100 }
-           TableViewColumn{ role: "severity"; title: "Severity"; width: 80 }
+           TableViewColumn{ role: "severity"; title: "Severity"; width: 60 }
            TableViewColumn{ role: "action"; title: "Action"; width: 60; }
            TableViewColumn{ role: "start" ; title: "Start" ; width: 60 }
            TableViewColumn{ role: "stop" ; title: "Stop" ; width: 60 }

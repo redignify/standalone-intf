@@ -14,7 +14,7 @@ ApplicationWindow {
     visible: true
     minimumWidth: 485//gridLayout.implicitWidth
     minimumHeight: 380//gridLayout.implicitHeight
-    title: qsTr("Family Cinema")
+    title: qsTr("Redignify")
 
     Item {
         id: media
@@ -300,8 +300,10 @@ ApplicationWindow {
 
     function watch_movie()
     {
-        Player.launch( media.url )
-        timer.start()
+        if( media.url ) {
+            Player.launch( media.url )
+            timer.start()
+        }
     }
 
     function get_time()

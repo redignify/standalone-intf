@@ -89,7 +89,8 @@ Item {
 
         Button {
             id: watch
-            text: "Watch clean movie"
+            tooltip: "Click to redignify and watch film"
+            text: "redignify"
             onClicked: watch_movie()
         }
     }
