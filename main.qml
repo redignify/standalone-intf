@@ -137,43 +137,68 @@ ApplicationWindow {
             columns: 1
             Label{
                 id: user_instructions
-                text: "Click the button when the scene ends"
+                text: "Click the button when the scene blablabla ends"
             }
+            Button {
+                text: "Go faster"
+                id: b_rate
+                onClicked: Player.set_rate( 2 )
+            }
+
             Button {
                 text: "Now it ends"
                 id: b_nowends
                 onClicked: {
-                    user_instructions.text = "Now click if ..."
+                    user_instructions.text = "Can you see the begining or the ending of the scene?"
                     b_beg.visible = true
                     b_end.visible = true
                     visible = false
+                    Player.set_rate( 1 )
+                    var current_time = get_time()
+                    var i = get_sync_scene_index()
+                    var original_start = scenelistmodel.get(i).start
+                    apply_sync( current_time - original_start, sync.applied_speed, 0 )
                 }
             }
             Button {
                 id: b_beg
                 visible: false
-                text: "Beginning"
-                //tooltip:"This is an interesting tool tip"
-                //onClicked: calibrate.visible = false
+                text: "Begining"
+                onClicked: {
+                    apply_sync( sync.applied_offset - 0.1, sync.applied_speed, 0 )
+                    var i = get_sync_scene_index()
+                    preview_scene( scenelistmodel.get(i).start, scenelistmodel.get(i).stop )
+                }
             }
             Button {
                 id: b_end
                 visible: false
-                text: "ending"
-                //tooltip:"This is an interesting tool tip"
-                //onClicked: calibrate.visible = false
+                text: "Ending visible"
+                onClicked: {
+                    apply_sync( sync.applied_offset + 0.1, sync.applied_speed, 0 )
+                    var i = get_sync_scene_index()
+                    preview_scene( scenelistmodel.get(i).start, scenelistmodel.get(i).stop )
+                }
             }
-        }
-        Component.onCompleted: {
-            user_instructions.text = "working"
         }
 
         onAccepted: {
             calibrate.visible = false
+            sync.confidence   = 2
         }
         onRejected: {
             calibrate.visible = false
         }
+    }
+
+    function get_sync_scene_index() {
+        if( !scenelistmodel.get(0) ) return -1
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            if( scenelistmodel.get(i).type == "Sync" ) {
+                return i
+            }
+        }
+        return -1
     }
 
     function load_movie( str )
@@ -312,9 +337,9 @@ ApplicationWindow {
         var re = /(\d+.?\d*)/i;
         var found = time.match(re);
         if ( found === null){
-            console.log("Unable to read time. Killing player")
+            console.log("Unable to read time. This will kill the player in future releases")
             //Player.kill() //TODO this also kills fcinema
-            timer.stop()
+            //timer.stop()
         }
 
         return Math.round( parseFloat(found[0])*1000 ) / 1000
@@ -322,15 +347,15 @@ ApplicationWindow {
 
     function set_time( time )
     {
-        console.log( "Jumping to ", time)
-        Player.seek( time)
+        console.log( "Jumping to ", time )
+        Player.seek( time )
     }
 
     function preview_scene( start, stop )
     {
         preview_data.start = start
         preview_data.stop  = stop
-        Player.seek( preview_data.start - 5)
+        Player.seek( preview_data.start - 3 )
         timer.stop()
         preview_timer.start()
     }

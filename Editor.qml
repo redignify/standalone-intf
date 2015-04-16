@@ -221,7 +221,8 @@ Item {
                 id: type_list
                 ListElement {  text: "Violence" }
                 ListElement {  text: "Sex" }
-                ListElement {  text: "Profanity"  }
+                ListElement {  text: "Profanity" }
+                ListElement {  text: "Sync" }
             }
             onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_list.get(currentIndex).text })
         }

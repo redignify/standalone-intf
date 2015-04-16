@@ -34,7 +34,14 @@ Item {
             text: "Guided calibration"
             //tooltip:"This is an interesting tool tip"
 //            Layout.fillWidth: true
-            onClicked: calibrate.visible = true
+            onClicked: {
+                calibrate.visible = true
+                watch_movie()
+                var i = get_sync_scene_index()
+                var start_search = Math.max( 1, scenelistmodel.get(i).start - 30 )
+                preview_scene( 0, start_search ) // just a trick to "wait" until movie is loaded before jump
+                Player.set_rate( 2 )
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ void Player::launch( QString file )
     //vlc --intf qt --extraintf rc
     arguments << "--intf" << "qt" << "--extraintf" << "rc" << "--rc-fake-tty"<< file;
     m_process->start(program, arguments);
+    m_process->waitForReadyRead();
 }
 
 void Player::kill()
@@ -29,6 +30,15 @@ void Player::seek( int sec )
 
     //qDebug() << output;
     QString cmd = QString("seek %1\n").arg(sec);
+    m_process->write( cmd.toStdString().c_str() );
+}
+
+void Player::set_rate( int rate )
+{
+    QString output = m_process->readAllStandardOutput();
+
+    //qDebug() << output;
+    QString cmd = QString("rate %1\n").arg(rate);
     m_process->write( cmd.toStdString().c_str() );
 }
 

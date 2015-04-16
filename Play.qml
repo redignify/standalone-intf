@@ -42,7 +42,7 @@ Item {
             value: 2
             tickmarksEnabled: true
             stepSize: 1
-            onValueChanged: apply_filters()
+            onValueChanged: apply_filters( )
         }
 
         Label{
@@ -93,6 +93,10 @@ Item {
             text: "redignify"
             onClicked: watch_movie()
         }
+
+        Component.onCompleted: {
+            apply_filters()
+        }
     }
 
 
@@ -123,6 +127,9 @@ Item {
                 selected_severity = slider_d.value
             }else if( type == "Profanity"){
                 selected_severity = slider_pro.value
+            }else if( type == "Sync"){
+                scenelistmodel.get(i).skip = "No"
+                continue
             } else { continue; }
 
             if( severity > 4 - selected_severity  ){

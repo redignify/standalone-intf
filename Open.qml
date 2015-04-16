@@ -19,14 +19,13 @@ Item {
             placeholderText: "Filename/url"
             Layout.columnSpan : 2
             text: media.url
-            onEditingFinished: load_file()
-            onAccepted: load_file()
+            onEditingFinished: parse_input_file()
+            onAccepted: parse_input_file()
         }
 
         Button {
             id: open
             text: "Browse"
-            //tooltip:"This is an interesting tool tip"
 //            Layout.fillWidth: true
             onClicked: fileDialog.open()
         }
@@ -85,11 +84,12 @@ Item {
             media.url = fileUrl;
             // TODO: regex might be better
             title.text = fileUrl.toString().split("/").pop().split(".").shift();
-            load_file()
+            parse_input_file()
         }
         onRejected: { console.log("Rejected") }
     }
 
+// Ask server for content of a specific movie
     function get_movie_data( id )
     {
         var data = JSON.parse( movie.list )
@@ -98,7 +98,8 @@ Item {
         post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash, show_list )
     }
 
-    function load_file()
+// A new input file has being selected, get hash and try to identify
+    function parse_input_file()
     {
         media.hash  = Utils.get_hash( fileDialog.fileUrl )
         console.log( media.hash )
@@ -106,12 +107,13 @@ Item {
         search_movie()
     }
 
+// Ask server for movie information
     function search_movie()
     {
         post( "action=search&filename="+ title.text + "&hash=" + media.hash, show_list )
     }
 
-
+// Great! We have the content of the current movie. Load the data.
     function load_movie()
     {  
     //
@@ -138,7 +140,8 @@ Item {
                 "skip": "Yes"
             }
             if( Scenes[i]["Category"] == "syn" ){
-                syncscenelistmodel.append( item )
+                //syncscenelistmodel.append( item )
+                scenelistmodel.append( item )
             } else {
                 scenelistmodel.append( item )
             }
@@ -159,7 +162,8 @@ Item {
                     "action": SyncScenes[i]["Action"],
                     "skip": "Yes"
                 }
-                syncscenelistmodel.append( item )
+                //syncscenelistmodel.append( item )
+                scenelistmodel.append( item )
             }
         }
 
