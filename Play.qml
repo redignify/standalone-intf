@@ -42,7 +42,7 @@ Item {
             value: 2
             tickmarksEnabled: true
             stepSize: 1
-            onValueChanged: apply_filters( )
+            onValueChanged: apply_filter( "Sex", value )
         }
 
         Label{
@@ -56,7 +56,7 @@ Item {
             value: 2
             tickmarksEnabled: true
             stepSize: 1
-            onValueChanged: apply_filters()
+            onValueChanged: apply_filter( "Violence", value )
         }
 
         Label{
@@ -70,7 +70,7 @@ Item {
             value: 2
             tickmarksEnabled: true
             stepSize: 1
-            onValueChanged: apply_filters()
+            onValueChanged: apply_filter( "Drugs", value )
         }
 
         Label{
@@ -84,7 +84,7 @@ Item {
             value: 2
             tickmarksEnabled: true
             stepSize: 1
-            onValueChanged: apply_filters()
+            onValueChanged: apply_filter( "Profanity", value )
         }
 
         Button {
@@ -92,10 +92,6 @@ Item {
             tooltip: "Click to redignify and watch film"
             text: "redignify"
             onClicked: watch_movie()
-        }
-
-        Component.onCompleted: {
-            apply_filters()
         }
     }
 
@@ -112,7 +108,20 @@ Item {
         }
     }
 
-    function apply_filters()
+    function apply_filter( typ, val )
+    {
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            if( typ === scenelistmodel.get(i).type )
+            {
+                if( scenelistmodel.get(i).severity > 4 - val  ){
+                    scenelistmodel.get(i).skip = "Yes"
+                }else{
+                    scenelistmodel.get(i).skip = "No"
+                }
+            }
+        }
+    }
+    function apply_filters( )
     {
         if( !scenelistmodel.get(0) ) return
         var type, severity, selected_severity

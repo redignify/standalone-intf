@@ -103,7 +103,7 @@ Item {
     {
         media.hash  = Utils.get_hash( fileDialog.fileUrl )
         console.log( media.hash )
-        if( media.hash == 'Error' ){ return }
+        if( media.hash === 'Error' ){ return }
         search_movie()
     }
 
@@ -119,7 +119,7 @@ Item {
     //
         //save_to_file( "/home/miguel/probando.json" , movie.data)
     // Read data
-        if( movie.data == "" ) return;
+        if( movie.data === "" ) return;
         console.log( movie.data )
         var data = JSON.parse( movie.data )
 
@@ -160,7 +160,7 @@ Item {
                     "description": SyncScenes[i]["AdditionalInfo"],
                     "stop": SyncScenes[i]["End"],
                     "action": SyncScenes[i]["Action"],
-                    "skip": "Yes"
+                    "skip": "No"
                 }
                 //syncscenelistmodel.append( item )
                 scenelistmodel.append( item )
@@ -172,12 +172,15 @@ Item {
             console.log( "Looking for sync info")
             for( i=0; i<data["SyncInfo"].length; ++i ){
                 console.log( "Checking ", i, data["SyncInfo"][i]["Hash"], media.hash)
-                if( data["SyncInfo"][i]["Hash"] == media.hash ){
+                if( data["SyncInfo"][i]["Hash"] === media.hash ){
                     apply_sync(data["SyncInfo"][i]["TimeOffset"],data["SyncInfo"][i]["SpeedFactor"],data["SyncInfo"][i]["Confidence"])
                     break
                 }
             }
         }
+
+    // Apply filters
+        apply_filters()
     }
 
     function show_list( str )
