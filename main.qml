@@ -194,7 +194,7 @@ ApplicationWindow {
     function get_sync_scene_index() {
         if( !scenelistmodel.get(0) ) return -1
         for( var i = 0; i < scenelistmodel.count; ++i){
-            if( scenelistmodel.get(i).type == "Sync" ) {
+            if( scenelistmodel.get(i).type === "Sync" ) {
                 return i
             }
         }
@@ -302,7 +302,7 @@ ApplicationWindow {
         var start, stop
     // Check current time against all unwanted scenes
         for( var i = 0; i < scenelistmodel.count; ++i){
-            if( scenelistmodel.get(i).skip == "Yes" )
+            if( scenelistmodel.get(i).skip === "Yes" && scenelistmodel.get(i).type !== "Sync" )
                 start = parseFloat( scenelistmodel.get(i).start );
                 stop  = parseFloat( scenelistmodel.get(i).stop );
                 if( time > start - 0.3 & time < stop ) {
