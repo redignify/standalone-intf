@@ -30,6 +30,12 @@ ApplicationWindow {
     }
 
     Item {
+        id: player
+        property variant execute: VLC
+        property bool isplaying: false
+    }
+
+    Item {
         id: movie
         property string title
         property string scenes
@@ -142,7 +148,7 @@ ApplicationWindow {
             Button {
                 text: "Go faster"
                 id: b_rate
-                onClicked: Player.set_rate( 2 )
+                onClicked: player.execute.set_rate( 2 )
             }
 
             Button {
@@ -153,7 +159,7 @@ ApplicationWindow {
                     b_beg.visible = true
                     b_end.visible = true
                     visible = false
-                    Player.set_rate( 1 )
+                    player.execute.set_rate( 1 )
                     var current_time = get_time()
                     var i = get_sync_scene_index()
                     var original_start = scenelistmodel.get(i).start
@@ -326,14 +332,14 @@ ApplicationWindow {
     function watch_movie()
     {
         if( media.url ) {
-            Player.launch( media.url )
+            player.execute.launch( media.url )
             timer.start()
         }
     }
 
     function get_time()
     {
-        var time = Player.get_time()
+        var time = player.execute.get_time()
         var re = /(\d+.?\d*)/i;
         var found = time.match(re);
         if ( found === null){
@@ -348,14 +354,14 @@ ApplicationWindow {
     function set_time( time )
     {
         console.log( "Jumping to ", time )
-        Player.seek( time )
+        player.execute.seek( time )
     }
 
     function preview_scene( start, stop )
     {
         preview_data.start = start
         preview_data.stop  = stop
-        Player.seek( preview_data.start - 3 )
+        player.execute.seek( preview_data.start - 3 )
         timer.stop()
         preview_timer.start()
     }

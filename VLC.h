@@ -1,16 +1,16 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef VLC_H
+#define VLC_H
 
 #include <QObject>
 #include <QProcess>
 
-class Player : public QObject
+class VLC : public QObject
 {
 
     Q_OBJECT
 
 public:
-    explicit Player(QObject *parent = 0);
+    explicit VLC(QObject *parent = 0);
     Q_INVOKABLE void launch( QString );
     Q_INVOKABLE void kill( );
     Q_INVOKABLE void seek( int );

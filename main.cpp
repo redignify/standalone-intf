@@ -9,7 +9,7 @@
 #include <QtQml>
 
 // include our new type
-#include "player.h"
+#include "VLC.h"
 #include "utils.h"
 
 
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     QQmlContext *context = engine.rootContext();
 
-    Player o_player;
-    context->setContextProperty("Player", &o_player);
+    VLC o_vlc;
+    context->setContextProperty("VLC", &o_vlc);
 
     Utils o_utils;
     context->setContextProperty("Utils", &o_utils);
@@ -41,8 +41,6 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 
     return app.exec();
-
-
 
 }
 

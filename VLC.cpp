@@ -1,13 +1,13 @@
-#include "player.h"
+#include "VLC.h"
 #include <QDebug>
 
-Player::Player(QObject *parent) :
+VLC::VLC(QObject *parent) :
     QObject(parent),
     m_process(new QProcess(this))
 {
 }
 
-void Player::launch( QString file )
+void VLC::launch( QString file )
 {
     QString program = "vlc";
     QStringList arguments;
@@ -17,14 +17,14 @@ void Player::launch( QString file )
     m_process->waitForReadyRead();
 }
 
-void Player::kill()
+void VLC::kill()
 {
     m_process->kill();
     m_process->waitForFinished();
     delete m_process;
 }
 
-void Player::seek( int sec )
+void VLC::seek( int sec )
 {
     QString output = m_process->readAllStandardOutput();
 
@@ -33,7 +33,7 @@ void Player::seek( int sec )
     m_process->write( cmd.toStdString().c_str() );
 }
 
-void Player::set_rate( int rate )
+void VLC::set_rate( int rate )
 {
     QString output = m_process->readAllStandardOutput();
 
@@ -42,7 +42,7 @@ void Player::set_rate( int rate )
     m_process->write( cmd.toStdString().c_str() );
 }
 
-QString Player::get_time()
+QString VLC::get_time()
 {
     m_process->readAllStandardOutput(); // Clean console output
 

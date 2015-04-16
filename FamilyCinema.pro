@@ -3,8 +3,8 @@ TEMPLATE = app
 QT += qml quick widgets
 
 SOURCES += main.cpp \
-    player.cpp \
-    utils.cpp
+    utils.cpp \
+    VLC.cpp
 
 RESOURCES += qml.qrc
 
@@ -15,7 +15,7 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    player.h \
-    utils.h
+    utils.h \
+    VLC.h
 
 OTHER_FILES +=

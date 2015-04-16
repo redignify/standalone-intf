@@ -40,7 +40,7 @@ Item {
                 var i = get_sync_scene_index()
                 var start_search = Math.max( 1, scenelistmodel.get(i).start - 30 )
                 preview_scene( 0, start_search ) // just a trick to "wait" until movie is loaded before jump
-                Player.set_rate( 2 )
+                player.execute.set_rate( 2 )
             }
         }
     }
