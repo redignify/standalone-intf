@@ -45,7 +45,11 @@ QString Utils::get_hash( QString filename)
     if (!handle) { return "Error"; }
     myhash = compute_hash(handle);
     char temp[32]; // its 16, but just in case
-    sprintf(temp, "%X", myhash);
+    #ifdef WIN32
+        sprintf(temp, "%X", myhash);
+    #else
+        sprintf(temp, "%" PRIx64, myhash);
+    #endif
     QString hash = "";
     hash.prepend( temp );
     fclose(handle);
