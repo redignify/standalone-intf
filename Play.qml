@@ -87,6 +87,13 @@ Item {
             onValueChanged: apply_filter( "Profanity", value )
         }
 
+        ComboBox {
+            width: 300
+            id: player_combo
+            model: players_list
+            onCurrentIndexChanged: set_player( players_list.get(currentIndex).text )
+        }
+
         Button {
             id: watch
             tooltip: "Click to redignify and watch film"

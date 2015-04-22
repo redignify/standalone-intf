@@ -31,8 +31,10 @@ ApplicationWindow {
 
     Item {
         id: player
-        property variant execute: VLC
+        property variant execute: VLC_TCP
         property bool isplaying: false
+        property bool autoskip_pressed : false
+        property double autoskip_start : 0
     }
 
     Item {
@@ -63,6 +65,12 @@ ApplicationWindow {
         id: action_list
         ListElement {  text: "Skip" }
         ListElement {  text: "Mute" }
+    }
+
+    ListModel {
+        id: players_list
+        ListElement {  text: "VLC_CONSOLE" }
+        ListElement {  text: "VLC_TCP" }
     }
 
 
@@ -339,16 +347,45 @@ ApplicationWindow {
 
     function get_time()
     {
-        var time = player.execute.get_time()
+        //var time = player.execute.get_time()
+        var time = player.execute.get_ms()
+        console.log(time)
         var re = /(\d+.?\d*)/i;
         var found = time.match(re);
         if ( found === null){
             console.log("Unable to read time. This will kill the player in future releases")
             //Player.kill() //TODO this also kills fcinema
             //timer.stop()
+            return
+        }
+        var ms = Math.round( parseFloat(found[0])*1000 ) / 1000
+
+    // Autoskip is presed
+        re = /fast/;
+        if ( time.match(re) !== null & !player.autoskip_pressed ){
+            console.log("Autoskip start")
+            player.autoskip_pressed = true
+            player.autoskip_start = ms
+            player.execute.mute()
+        } else if( time.match(re) === null & player.autoskip_pressed ){
+            console.log("Autoskip release")
+            player.autoskip_pressed = false
+            player.execute.unmute()
+            scenelistmodel.append({
+                "type":"?",
+                "subtype":"?",
+                "severity":5,
+                "start": player.autoskip_start - 1,
+                "duration": ms-player.autoskip_start,
+                "description": "",
+                "stop": ms-1,
+                "action": "Skip",
+                "skip": "Yes"
+            })
+            player.autoskip_start = 0
         }
 
-        return Math.round( parseFloat(found[0])*1000 ) / 1000
+        return ms
     }
 
     function set_time( time )
@@ -388,5 +425,14 @@ ApplicationWindow {
         sync.applied_offset = offset
         sync.applied_speed  = speed
         sync.confidence     = confidence
+    }
+
+    function set_player( pl )
+    {
+        if( pl === "VLC_TCP" ) {
+            player.execute = VLC_TCP
+        }else if( pl === "VLC_CONSOLE" ) {
+            player.execute = VLC_CONSOLE
+        }
     }
 }

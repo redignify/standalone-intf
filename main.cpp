@@ -9,7 +9,8 @@
 #include <QtQml>
 
 // include our new type
-#include "VLC.h"
+#include "vlc_console.h"
+#include "vlc_tcp.h"
 #include "utils.h"
 
 
@@ -32,8 +33,11 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     QQmlContext *context = engine.rootContext();
 
-    VLC o_vlc;
-    context->setContextProperty("VLC", &o_vlc);
+    VLC o_vlc_console;
+    context->setContextProperty("VLC_CONSOLE", &o_vlc_console);
+
+    VLC_TCP o_vlc_tcp;
+    context->setContextProperty("VLC_TCP", &o_vlc_tcp);
 
     Utils o_utils;
     context->setContextProperty("Utils", &o_utils);

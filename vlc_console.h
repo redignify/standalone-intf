@@ -1,12 +1,11 @@
-#ifndef VLC_H
-#define VLC_H
+#ifndef VLC_CONSOLE_H
+#define VLC_CONSOLE_H
 
 #include <QObject>
 #include <QProcess>
 
 class VLC : public QObject
 {
-
     Q_OBJECT
 
 public:
@@ -16,9 +15,11 @@ public:
     Q_INVOKABLE void seek( int );
     Q_INVOKABLE void set_rate( int );
     Q_INVOKABLE QString get_time( );
+    Q_INVOKABLE QString get_ms( );
+    Q_INVOKABLE void toggle_mute( );
 
 private:
     QProcess *m_process;
 };
 
-#endif
+#endif // VLC_CONSOLE_H

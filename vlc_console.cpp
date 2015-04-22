@@ -1,4 +1,4 @@
-#include "VLC.h"
+#include "vlc_console.h"
 #include <QDebug>
 
 VLC::VLC(QObject *parent) :
@@ -42,6 +42,21 @@ void VLC::set_rate( int rate )
     m_process->write( cmd.toStdString().c_str() );
 }
 
+QString VLC::get_ms( )
+{
+    m_process->readAllStandardOutput(); // Clean console output
+
+    m_process->write( "get_ms\n" );
+
+    m_process->waitForReadyRead(500);
+
+    QString output = m_process->readAllStandardOutput();
+
+    //qDebug() << output;
+
+    return output;
+}
+
 QString VLC::get_time()
 {
     m_process->readAllStandardOutput(); // Clean console output
@@ -55,4 +70,9 @@ QString VLC::get_time()
     //qDebug() << output;
 
     return output;
+}
+
+void VLC::toggle_mute( )
+{
+
 }
