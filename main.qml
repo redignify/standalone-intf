@@ -69,8 +69,8 @@ ApplicationWindow {
 
     ListModel {
         id: players_list
-        ListElement {  text: "VLC_CONSOLE" }
         ListElement {  text: "VLC_TCP" }
+        ListElement {  text: "VLC_CONSOLE" }
     }
 
 
@@ -310,8 +310,8 @@ ApplicationWindow {
     // Just check frequently if the player is playing an unwanted second, if so, tell it to jump to next "friendly" time
 
     // Get current time and prepare
-        if( !scenelistmodel.get(0) ) return
         var time = get_time()
+        if( !scenelistmodel.get(0) ) return
         console.log( "Checking ", time)
         var start, stop
     // Check current time against all unwanted scenes
@@ -339,10 +339,10 @@ ApplicationWindow {
 
     function watch_movie()
     {
-        if( media.url ) {
+        //if( media.url ) {
             player.execute.launch( media.url )
             timer.start()
-        }
+        //}
     }
 
     function get_time()
@@ -375,8 +375,8 @@ ApplicationWindow {
                 "type":"?",
                 "subtype":"?",
                 "severity":5,
-                "start": player.autoskip_start - 1,
-                "duration": ms-player.autoskip_start,
+                "start": player.autoskip_start - 3,
+                "duration": ms-player.autoskip_start + 2,
                 "description": "",
                 "stop": ms-1,
                 "action": "Skip",

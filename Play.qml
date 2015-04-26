@@ -18,11 +18,10 @@ Item {
            Layout.columnSpan : 4
            //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
            TableViewColumn{ role: "skip"; title: "Skip"; width: 50; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
            TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
            TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "severity" ; title: "Severity" ; width: 80; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
+           TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
            TableViewColumn{ role: "description" ; title: "Why?" ; width: 300; horizontalAlignment: Text.AlignLeft }
            model: scenelistmodel
            sortIndicatorVisible: true
