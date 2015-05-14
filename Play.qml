@@ -8,101 +8,173 @@ Item {
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
-        columns: 4
-        Component.onCompleted: { mainWindow.minimumWidth = 580;mainWindow.minimumHeight = 320}
+        columns: 2
+        Component.onCompleted: { mainWindow.minimumWidth = 790; mainWindow.minimumHeight = 510}
 
-        TableView {
-           id: playtableview
-           Layout.preferredWidth: 540
-           Layout.preferredHeight: 150
-           Layout.columnSpan : 4
-           //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
-           TableViewColumn{ role: "skip"; title: "Skip"; width: 50; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
-           TableViewColumn{ role: "description" ; title: "Why?" ; width: 300; horizontalAlignment: Text.AlignLeft }
-           model: scenelistmodel
-           sortIndicatorVisible: true
-           //onSortIndicatorColumnChanged: scenelistmodelsort(sortIndicatorColumn, sortIndicatorOrder)
-           //onSortIndicatorOrderChanged: scenelistmodel.sort(sortIndicatorColumn, sortIndicatorOrder)
-           onDoubleClicked: toogle_selection()
+        Image {
+            Layout.columnSpan: 1
+            Layout.rowSpan: 8
+            width: 300; height: 445
+            fillMode: Image.PreserveAspectFit
+            source: movie.poster_url//? movie.poster_url : "images/defaultposter.jpg
         }
 
-        Label{
-            text: "Sex & Nudity"
+
+        GridLayout {
+            columns: 4
+            RLabel{
+                Layout.columnSpan: 4
+                font.family: "Helvetica"
+                font.pointSize: 24
+                font.bold: true
+                text: movie.title? movie.title : "Unknow title"
+                horizontalAlignment: Text.AlignHCenter
+            }
+            RLabel{
+                Layout.columnSpan: 2
+                text: movie.director
+                horizontalAlignment: Text.AlignHCenter
+            }
+            RLabel{
+                text: movie.imdbrating? "IMBD " + movie.imdbrating : ""
+                horizontalAlignment: Text.AlignHCenter
+            }
+            RLabel{
+                text: movie.pgcode
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
+        GridLayout {
+            columns: 4
+            RLabel{
+                text: "Sex & Nudity"
+            }
+
+            RSlider {
+                id: slider_sn
+                value: configuration.sn
+                onValueChanged: apply_filter( "Sex", value )
+            }
+
+            RLabel{
+                text: "Violence"
+            }
+
+            RSlider {
+                id: slider_v
+                value: configuration.v
+                onValueChanged: apply_filter( "Violence", value )
+            }
+
+            RLabel{
+                text: "Drugs"
+            }
+
+            RSlider {
+                id: slider_d
+                value: configuration.d
+                onValueChanged: apply_filter( "Drugs", value )
+            }
+
+            RLabel{
+                text: "Profanity"
+            }
+
+            RSlider {
+                id: slider_pro
+                value: configuration.pro
+                onValueChanged: apply_filter( "Profanity", value )
+            }
         }
 
-        Slider {
-            id: slider_sn
-            maximumValue: 4
-            Layout.preferredWidth: 150
-            value: 2
-            tickmarksEnabled: true
-            stepSize: 1
-            onValueChanged: apply_filter( "Sex", value )
+        GridLayout {
+            TableView {
+               id: playtableview
+               visible: false
+               Layout.minimumWidth: 470
+               Layout.minimumHeight: 250
+               Layout.columnSpan : 4
+               //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
+               TableViewColumn{ role: "skip"; title: "Skip"; width: 50; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "subtype" ; title: "Tags" ; width: 100; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "severity"; title: "Level"; width: 60; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "description" ; title: "Why?" ; width: 215; horizontalAlignment: Text.AlignLeft }
+               //TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
+               //TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
+               model: scenelistmodel
+               sortIndicatorVisible: true
+               onSortIndicatorColumnChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
+               onSortIndicatorOrderChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
+               onDoubleClicked: toogle_selection()
+            }
         }
 
-        Label{
-            text: "Violence"
-        }
+        GridLayout {
+            columns: 4
+            RComboBox {
+                id: player_combo
+                Layout.minimumWidth : 150
+                model: players_list
+                //currentIndex: player.execute.name()
+                onActivated: set_player( players_list.get(currentIndex).text )
+            }
 
-        Slider {
-            id: slider_v
-            maximumValue: 4
-            Layout.preferredWidth: 150
-            value: 2
-            tickmarksEnabled: true
-            stepSize: 1
-            onValueChanged: apply_filter( "Violence", value )
-        }
+            RButton {
+                id: watch
+                tooltip: "Click to redignify and watch film"
+                text: "redignify"
+                onClicked: sync_and_play()
+            }
 
-        Label{
-            text: "Drugs"
-        }
+            RButton {
+                id: b_advanded
+                tooltip: "Advanced filters"
+                text: "Advanced"
+                onClicked: playtableview.visible? playtableview.visible=false : playtableview.visible=true
+            }
 
-        Slider {
-            id: slider_d
-            maximumValue: 4
-            Layout.preferredWidth: 150
-            value: 2
-            tickmarksEnabled: true
-            stepSize: 1
-            onValueChanged: apply_filter( "Drugs", value )
-        }
+            RButton {
+                id: b_not_this_movie
+                tooltip: "Advanced filters"
+                text: "Not this movie"
+                onClicked: {
+                    bad_movie.visible = true
+                }
+            }
 
-        Label{
-            text: "Profanity"
-        }
-
-        Slider {
-            id: slider_pro
-            maximumValue: 4
-            Layout.preferredWidth: 150
-            value: 2
-            tickmarksEnabled: true
-            stepSize: 1
-            onValueChanged: apply_filter( "Profanity", value )
-        }
-
-        ComboBox {
-            width: 300
-            id: player_combo
-            model: players_list
-            onCurrentIndexChanged: set_player( players_list.get(currentIndex).text )
-        }
-
-        Button {
-            id: watch
-            tooltip: "Click to redignify and watch film"
-            text: "redignify"
-            onClicked: watch_movie()
+            RLabel{
+                Layout.columnSpan : 4
+                id: l_msg
+                color: "red"
+                text: movie.msg_to_user
+            }
         }
     }
 
 
 /******************************* FUNCTIONS ***********************************/
+
+    function sort( column, order )
+    {
+        var columnname = playtableview.getColumn(column)[0]
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            var value = scenelistmodel.get(i).start
+            for( var j = i; j < scenelistmodel.count; ++j){
+                var value2 = scenelistmodel.get(i).skip
+                if( value > value2 ) scenelistmodel.move(i,j,1)
+            }
+        }
+    }
+    function sync_and_play(){
+        if( sync.confidence === 0 ){
+            watch_movie()
+            player.execute.toggle_fullscreen()
+        }else{
+            watch_movie()
+            player.execute.toggle_fullscreen()
+        }
+    }
 
     function toogle_selection()
     {
@@ -119,7 +191,7 @@ Item {
         for( var i = 0; i < scenelistmodel.count; ++i){
             if( typ === scenelistmodel.get(i).type )
             {
-                if( scenelistmodel.get(i).severity > 4 - val  ){
+                if( scenelistmodel.get(i).severity > 5 - val  ){
                     scenelistmodel.get(i).skip = "Yes"
                 }else{
                     scenelistmodel.get(i).skip = "No"
@@ -147,7 +219,7 @@ Item {
                 continue
             } else { continue; }
 
-            if( severity > 4 - selected_severity  ){
+            if( severity > 5 - selected_severity  ){
                 scenelistmodel.get(i).skip = "Yes"
             }else{
                 scenelistmodel.get(i).skip = "No"

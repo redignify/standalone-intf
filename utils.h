@@ -11,6 +11,9 @@ class Utils: public QObject
 public:
     explicit Utils();
     Q_INVOKABLE QString get_hash( QString );
+    Q_INVOKABLE double get_size( QString );
+    Q_INVOKABLE bool write_data( QString, QString );
+    Q_INVOKABLE QString read_data( QString );
 };
 
 #endif // UTILS_H

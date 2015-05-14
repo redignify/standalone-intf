@@ -10,16 +10,21 @@ class VLC : public QObject
 
 public:
     explicit VLC(QObject *parent = 0);
-    Q_INVOKABLE void launch( QString );
+    Q_INVOKABLE bool launch( QString );
+    Q_INVOKABLE bool connect( QString );
     Q_INVOKABLE void kill( );
-    Q_INVOKABLE void seek( int );
+    Q_INVOKABLE void seek(int );
     Q_INVOKABLE void set_rate( int );
     Q_INVOKABLE QString get_time( );
-    Q_INVOKABLE QString get_ms( );
+    Q_INVOKABLE float get_ms( );
     Q_INVOKABLE void toggle_mute( );
+    Q_INVOKABLE bool is_playing( );
+    Q_INVOKABLE bool is_autoskiping( );
+    Q_INVOKABLE QString name();
 
 private:
     QProcess *m_process;
+    Q_INVOKABLE bool autoskip_pressed;
 };
 
 #endif // VLC_CONSOLE_H

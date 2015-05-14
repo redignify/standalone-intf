@@ -21,3 +21,5 @@ HEADERS += \
     vlc_console.h
 
 OTHER_FILES +=
+
+DISTFILES +=

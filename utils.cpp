@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QQmlFile>
 #include <inttypes.h>
+#include <QStandardPaths>
+#include <fstream>
 
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #ifndef uint64_t
@@ -35,6 +37,12 @@ Utils::Utils()
 {
 }
 
+double Utils::get_size( QString filename ){
+    filename = QQmlFile::urlToLocalFileOrQrc(filename);
+    std::ifstream in(filename.toStdString().c_str(), std::ifstream::ate | std::ifstream::binary);
+    return in.tellg();
+}
+
 QString Utils::get_hash( QString filename)
 {
     FILE * handle;
@@ -56,4 +64,12 @@ QString Utils::get_hash( QString filename)
     return hash;
 }
 
+bool Utils::write_data(QString data, QString file)
+{
+    qDebug()<< QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+}
 
+QString Utils::read_data(QString file)
+{
+
+}

@@ -55,9 +55,9 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 8
-        Component.onCompleted: { mainWindow.minimumWidth = 620;mainWindow.minimumHeight = 350}
+        Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 350}
 
-        Component {
+    /*    Component {
             id: editableDelegate
             Item {
                 Text {
@@ -104,132 +104,12 @@ Item {
                 }
             }
         }
+*/
 
-        TableView {
-           id: tableview
-           sortIndicatorOrder: 1
-           sortIndicatorColumn: 1
-           Layout.preferredWidth: 450
-           Layout.preferredHeight: 250
-           Layout.columnSpan : 7
-           Layout.rowSpan: 7
-           //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
-           /*TableViewColumn {
-               role:"type_drop"
-               title:"Type"
-               width: 120
-               delegate: Item {
-                   ComboBox {
-                       anchors.verticalCenter: parent.verticalCenter
-                       width: 120
-                       currentIndex: 1
-                       model: ListModel {
-                           id: type_list
-                           ListElement {  text: "Violence" }
-                           ListElement {  text: "Sex" }
-                           ListElement {  text: "Profanity"  }
-                       }
-                       onCurrentIndexChanged: scenelistmodel.set(styleData.row, {"type": type_list.get(currentIndex).text })
-                   }
-               }
-           }/*
-           TableViewColumn {
-               role:"subtype_drop"
-               title:"Subtype"
-               width: 120
-               delegate: Item {
-                   ComboBox {
-                       anchors.verticalCenter: parent.verticalCenter
-                       width: 120
-                       currentIndex: 1
-                       model: ListModel {
-                           id: subtype_list
-                           ListElement {  text: "Violence" }
-                           ListElement {  text: "Sex" }
-                           ListElement {  text: "Profanity"  }
-                       }
-                   }
-               }
-           }
-           TableViewColumn {
-               role:"severity_drop"
-               title:"Severity"
-               width: 80
-               delegate: Item {
-                   ComboBox {
-                       anchors.verticalCenter: parent.verticalCenter
-                       width: 80
-                       currentIndex: 1
-                       model: ListModel {
-                           id: severity_list
-                           ListElement {  text: "Low" }
-                           ListElement {  text: "Medium" }
-                           ListElement {  text: "High"  }
-                       }
-                       onCurrentIndexChanged: scenelistmodel.set(styleData.row, {"severity": severity_list.get(currentIndex).text })
-                   }
-               }
-           }
-           TableViewColumn {
-               role:"action_drop"
-               title:"Action"
-               width: 80
-               delegate: Item {
-                   ComboBox {
-                       anchors.verticalCenter: parent.verticalCenter
-                       width: 80
-                       currentIndex: 1
-                       model: ListModel {
-                           id: action_list
-                           ListElement {  text: "Skip" }
-                           ListElement {  text: "Mute" }
-                       }
-                       onCurrentIndexChanged: scenelistmodel.set(styleData.row, {"action": action_list.get(currentIndex).text })
-                   }
-               }
-           }*/
-           TableViewColumn{ role: "type"  ; title: "Type" ; width: 90 }
-           TableViewColumn{ role: "subtype" ; title: "Subtype" ; width: 100 }
-           TableViewColumn{ role: "severity"; title: "Severity"; width: 60 }
-           TableViewColumn{ role: "action"; title: "Action"; width: 60; }
-           TableViewColumn{ role: "start" ; title: "Start" ; width: 60 }
-           TableViewColumn{ role: "stop" ; title: "Stop" ; width: 60 }
-           TableViewColumn{ role: "description" ; title: "Why?" ; width: 189 }
-           model: scenelistmodel
-           selectionMode: SelectionMode.SingleSelection
-           sortIndicatorVisible: true
-           onClicked : {
-               var current_scene = scenelistmodel.get(tableview.currentRow)
-               type_combo.currentIndex     = type_combo.find( current_scene.type )
-               subtype_combo.currentIndex  = subtype_combo.find( current_scene.subtype )
-               action_combo.currentIndex   = action_combo.find( current_scene.action )
-               severity_combo.currentIndex = severity_combo.find( current_scene.severity.toString() )
-               start_input.text            = current_scene.start
-               stop_input.text             = current_scene.stop
-               description_input.text      = current_scene.description
-           }
 
-           /*itemDelegate: {
-               return editableDelegate;
-           }*/
-        }
-
-        ComboBox {
-            id: type_combo
-            width: 150
-            model: ListModel {
-                id: type_list
-                ListElement {  text: "Violence" }
-                ListElement {  text: "Sex" }
-                ListElement {  text: "Profanity" }
-                ListElement {  text: "Sync" }
-            }
-            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_list.get(currentIndex).text })
-        }
-
-        ComboBox {
+/*        RComboBox {
             id: subtype_combo
-            width: 150
+            Layout.minimumWidth : 150
             model: ListModel {
                 id: subtype_list
                 ListElement {  text: "Explicit" }
@@ -237,35 +117,164 @@ Item {
             }
             onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"subtype": subtype_list.get(currentIndex).text })
         }
-        ComboBox {
-            width: 150
+*/
+        GridLayout {
+            columns: 3
+            Layout.columnSpan: 2
+            //Layout.minimumWidth:  200
+            //Layout.minimumHeight: 200
+
+            RComboBox {
+                id: type_combo
+                Layout.minimumWidth : 150
+                model: type_list
+                onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
+            }
+            /*GroupBox {
+                title: "Tab Position"
+
+                RowLayout {
+                    ExclusiveGroup { id: tabPositionGroup }
+                    RadioButton { text: "Discriminación"; checked: true; exclusiveGroup: tabPositionGroup }
+                    RadioButton { text: "Violencia"; exclusiveGroup: tabPositionGroup; }
+                    RadioButton { text: "Sexo"; exclusiveGroup: tabPositionGroup; }
+                    RadioButton { text: "Drogas"; exclusiveGroup: tabPositionGroup; }
+                    RadioButton { text: "Calibración"; exclusiveGroup: tabPositionGroup; }
+                }
+            }*/
+
+            //RLabel{ Layout.columnSpan: 1; text: qsTr("Discriminación") }
+            RSlider{ id: severity; Layout.columnSpan: 2; Layout.fillWidth: true; maximumValue: 4; value: 0; onValueChanged: scenelistmodel.set(tableview.currentRow, {"severity": value + 1 } ) }
+            RCheckBox { id: race; text: qsTr("Raza"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Race", checked ) }
+            RCheckBox { id: nati; text: qsTr("Nacionalidad"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Nationality", checked ) }
+            RCheckBox { id: sexdisc;  text: qsTr("Machismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Machismo", checked ) }
+            RCheckBox { id: homo;  text: qsTr("Homofobia"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Homofobic", checked ) }
+            RCheckBox { id: rel; text: qsTr("Religión"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Religion", checked ) }
+            RCheckBox { id: ideo; text: qsTr("Ideología"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Ideology", checked ) }
+
+            //RLabel { Layout.columnSpan: 1; text: qsTr("Violencia") }
+            //RSlider{ id: s_vio; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
+            CheckBox { id: phy; text: qsTr("Física"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Physical", checked ) }
+            CheckBox { id: psico; text: qsTr("Psicológica"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Psicological", checked ) }
+            CheckBox { id: animal;  text: qsTr("Animal"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Animal", checked ) }
+            CheckBox { id: sad;  text: qsTr("Sadismo"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Sadism", checked ) }
+            CheckBox { id: blo;  text: qsTr("Sangre"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Blood", checked ) }
+            CheckBox { id: suf;  text: qsTr("Tortura"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Torture", checked ) }
+
+            //RLabel{ Layout.columnSpan: 1; text: qsTr("Sexo") }
+            /* https://orbitadiversa.wordpress.com/2013/01/28/cosificacion-sexual/
+                    reducción (
+                        1. parte
+                        5. disponibilidad
+                        7. lienzo
+                        2. soporte
+                    intercambio
+                        3. intercambiable
+                    humillación
+                        4. vejación
+                    mercancía
+                        6. mercancia
+            */
+            //RSlider{ id: s_sex; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
+            CheckBox { id: nud; text: qsTr("Desnudo"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Nudity", checked ) }
+            CheckBox { id: sen; text: qsTr("Sensualidad"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Sensuality", checked ) }
+            CheckBox { id: por; text: qsTr("Pornografía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Porn", checked ) }
+            CheckBox { id: see; text: qsTr("Sexo explicito"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Explicit sex", checked ) }
+            CheckBox { id: obj; text: qsTr("Cosificación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Objetivation", checked ) }
+            CheckBox { id: inf; text: qsTr("Intercambiable"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Interchangeable", checked ) }
+            CheckBox { id: hum; text: qsTr("Humillación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Humiliation", checked ) }
+            CheckBox { id: mer; text: qsTr("Mercancía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Trading", checked ) }
+            CheckBox { id: red; text: qsTr("Reducción"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Reduction", checked ) }
+
+            //RLabel{ Layout.columnSpan: 1; text: qsTr("Drogas") }
+            //RSlider  { id: s_drugs; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
+            CheckBox { id: tob;  text: qsTr("Tabaco"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Tobaco", checked ) }
+            CheckBox { id: weed; text: qsTr("Porros"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Weed", checked ) }
+            CheckBox { id: coc;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Cocaine", checked ) }
+            //CheckBox { id: con;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Ideology", checked ) }
+
+            RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
+            CheckBox { id: plot; text: qsTr("Trama"); checked: false }
+            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true }
+            //CheckBox { id: mut;  text: qsTr("Mute"); checked: false }
+            CheckBox { id: cri;  text: qsTr("Crítica"); checked: false }
+            RComboBox {
+                Layout.minimumWidth : 50
+                id: action_combo
+                model: action_list
+                onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"action": action_list.get(currentIndex).text })
+            }
+        }
+
+        /*RSlider {
+            id: slider_pro
+            maximumValue: 4
+            value: 2
+            Layout.columnSpan: 2
+            //value: configuration.pro
+            onValueChanged: scenelistmodel.set(tableview.currentRow, {"severity": value })
+        }*/
+        /*RComboBox {
+            Layout.minimumWidth : 150
             id: severity_combo
             model: severity_list
             onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"severity": severity_list.get(currentIndex).text })
-        }
-        ComboBox {
-            width: 150
-            id: action_combo
-            model: action_list
-            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"action": action_list.get(currentIndex).text })
-        }
+        }*/
 
+
+        TableView {
+           id: tableview
+           sortIndicatorOrder: 1
+           sortIndicatorColumn: 1
+           Layout.preferredWidth: 450
+           Layout.preferredHeight: 250
+           Layout.columnSpan : 6
+           Layout.rowSpan: 6
+
+           TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
+           TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 60 }
+           TableViewColumn{ role: "subtype" ; title: qsTr("Tags") ; width: 60 }
+           TableViewColumn{ role: "action"; title: qsTr("Action"); width: 60; }
+           TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 60 }
+           TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 60 }
+           TableViewColumn{ role: "description" ; title: qsTr("Comments") ; width: 190 }
+           model: scenelistmodel
+           selectionMode: SelectionMode.SingleSelection
+           sortIndicatorVisible: true
+           onClicked : {
+               var current_scene = scenelistmodel.get(tableview.currentRow)
+               type_combo.currentIndex     = type_combo.find( current_scene.type )
+               action_combo.currentIndex   = action_combo.find( current_scene.action )
+               severity.value              = current_scene.severity - 1
+               start_input.text            = current_scene.start
+               stop_input.text             = current_scene.stop
+               description_input.text      = current_scene.description
+               // Tags
+               nud.checked = current_scene.subtype.match("Nudity")
+               sen.checked = current_scene.subtype.match("Sensuality")
+               por.checked = current_scene.subtype.match("Porn")
+               see.checked = current_scene.subtype.match("Explicit sex")
+           }
+
+        }
         TextField {
             id: start_input
-            Layout.preferredWidth: 150
+            Layout.fillWidth: true;
             placeholderText: "Start time"
             onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
             onAccepted: start_input.text = get_time()
         }
         TextField {
             id: stop_input
-            Layout.preferredWidth: 150
+            Layout.fillWidth: true;
             placeholderText: "Stop time"
             onEditingFinished: scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
             onAccepted: stop_input.text = get_time()
         }
 
         TextField {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
             id: description_input
             Layout.preferredWidth: 150
             placeholderText: "Why inadecuate?"
@@ -273,15 +282,16 @@ Item {
         }
 
 
-        Button {
+        RButton {
             id: b_preview
+            Layout.fillWidth: true
             text: "Preview"
             //tooltip:"This is an interesting tool tip"
             //Layout.fillWidth: true
             onClicked: preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) )
         }
 
-        Button {
+        RButton {
             id: b_add
             text: "Add scene"
             //tooltip:"This is an interesting tool tip"
@@ -289,8 +299,8 @@ Item {
             onClicked: {
                 scenelistmodel.append({
                     "type":type_list.get(type_combo.currentIndex).text,
-                    "subtype":subtype_list.get(subtype_combo.currentIndex).text,
-                    "severity":severity_list.get(severity_combo.currentIndex).text,
+                    "subtype":"",//subtype_list.get(subtype_combo.currentIndex).text,
+                    "severity": severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
                     "start": parseFloat( start_input.text ),
                     "duration": parseFloat( stop_input.text ) - parseFloat( start_input.text ),
                     "description": description_input.text,
@@ -298,19 +308,21 @@ Item {
                     "action":action_list.get(action_combo.currentIndex).text,
                     "skip": "No"
                 })
+                app.ask_before_close = true
                 tableview.selection.deselect(0, tableview.rowCount - 1)
                 tableview.selection.select( tableview.rowCount - 1 )
                 tableview.currentRow = tableview.rowCount - 1
             }
         }
 
-        Button {
+        RButton {
             id: remove
             text: "Remove scene"
             //tooltip:"This is an interesting tool tip"
             Layout.fillWidth: true
             onClicked: {
                 scenelistmodel.remove(tableview.currentRow);
+                app.ask_before_close = true
                 tableview.selection.deselect( 0, tableview.rowCount - 1)
                 tableview.selection.select( tableview.rowCount - 1 )
                 tableview.currentRow = tableview.rowCount - 1
@@ -318,7 +330,7 @@ Item {
 
         }
 
-        Button {
+        RButton {
             id: b_share
             text: "Share"
             //tooltip:"This is an interesting tool tip"
@@ -327,95 +339,21 @@ Item {
         }
     }
 
-    Dialog {
-        id: requestPass
-        width: 200
-        height: 100
-        //title: "Identification required"
-        GridLayout {
-            columns: 2
-            Label{
-                text: "Username"
-            }
-            TextField {
-                id:name
-                //placeholderText: "Username"
-            }
-            Label{
-                text: "Password"
-            }
-            TextField {
-                id:pass
-                echoMode: TextInput.Password
-                //placeholderText: "Password"
-            }
-            Button {
-                text: "Share"
-                //tooltip:"This is an interesting tool tip"
-                onClicked: {
-                    share( name.text, pass.text )
-                    requestPass.visible = false
-                }
-            }
-            Button {
-                text: "Cancel"
-                //tooltip:"This is an interesting tool tip"
-                onClicked: requestPass.visible = false
-            }
+   /* ToolTip {
+        id: tooltip1
+        target: b_preview
+        text: "Enter the text here."
+    }*/
+
+
+/*------------------- FUNCTIONS -------------------------*/
+    function add_tag( tag, add ){
+        var ctag = scenelistmodel.get(tableview.currentRow).subtype
+        if( add ) {
+            scenelistmodel.set(tableview.currentRow, {"subtype": "#"+tag+" "+ctag } )
+        }else{
+            scenelistmodel.set(tableview.currentRow, {"subtype": ctag.replace("#"+tag,'') } )
         }
-        onAccepted: {
-            share( name.text, pass.text )
-            requestPass.visible = false
-        }
+
     }
-
-    function share( user, pass)
-    {
-        // Recover original file
-        var jsonObject = JSON.parse( movie.data );
-        if ( !jsonObject ) { return }
-
-        // Update scenes data
-        jsonObject['Scenes'] = [];
-        for( var i = 0; i < scenelistmodel.count; ++i){
-            jsonObject['Scenes'][i] = {}
-            var scene = scenelistmodel.get(i)
-            jsonObject['Scenes'][i]["Category"] = scene.type
-            jsonObject['Scenes'][i]["SubCategory"] = scene.subtype
-            jsonObject['Scenes'][i]["Severity"] = scene.severity
-            jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
-            jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
-            jsonObject['Scenes'][i]["Action"] = scene.action
-            jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
-        }
-
-        if( media.hash ){
-            // Update sync data
-            if( !jsonObject["SyncInfo"] ) jsonObject["SyncInfo"] = []
-
-            var sync_updated_flag = 0
-            for( i=0; i<jsonObject["SyncInfo"].length; ++i ){
-                if( jsonObject["SyncInfo"][i]["Hash"] == media.hash ){
-                    jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
-                    jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
-                    jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
-                    sync_updated_flag = 1
-                }
-            }
-            if (sync_updated_flag == 0) {
-                i = jsonObject["SyncInfo"].length
-                jsonObject["SyncInfo"][i] = {}
-                jsonObject["SyncInfo"][i]["Hash"] = media.hash
-                jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
-                jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
-                jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
-            }
-        }
-
-        // Format and share
-        var str = JSON.stringify( jsonObject, "", 2 );
-        console.log( str )
-        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){} )
-    }
-
 }

@@ -1,27 +1,58 @@
 #include "vlc_console.h"
 #include <QDebug>
 
+
+float getNumberFromQString2(const QString &xString)
+{
+  QRegExp xRegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
+  xRegExp.indexIn(xString);
+  QStringList xList = xRegExp.capturedTexts();
+
+  if (true == xList.empty())
+  {
+    return -1.0;
+  }
+  return xList.begin()->toFloat();
+}
+
 VLC::VLC(QObject *parent) :
     QObject(parent),
     m_process(new QProcess(this))
 {
 }
 
-void VLC::launch( QString file )
+bool VLC::launch( QString file )
 {
-    QString program = "vlc";
-    QStringList arguments;
-    //vlc --intf qt --extraintf rc
-    arguments << "--intf" << "qt" << "--extraintf" << "rc" << "--rc-fake-tty"<< file;
-    m_process->start(program, arguments);
-    m_process->waitForReadyRead();
+    qDebug("Trying to launch VLC CONSOLE");
+    if( !file.isEmpty() ){
+        QString program = "vlc";
+        QStringList arguments;
+        //vlc --intf qt --extraintf rc
+        arguments << "--intf" << "qt" << "--extraintf" << "rc" << "--rc-fake-tty"<< file;
+        m_process->start(program, arguments);
+        m_process->waitForReadyRead();
+        qDebug() << m_process->state();
+        return true;
+    }else{
+        qDebug("Console player called without filename!");
+        return false;
+    }
+}
+bool VLC::connect( QString file )
+{
+    if( m_process->state() == 0 ){
+        return false;
+    } else {
+        return true;
+    }
 }
 
 void VLC::kill()
 {
-    m_process->kill();
-    m_process->waitForFinished();
-    delete m_process;
+    m_process->write( "shutdown\n" );
+    //m_process->kill();
+    //m_process->waitForFinished();
+    //delete m_process;
 }
 
 void VLC::seek( int sec )
@@ -33,16 +64,18 @@ void VLC::seek( int sec )
     m_process->write( cmd.toStdString().c_str() );
 }
 
+bool VLC::is_playing()
+{
+    return m_process->state();
+}
+
 void VLC::set_rate( int rate )
 {
-    QString output = m_process->readAllStandardOutput();
-
-    //qDebug() << output;
     QString cmd = QString("rate %1\n").arg(rate);
     m_process->write( cmd.toStdString().c_str() );
 }
 
-QString VLC::get_ms( )
+float VLC::get_ms( )
 {
     m_process->readAllStandardOutput(); // Clean console output
 
@@ -52,9 +85,24 @@ QString VLC::get_ms( )
 
     QString output = m_process->readAllStandardOutput();
 
-    //qDebug() << output;
+    QRegExp xRegExp("fast");
+    if( xRegExp.indexIn(output) == -1 ){
+        autoskip_pressed = false;
+    } else {
+        autoskip_pressed = true;
+    }
 
-    return output;
+    return getNumberFromQString2( output );
+}
+
+QString VLC::name( )
+{
+    return "VLC_CONSOLE";
+}
+
+bool VLC::is_autoskiping()
+{
+    return autoskip_pressed;
 }
 
 QString VLC::get_time()

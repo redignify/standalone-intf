@@ -12,5 +12,12 @@
         <file>images/play.png</file>
         <file>images/help.png</file>
         <file>Help.qml</file>
+        <file>RButton.qml</file>
+        <file>RSlider.qml</file>
+        <file>RLabel.qml</file>
+        <file>RText.qml</file>
+        <file>RComboBox.qml</file>
+        <file>ToolTip.qml</file>
+        <file>RCheckBox.qml</file>
     </qresource>
 </RCC>

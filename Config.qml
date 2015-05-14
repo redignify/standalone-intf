@@ -13,7 +13,7 @@ Item {
         columns: 2
         Component.onCompleted: { mainWindow.minimumWidth = 485; mainWindow.minimumHeight = 350 }
 
-        Label{
+        RLabel{
             text: "Time offset"
         }
         TextField {
@@ -21,7 +21,7 @@ Item {
             text: sync.applied_offset
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
-        Label{
+        RLabel{
             text: "Speed factor"
         }
         TextField {
@@ -29,19 +29,23 @@ Item {
             text: sync.applied_speed
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
-        Button {
-            id: b_calibrate
+        RLabel{
             text: "Guided calibration"
+        }
+        RButton {
+            id: b_calibrate
+            text: "Calibrate"
             //tooltip:"This is an interesting tool tip"
 //            Layout.fillWidth: true
-            onClicked: {
-                calibrate.visible = true
-                watch_movie()
-                var i = get_sync_scene_index()
-                var start_search = Math.max( 1, scenelistmodel.get(i).start - 30 )
-                preview_scene( 0, start_search ) // just a trick to "wait" until movie is loaded before jump
-                player.execute.set_rate( 2 )
-            }
+            onClicked: manual_calibration()
+        }
+        RLabel{
+            text: "Security margin"
+        }
+        TextField {
+            id:margin
+            text: configuration.time_margin
+            onEditingFinished: configuration.time_margin = parseFloat(margin.text)
         }
 
     }
