@@ -16,19 +16,6 @@
 
 int main(int argc, char *argv[])
 {
-
-    /*QApplication app(argc, argv);
-
-    QQmlApplicationEngine engine;
-
-    //QQmlContext *context = new QQmlContext(engine.rootContext());
-    //QQmlContext *context = engine.rootContext();
-
-    engine.rootContext()->setContextProperty("runplayer", &run_player);
-
-    engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
-    return app.exec();*/
-
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
     QQmlContext *context = engine.rootContext();
@@ -41,6 +28,10 @@ int main(int argc, char *argv[])
 
     Utils o_utils;
     context->setContextProperty("Utils", &o_utils);
+
+    app.setOrganizationName("redignify");
+    app.setOrganizationDomain("redignify.org");
+    app.setApplicationName("Redignify");
 
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 

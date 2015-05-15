@@ -10,7 +10,8 @@ class VLC : public QObject
 
 public:
     explicit VLC(QObject *parent = 0);
-    Q_INVOKABLE bool launch( QString );
+    Q_INVOKABLE bool launch(QString );
+    Q_INVOKABLE bool set_path(QString);
     Q_INVOKABLE bool connect( QString );
     Q_INVOKABLE void kill( );
     Q_INVOKABLE void seek(int );
@@ -24,6 +25,7 @@ public:
 
 private:
     QProcess *m_process;
+    QString path;
     Q_INVOKABLE bool autoskip_pressed;
 };
 

@@ -56,11 +56,17 @@ bool VLC_TCP::connect( QString file )
     return false;
 }
 
+
+bool VLC_TCP::set_path(QString program_path)
+{
+    path = program_path;
+}
+
 bool VLC_TCP::launch( QString file )
 {
     qDebug("Trying to launch VLC TCP");
     if( !file.isEmpty() ){
-        QString program = "vlc";
+        QString program = path;
         QStringList arguments;
         //vlc --intf qt --extraintf cli --lua-config "cli={host='localhost:4212'}" file
         arguments << "--intf" << "qt" << "--extraintf" << "cli" << file;//"--lua-config" <<"'cli={host=\"localhost:4212\"}'"<< file;

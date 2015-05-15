@@ -211,7 +211,7 @@ Item {
             maximumValue: 4
             value: 2
             Layout.columnSpan: 2
-            //value: configuration.pro
+            //value: settings.pro
             onValueChanged: scenelistmodel.set(tableview.currentRow, {"severity": value })
         }*/
         /*RComboBox {

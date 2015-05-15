@@ -52,7 +52,7 @@ Item {
 
             RSlider {
                 id: slider_sn
-                value: configuration.sn
+                value: settings.sn
                 onValueChanged: apply_filter( "Sex", value )
             }
 
@@ -62,7 +62,7 @@ Item {
 
             RSlider {
                 id: slider_v
-                value: configuration.v
+                value: settings.v
                 onValueChanged: apply_filter( "Violence", value )
             }
 
@@ -72,7 +72,7 @@ Item {
 
             RSlider {
                 id: slider_d
-                value: configuration.d
+                value: settings.d
                 onValueChanged: apply_filter( "Drugs", value )
             }
 
@@ -82,7 +82,7 @@ Item {
 
             RSlider {
                 id: slider_pro
-                value: configuration.pro
+                value: settings.pro
                 onValueChanged: apply_filter( "Profanity", value )
             }
         }

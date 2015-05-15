@@ -44,8 +44,29 @@ Item {
         }
         TextField {
             id:margin
-            text: configuration.time_margin
-            onEditingFinished: configuration.time_margin = parseFloat(margin.text)
+            text: settings.time_margin
+            onEditingFinished: settings.time_margin = parseFloat(margin.text)
+        }
+        RLabel{
+            text: "VLC path"
+        }
+        TextField {
+            id: vlc_path
+            text: settings.vlc_path
+            onEditingFinished: {
+                settings.vlc_path = text
+                VLC_CONSOLE.set_path( settings.vlc_path )
+                VLC_TCP.set_path( settings.vlc_path )
+            }
+        }
+        RLabel{
+            text: qsTr("Preguntar al añadir escena")
+        }
+        CheckBox {
+            id: ask;
+            text: qsTr("")
+            checked: settings.ask
+            onClicked: settings.ask = checked
         }
 
     }

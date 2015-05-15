@@ -13,7 +13,8 @@ class VLC_TCP: public QObject
 public:
     explicit VLC_TCP(QObject *parent = 0);
     Q_INVOKABLE bool connect( QString );
-    Q_INVOKABLE bool launch( QString );
+    Q_INVOKABLE bool launch(QString );
+    Q_INVOKABLE bool set_path(QString);
     Q_INVOKABLE void kill( );
     Q_INVOKABLE void seek(int );
     Q_INVOKABLE void toggle_fullscreen( void );
@@ -30,6 +31,7 @@ public:
 private:
     QProcess *m_process;
     int volume;
+    QString path;
     bool lock;
     Q_INVOKABLE bool autoskip_pressed;
     QTcpSocket *tcpSocket;

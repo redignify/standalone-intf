@@ -6,6 +6,7 @@ import QtQuick.Controls.Styles 1.1
 import QtQuick.Particles 2.0
 import QtQuick.Window 2.2
 import QtQuick.Dialogs 1.2
+import Qt.labs.settings 1.0
 
 //import "js/OpenSubtitlesHash.js" as OpenSubtitlesHash
 
@@ -65,8 +66,8 @@ ApplicationWindow {
         property int confidence: 0
     }
 
-    Item {
-        id: configuration
+    Settings {
+        id: settings
         property string name
         property string password
         property double time_margin: 0.3
@@ -75,6 +76,7 @@ ApplicationWindow {
         property int d: 1
         property int pro: 1
         property bool ask: true
+        property string vlc_path : "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
     }
 
     Item {
@@ -197,6 +199,9 @@ ApplicationWindow {
             media.url = Qt.application.arguments[1]
             movie.title = media.url.split("/").pop().split(".").shift();
         }
+        settings.vlc_path = "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
+        VLC_CONSOLE.set_path( settings.vlc_path )
+        VLC_TCP.set_path( settings.vlc_path )
     }
 
 
@@ -555,7 +560,7 @@ ApplicationWindow {
             if( scenelistmodel.get(i).skip === "Yes" && scenelistmodel.get(i).type !== "Sync" )
                 start = parseFloat( scenelistmodel.get(i).start );
                 stop  = parseFloat( scenelistmodel.get(i).stop );
-                if( time > start - configuration.time_margin & time + 1 < stop ) {
+                if( time > start - settings.time_margin & time + 1 < stop ) {
                     if( preview_data.last_skipped == i){
                         preview_data.times_failed = preview_data.times_failed + 1
                         set_time( stop + 0.1 + 5*preview_data.times_failed )
@@ -579,7 +584,7 @@ ApplicationWindow {
 
         var start = preview_data.start
         var stop  = preview_data.stop
-        if( time > start - configuration.time_margin & time + 1 < stop ) {
+        if( time > start - settings.time_margin & time + 1 < stop ) {
             set_time( stop + 0.1 + 5*preview_data.times_failed )
             preview_data.times_failed = preview_data.times_failed + 1
             console.log("Times failed", preview_data.times_failed )
@@ -671,7 +676,7 @@ ApplicationWindow {
             app.ask_before_close = true
             player.autoskip_start = 0
             loader.source = "Editor.qml"
-            if( configuration.ask ) raise()
+            if( settings.ask ) raise()
         }
         return time
     }

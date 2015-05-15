@@ -21,11 +21,16 @@ VLC::VLC(QObject *parent) :
 {
 }
 
+bool VLC::set_path(QString program_path)
+{
+    path = program_path;
+}
+
 bool VLC::launch( QString file )
 {
     qDebug("Trying to launch VLC CONSOLE");
     if( !file.isEmpty() ){
-        QString program = "vlc";
+        QString program = path;
         QStringList arguments;
         //vlc --intf qt --extraintf rc
         arguments << "--intf" << "qt" << "--extraintf" << "rc" << "--rc-fake-tty"<< file;
