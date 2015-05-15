@@ -9,12 +9,34 @@
 #include <inttypes.h>
 #include <QStandardPaths>
 #include <fstream>
+#include <QCoreApplication>
+#include <QTime>
+
+void delay( int millisecondsToWait )
+{
+    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
+    while( QTime::currentTime() < dieTime )
+    {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+    }
+}
+
+float getNumberFromQString(const QString &xString)
+{
+  QRegExp xRegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
+  xRegExp.indexIn(xString);
+  QStringList xList = xRegExp.capturedTexts();
+
+  if (true == xList.empty()) return -1.0;
+
+  return xList.begin()->toFloat();
+}
+
 
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 #ifndef uint64_t
 #define uint64_t unsigned long long
 #endif
-
 
 uint64_t compute_hash(FILE * handle)
 {
@@ -43,6 +65,8 @@ double Utils::get_size( QString filename ){
     return in.tellg();
 }
 
+
+
 QString Utils::get_hash( QString filename)
 {
     FILE * handle;
@@ -54,7 +78,7 @@ QString Utils::get_hash( QString filename)
     myhash = compute_hash(handle);
     char temp[32]; // its 16, but just in case
     #ifdef WIN32
-        sprintf(temp, "%X", myhash);
+        sprintf(temp, "%I64x", myhash);
     #else
         sprintf(temp, "%" PRIx64, myhash);
     #endif

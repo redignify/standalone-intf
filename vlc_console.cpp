@@ -1,19 +1,7 @@
 #include "vlc_console.h"
+#include "utils.h"
 #include <QDebug>
 
-
-float getNumberFromQString2(const QString &xString)
-{
-  QRegExp xRegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
-  xRegExp.indexIn(xString);
-  QStringList xList = xRegExp.capturedTexts();
-
-  if (true == xList.empty())
-  {
-    return -1.0;
-  }
-  return xList.begin()->toFloat();
-}
 
 VLC::VLC(QObject *parent) :
     QObject(parent),
@@ -35,7 +23,10 @@ bool VLC::launch( QString file )
         //vlc --intf qt --extraintf rc
         arguments << "--intf" << "qt" << "--extraintf" << "rc" << "--rc-fake-tty"<< file;
         m_process->start(program, arguments);
-        m_process->waitForReadyRead();
+        for (int i=1;i<10;i++){
+            if( m_process->state() != 0 ) break;
+            delay(500);
+        }
         qDebug() << m_process->state();
         return true;
     }else{
@@ -97,7 +88,7 @@ float VLC::get_ms( )
         autoskip_pressed = true;
     }
 
-    return getNumberFromQString2( output );
+    return getNumberFromQString( output );
 }
 
 QString VLC::name( )

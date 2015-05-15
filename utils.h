@@ -16,4 +16,7 @@ public:
     Q_INVOKABLE QString read_data( QString );
 };
 
+void delay( int millisecondsToWait );
+float getNumberFromQString(const QString &xString);
+
 #endif // UTILS_H

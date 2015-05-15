@@ -1,29 +1,7 @@
 #include "vlc_tcp.h"
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include <QCoreApplication>
-
-#include <QTime>
-
-void delay( int millisecondsToWait )
-{
-    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
-    while( QTime::currentTime() < dieTime )
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-    }
-}
-
-float getNumberFromQString(const QString &xString)
-{
-  QRegExp xRegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
-  xRegExp.indexIn(xString);
-  QStringList xList = xRegExp.capturedTexts();
-
-  if (true == xList.empty()) return -1.0;
-
-  return xList.begin()->toFloat();
-}
+#include "utils.h"
 
 VLC_TCP::VLC_TCP(QObject *parent) :
     QObject(parent),
@@ -72,7 +50,7 @@ bool VLC_TCP::launch( QString file )
         arguments << "--intf" << "qt" << "--extraintf" << "cli" << file;//"--lua-config" <<"'cli={host=\"localhost:4212\"}'"<< file;
         m_process->start(program, arguments);
         qDebug() << m_process->arguments();
-        for (int i=1;i<100;i++){
+        for (int i=1;i<10;i++){
             if( m_process->state() != 0 ) break;
             delay(500);
             //qDebug() << m_process->state();
