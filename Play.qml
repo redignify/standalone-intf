@@ -9,7 +9,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 2
-        //Component.onCompleted: { mainWindow.minimumWidth = 790; mainWindow.minimumHeight = 510}
+        Component.onCompleted: { mainWindow.minimumWidth = 790; mainWindow.minimumHeight = 510}
 
         Image {
             Layout.columnSpan: 1

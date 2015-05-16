@@ -198,6 +198,7 @@ ApplicationWindow {
         {
             media.url = Qt.application.arguments[1]
             movie.title = media.url.split("/").pop().split(".").shift();
+            parse_input_file()
         }
         VLC_CONSOLE.set_path( settings.vlc_path )
         VLC_TCP.set_path( settings.vlc_path )
