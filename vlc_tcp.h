@@ -19,8 +19,7 @@ public:
     Q_INVOKABLE void seek(int );
     Q_INVOKABLE void toggle_fullscreen( void );
     Q_INVOKABLE void set_rate( int );
-    Q_INVOKABLE QString get_time( );
-    Q_INVOKABLE float get_ms();
+    Q_INVOKABLE float get_time( );
     Q_INVOKABLE QString get_title( );
     Q_INVOKABLE int mute( );
     Q_INVOKABLE void unmute( );
@@ -37,6 +36,7 @@ private:
     QTcpSocket *tcpSocket;
     QString currentData;
     quint16 blockSize;
+    int tuned_cli;
     void ready();
     void clean( );
 };

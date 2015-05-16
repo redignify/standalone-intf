@@ -8,6 +8,7 @@ VLC_TCP::VLC_TCP(QObject *parent) :
     m_process(new QProcess(this))
 {
     lock = false;
+    tuned_cli = 0;
 }
 
 bool VLC_TCP::connect( QString file )
@@ -22,7 +23,7 @@ bool VLC_TCP::connect( QString file )
     tcpSocket->connectToHost("localhost", 4212 );
     for (int i=1;i<10;i++) {
         qDebug() << tcpSocket->state();
-        if( get_ms() != -1 ){
+        if( get_time() != -1 ){
             lock = false;
             return true;
         }
@@ -126,25 +127,44 @@ void VLC_TCP::clean()
     out << tcpSocket->readAll();
 }
 
-float VLC_TCP::get_ms( )
+float VLC_TCP::get_time( )
 {
     if( tcpSocket->state() < 3 ) return -1;
     clean();
-    // Ask for data
-    tcpSocket->write( "get_ms\n" );
+
+// Ask for data
+    if( tuned_cli != 1 ) {
+        tcpSocket->write( "get_ms\n" );
+    }else{
+        tcpSocket->write( "get_time\n" );
+    }
     tcpSocket->waitForReadyRead(2000);
     char data[1000];
     tcpSocket->read(data,1000);
     QString output = QString("%1").arg(data);
 
-    QRegExp xRegExp("fast");
-    if( xRegExp.indexIn(output) == -1 ){
-        autoskip_pressed = false;
-    } else {
-        autoskip_pressed = true;
-        qDebug("Autoskiping");
+// Is the cli interface tuned? 0-Unkown, 1-No, 2-Yes
+    if( tuned_cli != 1 ) {
+        QRegExp reg_fast("fast");
+        if( reg_fast.indexIn(output) == -1 ){
+            autoskip_pressed = false;
+        } else {
+            autoskip_pressed = true;
+            qDebug("Autoskiping");
+        }
+
+        QRegExp reg_unknown("Unknown command");
+        if( reg_unknown.indexIn(output) == -1 ){
+            if( getNumberFromQString( output ) != -1 ){
+                tuned_cli = 2;
+            }else{
+                tuned_cli = 0;
+            }
+        } else {
+            tuned_cli = 1;
+            qDebug("CLI is not tuned");
+        }
     }
-    //qDebug()<<output;
     return getNumberFromQString( output );
 }
 
@@ -153,10 +173,6 @@ bool VLC_TCP::is_autoskiping()
     return autoskip_pressed;
 }
 
-QString VLC_TCP::get_time()
-{
-    return "output";
-}
 
 int VLC_TCP::mute( )
 {

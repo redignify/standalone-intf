@@ -7,6 +7,7 @@ VLC::VLC(QObject *parent) :
     QObject(parent),
     m_process(new QProcess(this))
 {
+    tuned_cli = 0;
 }
 
 bool VLC::set_path(QString program_path)
@@ -71,26 +72,6 @@ void VLC::set_rate( int rate )
     m_process->write( cmd.toStdString().c_str() );
 }
 
-float VLC::get_ms( )
-{
-    m_process->readAllStandardOutput(); // Clean console output
-
-    m_process->write( "get_ms\n" );
-
-    m_process->waitForReadyRead(500);
-
-    QString output = m_process->readAllStandardOutput();
-
-    QRegExp xRegExp("fast");
-    if( xRegExp.indexIn(output) == -1 ){
-        autoskip_pressed = false;
-    } else {
-        autoskip_pressed = true;
-    }
-
-    return getNumberFromQString( output );
-}
-
 QString VLC::name( )
 {
     return "VLC_CONSOLE";
@@ -101,19 +82,44 @@ bool VLC::is_autoskiping()
     return autoskip_pressed;
 }
 
-QString VLC::get_time()
+float VLC::get_time()
 {
     m_process->readAllStandardOutput(); // Clean console output
 
-    m_process->write( "get_time\n" );
+    // Ask for data
+        if( tuned_cli != 1 ) {
+            m_process->write( "get_ms\n" );
+        }else{
+            m_process->write( "get_time\n" );
+        }
+        m_process->waitForReadyRead(2000);
+        char data[1000];
+        m_process->read(data,1000);
+        QString output = QString("%1").arg(data);
 
-    m_process->waitForReadyRead(500);
+    // Is the cli interface tuned? 0-Unkown, 1-No, 2-Yes
+        if( tuned_cli != 1 ) {
+            QRegExp reg_fast("fast");
+            if( reg_fast.indexIn(output) == -1 ){
+                autoskip_pressed = false;
+            } else {
+                autoskip_pressed = true;
+                qDebug("Autoskiping");
+            }
 
-    QString output = m_process->readAllStandardOutput();
-
-    //qDebug() << output;
-
-    return output;
+            QRegExp reg_unknown("Unknown command");
+            if( reg_unknown.indexIn(output) == -1 ){
+                if( getNumberFromQString( output ) != -1 ){
+                    tuned_cli = 2;
+                }else{
+                    tuned_cli = 0;
+                }
+            } else {
+                tuned_cli = 1;
+                qDebug("CLI is not tuned");
+            }
+        }
+        return getNumberFromQString( output );
 }
 
 void VLC::toggle_fullscreen( void )

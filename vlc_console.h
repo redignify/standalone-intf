@@ -16,8 +16,7 @@ public:
     Q_INVOKABLE void kill( );
     Q_INVOKABLE void seek(int );
     Q_INVOKABLE void set_rate( int );
-    Q_INVOKABLE QString get_time( );
-    Q_INVOKABLE float get_ms( );
+    Q_INVOKABLE float get_time( );
     Q_INVOKABLE void toggle_mute( );
     Q_INVOKABLE void toggle_fullscreen( );
     Q_INVOKABLE bool is_playing( );
@@ -27,6 +26,7 @@ public:
 private:
     QProcess *m_process;
     QString path;
+    int tuned_cli;
     Q_INVOKABLE bool autoskip_pressed;
 };
 

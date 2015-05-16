@@ -639,8 +639,8 @@ ApplicationWindow {
 // Ask player for the current time
     function get_time()
     {
-        var time = player.execute.get_ms() // get_time() also works. Not sure which one to use
-        if ( time == -1){
+        var time = player.execute.get_time()
+        if ( time == -1){ // @disable-check M126
             say_to_user("Reconecting with player")
             if( !player.execute.connect("") ){
                 say_to_user("Warning: unable to reach player!")
