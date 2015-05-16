@@ -77,6 +77,8 @@ Item {
             text: "test"
             onClicked: {
                 get_subs()
+                media.url = fileurl.text.toString()
+                parse_input_file()
                 //calibrate_from_subtitles()
                 //console.log(JSON.stringify(a))
                 //console.log( seconds_to_time(65) )
@@ -115,8 +117,8 @@ Item {
 // A new input file has being selected, get hash and try to identify
     function parse_input_file()
     {
-        media.hash     = Utils.get_hash( fileDialog.fileUrl )
-        media.bytesize = Utils.get_size( fileDialog.fileUrl )
+        media.hash     = Utils.get_hash( media.url )
+        media.bytesize = Utils.get_size( media.url )
         if( media.hash === 'Error' ){ return }
 
         media.hash = pad(media.hash,16)

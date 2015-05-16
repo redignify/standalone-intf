@@ -196,9 +196,9 @@ ApplicationWindow {
     Component.onCompleted: {
         if( media.url == "" && Qt.application.arguments[1] )
         {
-            media.url = Qt.application.arguments[1]
+            media.url = "file://"+ Qt.application.arguments[1].toString();
             movie.title = media.url.split("/").pop().split(".").shift();
-            parse_input_file()
+            loader.item.parse_input_file()
         }
         VLC_CONSOLE.set_path( settings.vlc_path )
         VLC_TCP.set_path( settings.vlc_path )
