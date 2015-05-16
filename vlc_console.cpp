@@ -28,8 +28,11 @@ bool VLC::launch( QString file )
             if( m_process->state() != 0 ) break;
             delay(500);
         }
-        qDebug() << m_process->state();
-        return true;
+        for (int i=1;i<10;i++) {
+            if( get_time() != -1 ) return true;
+            delay(500);
+        }
+        return false;
     }else{
         qDebug("Console player called without filename!");
         return false;
