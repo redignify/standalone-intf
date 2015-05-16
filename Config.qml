@@ -13,45 +13,40 @@ Item {
         columns: 2
         Component.onCompleted: { mainWindow.minimumWidth = 485; mainWindow.minimumHeight = 350 }
 
-        RLabel{
-            text: "Time offset"
-        }
+
+        RLabel{ text: qsTr("Diferencia tiempo") }
         TextField {
             id:offset
             text: sync.applied_offset
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
-        RLabel{
-            text: "Speed factor"
-        }
+
+
+        RLabel{ text: qsTr("Diferencia velocidad") }
         TextField {
             id:speed
             text: sync.applied_speed
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
         }
-        RLabel{
-            text: "Guided calibration"
-        }
+
+
+        RLabel{ text: qsTr("Calibración guiada") }
         RButton {
-            id: b_calibrate
-            text: "Calibrate"
-            //tooltip:"This is an interesting tool tip"
-//            Layout.fillWidth: true
+            text: qsTr("Calibrar")
+            Layout.fillWidth: true
             onClicked: manual_calibration()
         }
-        RLabel{
-            text: "Security margin"
-        }
+
+
+        RLabel{ text: qsTr("Margen de seguridad") }
         TextField {
-            id:margin
             text: settings.time_margin
             onEditingFinished: settings.time_margin = parseFloat(margin.text)
         }
-        RLabel{
-            text: "VLC path"
-        }
+
+
+        RLabel{ text: qsTr("Ejecutable VLC") }
         TextField {
-            id: vlc_path
             text: settings.vlc_path
             onEditingFinished: {
                 settings.vlc_path = text
@@ -59,14 +54,21 @@ Item {
                 VLC_TCP.set_path( settings.vlc_path )
             }
         }
-        RLabel{
-            text: qsTr("Preguntar al añadir escena")
-        }
+
+
+        RLabel{ text: qsTr("Preguntar al añadir escena") }
         CheckBox {
-            id: ask;
             text: qsTr("")
             checked: settings.ask
             onClicked: settings.ask = checked
+        }
+
+
+        RLabel{ text: qsTr("Lanzar en pantalla completa") }
+        CheckBox {
+            text: qsTr("")
+            checked: settings.start_fullscreen
+            onClicked: settings.start_fullscreen = checked
         }
 
     }

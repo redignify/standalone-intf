@@ -9,12 +9,12 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 2
-        Component.onCompleted: { mainWindow.minimumWidth = 790; mainWindow.minimumHeight = 510}
+        //Component.onCompleted: { mainWindow.minimumWidth = 790; mainWindow.minimumHeight = 510}
 
         Image {
             Layout.columnSpan: 1
             Layout.rowSpan: 8
-            width: 300; height: 445
+            //width: 300; height: 445
             fillMode: Image.PreserveAspectFit
             source: movie.poster_url//? movie.poster_url : "images/defaultposter.jpg
         }
@@ -30,15 +30,18 @@ Item {
                 text: movie.title? movie.title : "Unknow title"
                 horizontalAlignment: Text.AlignHCenter
             }
+
             RLabel{
                 Layout.columnSpan: 2
                 text: movie.director
                 horizontalAlignment: Text.AlignHCenter
             }
+
             RLabel{
                 text: movie.imdbrating? "IMBD " + movie.imdbrating : ""
                 horizontalAlignment: Text.AlignHCenter
             }
+
             RLabel{
                 text: movie.pgcode
                 horizontalAlignment: Text.AlignHCenter
@@ -46,40 +49,33 @@ Item {
         }
         GridLayout {
             columns: 4
-            RLabel{
-                text: "Sex & Nudity"
-            }
 
+
+            RLabel{ text: qsTr("Sex & Nudity") }
             RSlider {
                 id: slider_sn
                 value: settings.sn
                 onValueChanged: apply_filter( "Sex", value )
             }
 
-            RLabel{
-                text: "Violence"
-            }
 
+            RLabel{ text: qsTr("Violence") }
             RSlider {
                 id: slider_v
                 value: settings.v
                 onValueChanged: apply_filter( "Violence", value )
             }
 
-            RLabel{
-                text: "Drugs"
-            }
 
+            RLabel{ text: qsTr("Drugs") }
             RSlider {
                 id: slider_d
                 value: settings.d
                 onValueChanged: apply_filter( "Drugs", value )
             }
 
-            RLabel{
-                text: "Profanity"
-            }
 
+            RLabel{ text: qsTr("Profanity") }
             RSlider {
                 id: slider_pro
                 value: settings.pro
@@ -130,14 +126,14 @@ Item {
             RButton {
                 id: b_advanded
                 tooltip: "Advanced filters"
-                text: "Advanced"
+                text: qsTr("Advanzado")
                 onClicked: playtableview.visible? playtableview.visible=false : playtableview.visible=true
             }
 
             RButton {
                 id: b_not_this_movie
                 tooltip: "Advanced filters"
-                text: "Not this movie"
+                text: qsTr("Película erronea")
                 onClicked: {
                     bad_movie.visible = true
                 }
@@ -169,10 +165,10 @@ Item {
     function sync_and_play(){
         if( sync.confidence === 0 ){
             watch_movie()
-            player.execute.toggle_fullscreen()
+            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
         }else{
             watch_movie()
-            player.execute.toggle_fullscreen()
+            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
         }
     }
 

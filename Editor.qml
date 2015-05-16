@@ -57,67 +57,6 @@ Item {
         columns: 8
         Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 350}
 
-    /*    Component {
-            id: editableDelegate
-            Item {
-                Text {
-                    width: parent.width
-                    anchors.margins: 4
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    elide: styleData.elideMode
-                    text: styleData.value !== undefined ? styleData.value : ""
-                    color: styleData.textColor
-                    visible: !styleData.selected
-                }
-                Loader {
-                    id: loaderEditor
-                    anchors.fill: parent
-                    anchors.margins: 4
-                    Connections {
-                        target: loaderEditor.item
-                        onEditingFinished: {
-                            if (typeof styleData.value === 'number')
-                                var num = parseFloat(loaderEditor.item.text)
-                                if ( typeof num === 'number' && num > 0 ) {
-                                    scenelistmodel.setProperty(styleData.row, styleData.role, Number(num) )
-                                }
-                            else
-                                scenelistmodel.setProperty(styleData.row, styleData.role, loaderEditor.item.text)
-                        }
-                    }
-                    sourceComponent: styleData.selected ? editor : null
-                    Component {
-                        id: editor
-                        TextInput {
-                            id: textinput
-                            color: styleData.textColor
-                            text: styleData.value
-                            MouseArea {
-                                id: mouseArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: textinput.forceActiveFocus()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-*/
-
-
-/*        RComboBox {
-            id: subtype_combo
-            Layout.minimumWidth : 150
-            model: ListModel {
-                id: subtype_list
-                ListElement {  text: "Explicit" }
-                ListElement {  text: "Implicit" }
-            }
-            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"subtype": subtype_list.get(currentIndex).text })
-        }
-*/
         GridLayout {
             columns: 3
             Layout.columnSpan: 2
@@ -130,18 +69,7 @@ Item {
                 model: type_list
                 onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
             }
-            /*GroupBox {
-                title: "Tab Position"
 
-                RowLayout {
-                    ExclusiveGroup { id: tabPositionGroup }
-                    RadioButton { text: "Discriminación"; checked: true; exclusiveGroup: tabPositionGroup }
-                    RadioButton { text: "Violencia"; exclusiveGroup: tabPositionGroup; }
-                    RadioButton { text: "Sexo"; exclusiveGroup: tabPositionGroup; }
-                    RadioButton { text: "Drogas"; exclusiveGroup: tabPositionGroup; }
-                    RadioButton { text: "Calibración"; exclusiveGroup: tabPositionGroup; }
-                }
-            }*/
 
             //RLabel{ Layout.columnSpan: 1; text: qsTr("Discriminación") }
             RSlider{ id: severity; Layout.columnSpan: 2; Layout.fillWidth: true; maximumValue: 4; value: 0; onValueChanged: scenelistmodel.set(tableview.currentRow, {"severity": value + 1 } ) }
@@ -206,22 +134,6 @@ Item {
             }
         }
 
-        /*RSlider {
-            id: slider_pro
-            maximumValue: 4
-            value: 2
-            Layout.columnSpan: 2
-            //value: settings.pro
-            onValueChanged: scenelistmodel.set(tableview.currentRow, {"severity": value })
-        }*/
-        /*RComboBox {
-            Layout.minimumWidth : 150
-            id: severity_combo
-            model: severity_list
-            onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"severity": severity_list.get(currentIndex).text })
-        }*/
-
-
         TableView {
            id: tableview
            sortIndicatorOrder: 1
@@ -249,25 +161,55 @@ Item {
                start_input.text            = current_scene.start
                stop_input.text             = current_scene.stop
                description_input.text      = current_scene.description
+
                // Tags
-               nud.checked = current_scene.subtype.match("Nudity")
-               sen.checked = current_scene.subtype.match("Sensuality")
-               por.checked = current_scene.subtype.match("Porn")
-               see.checked = current_scene.subtype.match("Explicit sex")
+               race.checked     = current_scene.subtype.match("Race")
+               nati.checked     = current_scene.subtype.match("Nationality")
+               sexdisc.checked  = current_scene.subtype.match("Porn")
+               homo.checked     = current_scene.subtype.match("Homofobic")
+               rel.checked      = current_scene.subtype.match("Religion")
+               ideo.checked     = current_scene.subtype.match("Ideology")
+
+               phy.checked      = current_scene.subtype.match("Physical")
+               psico.checked    = current_scene.subtype.match("Psicological")
+               animal.checked   = current_scene.subtype.match("Animal")
+               sad.checked      = current_scene.subtype.match("Sadism")
+               blo.checked      = current_scene.subtype.match("Blood")
+               suf.checked      = current_scene.subtype.match("Torture")
+
+               nud.checked      = current_scene.subtype.match("Nudity")
+               sen.checked      = current_scene.subtype.match("Sensuality")
+               por.checked      = current_scene.subtype.match("Porn")
+               see.checked      = current_scene.subtype.match("Explicit sex")
+               obj.checked      = current_scene.subtype.match("Objetivation")
+               inf.checked      = current_scene.subtype.match("Interchangeable")
+               hum.checked      = current_scene.subtype.match("Humiliation")
+               mer.checked      = current_scene.subtype.match("Trading")
+               red.checked      = current_scene.subtype.match("Reduction")
+
+               tob.checked      = current_scene.subtype.match("Tobaco")
+               weed.checked     = current_scene.subtype.match("Weed")
+               coc.checked      = current_scene.subtype.match("Cocaine")
+
+               plot.checked     = current_scene.subtype.match("Plot")
+               grap.checked     = current_scene.subtype.match("Graph")
+               cri.checked      = current_scene.subtype.match("Critic")
            }
 
         }
+
         TextField {
             id: start_input
             Layout.fillWidth: true;
-            placeholderText: "Start time"
+            placeholderText: qsTr("Segundo inicio")
             onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
             onAccepted: start_input.text = get_time()
         }
+
         TextField {
             id: stop_input
             Layout.fillWidth: true;
-            placeholderText: "Stop time"
+            placeholderText: qsTr("Segundo fin")
             onEditingFinished: scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
             onAccepted: stop_input.text = get_time()
         }
@@ -277,7 +219,7 @@ Item {
             Layout.fillWidth: true
             id: description_input
             Layout.preferredWidth: 150
-            placeholderText: "Why inadecuate?"
+            placeholderText: qsTr("Comentarios")
             onTextChanged: scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
         }
 
@@ -285,16 +227,13 @@ Item {
         RButton {
             id: b_preview
             Layout.fillWidth: true
-            text: "Preview"
-            //tooltip:"This is an interesting tool tip"
-            //Layout.fillWidth: true
+            text: qsTr("Preview")
             onClicked: preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) )
         }
 
         RButton {
             id: b_add
-            text: "Add scene"
-            //tooltip:"This is an interesting tool tip"
+            text: qsTr("Añadir escena")
             Layout.fillWidth: true
             onClicked: {
                 scenelistmodel.append({
@@ -315,10 +254,10 @@ Item {
             }
         }
 
+
         RButton {
             id: remove
-            text: "Remove scene"
-            //tooltip:"This is an interesting tool tip"
+            text: qsTr("Remover escena")
             Layout.fillWidth: true
             onClicked: {
                 scenelistmodel.remove(tableview.currentRow);
@@ -330,20 +269,15 @@ Item {
 
         }
 
+
         RButton {
             id: b_share
-            text: "Share"
-            //tooltip:"This is an interesting tool tip"
+            text: qsTr("Compartir")
             Layout.fillWidth: true
             onClicked: requestPass.visible = true
         }
     }
 
-   /* ToolTip {
-        id: tooltip1
-        target: b_preview
-        text: "Enter the text here."
-    }*/
 
 
 /*------------------- FUNCTIONS -------------------------*/

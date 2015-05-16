@@ -71,6 +71,7 @@ ApplicationWindow {
         property string name
         property string password
         property double time_margin: 0.3
+        property bool start_fullscreen: true
         property int sn: 3
         property int v: 2
         property int d: 1
@@ -143,7 +144,7 @@ ApplicationWindow {
         id: toolbar
         RowLayout {
             id: toolbarLayout
-            spacing: 0
+            //spacing: 0
             width: parent.width
             ToolButton {
                 iconSource: "images/play.png"
@@ -323,15 +324,14 @@ ApplicationWindow {
         GridLayout {
             columns: 2
             RLabel{
-                text: "Username"
+                text: qsTr("Usuario")
             }
             TextField {
                 id:name
                 width: 100
-                //placeholderText: "Username"
             }
             RLabel{
-                text: "Password"
+                text: qsTr("Contraseña")
             }
             TextField {
                 width: 100
@@ -340,10 +340,10 @@ ApplicationWindow {
                 //placeholderText: "Password"
             }
             RLabel{
-                text: "Filter status"
+                text: qsTr("Estado del filtro")
             }
             RComboBox {
-                width: 100
+                Layout.minimumWidth: 100
                 id: status_combo
                 model: status_list
                 currentIndex: movie.filter_status
@@ -364,16 +364,16 @@ ApplicationWindow {
         id: calibrate
         width: 500
         height: 200
-        title: "Guided calibration"
+        title: qsTr("Calibración guiada")
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         GridLayout {
             columns: 1
             RLabel{
                 id: user_instructions
-                text: "Click the RButton when the scene" + scenelistmodel.get(get_sync_scene_index).description + " ends"
+                text: "Click the button when the scene ends"// + scenelistmodel.get(get_sync_scene_index).description + " ends"
             }
             RButton {
-                text: "Faster"
+                text: qsTr("Velocidad x3")
                 tooltip: "Play at 3x speed"
                 id: b_rate
                 onClicked: player.execute.set_rate( 3 )

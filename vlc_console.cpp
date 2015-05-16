@@ -1,6 +1,8 @@
 #include "vlc_console.h"
 #include "utils.h"
 #include <QDebug>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 
 VLC::VLC(QObject *parent) :
@@ -66,7 +68,7 @@ void VLC::seek( int sec )
 
 bool VLC::is_playing()
 {
-    return m_process->state();
+    return m_process->state(); // TODO: this is not exactly a bool
 }
 
 void VLC::set_rate( int rate )
@@ -130,7 +132,30 @@ void VLC::toggle_fullscreen( void )
     m_process->write( "f \n" );
 }
 
-void VLC::toggle_mute( )
+int VLC::mute( )
 {
+    if( !is_playing() ) return -1;
+    m_process->readAllStandardOutput(); // Clean console output
+    // Ask for data
+    m_process->write( "volume\n" );
+    m_process->waitForReadyRead(2000);
+    char data[1000];
+    m_process->read(data,1000);
+    QRegularExpression re("(\\d+.?\\d*)");
+    QRegularExpressionMatch found;
+    if( QString("%1").arg(data).contains(re,&found) ) {
+        volume = found.captured().toInt();
+    }else {
+        volume = 100;
+    }
+    m_process->write( "volume 0\n" );
+    return volume;
+}
 
+void VLC::unmute( )
+{
+    if( !is_playing() ) return;
+    qDebug() << volume;
+    QString cmd = QString("volume %1\n").arg( volume );
+    m_process->write( cmd.toStdString().c_str() );
 }
