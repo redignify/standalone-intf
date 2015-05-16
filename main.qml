@@ -163,7 +163,6 @@ ApplicationWindow {
                 onClicked: loader.source = "Editor.qml"
                 Accessible.name: "Editor"
                 tooltip: "Create your own scenes"
-
             }
             ToolButton {
                 iconSource: "images/preferences-system.png"
@@ -200,7 +199,6 @@ ApplicationWindow {
             media.url = Qt.application.arguments[1]
             movie.title = media.url.split("/").pop().split(".").shift();
         }
-        settings.vlc_path = "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
         VLC_CONSOLE.set_path( settings.vlc_path )
         VLC_TCP.set_path( settings.vlc_path )
     }

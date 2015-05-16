@@ -51,15 +51,15 @@ Item {
             columns: 4
 
 
-            RLabel{ text: qsTr("Sex & Nudity") }
+            RLabel{ text: qsTr("Discriminación") }
             RSlider {
-                id: slider_sn
-                value: settings.sn
-                onValueChanged: apply_filter( "Sex", value )
+                id: slider_pro
+                value: settings.pro
+                onValueChanged: apply_filter( "Discrimination", value )
             }
 
 
-            RLabel{ text: qsTr("Violence") }
+            RLabel{ text: qsTr("Violencia") }
             RSlider {
                 id: slider_v
                 value: settings.v
@@ -67,20 +67,21 @@ Item {
             }
 
 
-            RLabel{ text: qsTr("Drugs") }
+            RLabel{ text: qsTr("Sexo") }
+            RSlider {
+                id: slider_sn
+                value: settings.sn
+                onValueChanged: apply_filter( "Sex", value )
+            }
+
+
+            RLabel{ text: qsTr("Drogas") }
             RSlider {
                 id: slider_d
                 value: settings.d
                 onValueChanged: apply_filter( "Drugs", value )
             }
 
-
-            RLabel{ text: qsTr("Profanity") }
-            RSlider {
-                id: slider_pro
-                value: settings.pro
-                onValueChanged: apply_filter( "Profanity", value )
-            }
         }
 
         GridLayout {
@@ -162,6 +163,8 @@ Item {
             }
         }
     }
+
+
     function sync_and_play(){
         if( sync.confidence === 0 ){
             watch_movie()
