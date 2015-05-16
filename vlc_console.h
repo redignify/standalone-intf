@@ -19,6 +19,7 @@ public:
     Q_INVOKABLE QString get_time( );
     Q_INVOKABLE float get_ms( );
     Q_INVOKABLE void toggle_mute( );
+    Q_INVOKABLE void toggle_fullscreen( );
     Q_INVOKABLE bool is_playing( );
     Q_INVOKABLE bool is_autoskiping( );
     Q_INVOKABLE QString name();

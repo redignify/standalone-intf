@@ -7,6 +7,7 @@ VLC_TCP::VLC_TCP(QObject *parent) :
     QObject(parent),
     m_process(new QProcess(this))
 {
+    lock = false;
 }
 
 bool VLC_TCP::connect( QString file )
@@ -38,6 +39,7 @@ bool VLC_TCP::connect( QString file )
 bool VLC_TCP::set_path(QString program_path)
 {
     path = program_path;
+    return true;
 }
 
 bool VLC_TCP::launch( QString file )
@@ -49,11 +51,10 @@ bool VLC_TCP::launch( QString file )
         //vlc --intf qt --extraintf cli --lua-config "cli={host='localhost:4212'}" file
         arguments << "--intf" << "qt" << "--extraintf" << "cli" << file;//"--lua-config" <<"'cli={host=\"localhost:4212\"}'"<< file;
         m_process->start(program, arguments);
-        qDebug() << m_process->arguments();
         for (int i=1;i<10;i++){
+            qDebug() << m_process->state();
             if( m_process->state() != 0 ) break;
             delay(500);
-            //qDebug() << m_process->state();
         }
     }
     return connect("");

@@ -116,6 +116,11 @@ QString VLC::get_time()
     return output;
 }
 
+void VLC::toggle_fullscreen( void )
+{
+    m_process->write( "f \n" );
+}
+
 void VLC::toggle_mute( )
 {
 
