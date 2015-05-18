@@ -198,7 +198,7 @@ ApplicationWindow {
         if( media.url == "" && Qt.application.arguments[1] )
         {
             media.url = "file:///"+ Qt.application.arguments[1].toString();
-            movie.title = media.url.split("/").pop().split(".").shift();
+            movie.title = clean_title( media.url );
             loader.item.parse_input_file()
         }
         VLC_CONSOLE.set_path( settings.vlc_path )
@@ -488,6 +488,16 @@ ApplicationWindow {
         post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){} )
     }
 
+
+
+// Get title from file name
+    function clean_title( str )
+    {
+        var tit = str.toString().split("/").pop();
+        tit = tit.replace(/mp4|avi|1080p|xvid|mkv|720p|web-dl|dvdrip|brrip|hdrip|x264|bluray|hdtv|yify|eztv|480p/gi,'');
+        tit = tit.replace(/\.|_/g,' ').replace(/ +/g,' ');
+        return tit
+    }
 
 // Get the index of the sync scene
     function get_sync_scene_index() {

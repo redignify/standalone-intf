@@ -96,10 +96,7 @@ Item {
         onAccepted: {
             console.log(fileUrl)
             media.url = fileUrl;
-            var tit = fileUrl.toString().split("/").pop();
-            tit = tit.replace(/mp4|avi|1080p|xvid|mkv|720p|web-dl|dvdrip|brrip|hdrip|x264|bluray|hdtv|yify|eztv|480p/gi,'');
-            tit = tit.replace(/\.|_/g,' ').replace(/ +/g,' ');
-            title.text =  tit;
+            title.text =  clean_title( fileUrl)
             parse_input_file()
         }
         onRejected: { console.log("Rejected") }
