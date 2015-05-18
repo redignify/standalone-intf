@@ -77,6 +77,7 @@ ApplicationWindow {
         property int d: 1
         property int pro: 1
         property bool ask: true
+        property bool autoshare: true
         property string vlc_path : "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
     }
 
@@ -196,7 +197,7 @@ ApplicationWindow {
     Component.onCompleted: {
         if( media.url == "" && Qt.application.arguments[1] )
         {
-            media.url = "file://"+ Qt.application.arguments[1].toString();
+            media.url = "file:///"+ Qt.application.arguments[1].toString();
             movie.title = media.url.split("/").pop().split(".").shift();
             loader.item.parse_input_file()
         }
@@ -829,15 +830,13 @@ ApplicationWindow {
                         num++
                         break;
 
-                    }else{ console.log("WTF: ", off, i, j-i, str_subs, str_ref) }
+                    }else{ console.log("WTF, extreme offset between subtitles: ", off, i, j-i, str_subs, str_ref) }
                 }
             }
         }
 
         for( var i = 0, sum = 0; i < offset.length; i++ ) sum += offset[i];
         var avg = sum/offset.length;
-
-
 
         var max_err = Math.max( offset )
         var min_err = Math.min( offset )

@@ -41,7 +41,7 @@ Item {
         RLabel{ text: qsTr("Margen de seguridad") }
         TextField {
             text: settings.time_margin
-            onEditingFinished: settings.time_margin = parseFloat(margin.text)
+            onEditingFinished: settings.time_margin = parseFloat(text)
         }
 
 
@@ -69,6 +69,14 @@ Item {
             text: qsTr("")
             checked: settings.start_fullscreen
             onClicked: settings.start_fullscreen = checked
+        }
+
+
+        RLabel{ text: qsTr("Compartir información automáticamente") }
+        CheckBox {
+            text: qsTr("")
+            checked: settings.autoshare
+            onClicked: settings.autoshare = checked
         }
 
     }

@@ -60,12 +60,13 @@ Item {
         GridLayout {
             columns: 3
             Layout.columnSpan: 2
+            Layout.minimumWidth: 400
             //Layout.minimumWidth:  200
             //Layout.minimumHeight: 200
 
             RComboBox {
                 id: type_combo
-                Layout.minimumWidth : 150
+                Layout.minimumWidth : 135
                 model: type_list
                 onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
             }
@@ -122,10 +123,10 @@ Item {
             //CheckBox { id: con;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Ideology", checked ) }
 
             RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
-            CheckBox { id: plot; text: qsTr("Trama"); checked: false }
-            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true }
+            CheckBox { id: plot; text: qsTr("Trama"); checked: false; onClicked: add_tag("Plot", checked ) }
+            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true; onClicked: add_tag("Graphic", checked ) }
             //CheckBox { id: mut;  text: qsTr("Mute"); checked: false }
-            CheckBox { id: cri;  text: qsTr("Crítica"); checked: false }
+            CheckBox { id: cri;  text: qsTr("Crítica"); checked: false; onClicked: add_tag("Critic", checked ) }
             RComboBox {
                 Layout.minimumWidth : 50
                 id: action_combo
@@ -138,17 +139,17 @@ Item {
            id: tableview
            sortIndicatorOrder: 1
            sortIndicatorColumn: 1
-           Layout.preferredWidth: 450
-           Layout.preferredHeight: 250
+           Layout.preferredWidth: 385
+           Layout.preferredHeight: 290
            Layout.columnSpan : 6
            Layout.rowSpan: 6
 
            TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
-           TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 60 }
-           TableViewColumn{ role: "subtype" ; title: qsTr("Tags") ; width: 60 }
-           TableViewColumn{ role: "action"; title: qsTr("Action"); width: 60; }
-           TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 60 }
-           TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 60 }
+           TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 70 }
+           TableViewColumn{ role: "subtype" ; title: qsTr("Tags") ; width: 120 }
+           TableViewColumn{ role: "action"; title: qsTr("Action"); width: 70 }
+           TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 70 }
+           TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 70 }
            TableViewColumn{ role: "description" ; title: qsTr("Comments") ; width: 190 }
            model: scenelistmodel
            selectionMode: SelectionMode.SingleSelection
@@ -192,7 +193,7 @@ Item {
                coc.checked      = current_scene.subtype.match("Cocaine")
 
                plot.checked     = current_scene.subtype.match("Plot")
-               grap.checked     = current_scene.subtype.match("Graph")
+               grap.checked     = current_scene.subtype.match("Graphic")
                cri.checked      = current_scene.subtype.match("Critic")
            }
 
@@ -286,7 +287,7 @@ Item {
         if( add ) {
             scenelistmodel.set(tableview.currentRow, {"subtype": "#"+tag+" "+ctag } )
         }else{
-            scenelistmodel.set(tableview.currentRow, {"subtype": ctag.replace("#"+tag,'') } )
+            scenelistmodel.set(tableview.currentRow, {"subtype": ctag.replace("#"+tag,'').replace(/ +/g,' ') } )
         }
 
     }
