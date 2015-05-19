@@ -77,8 +77,8 @@ Item {
             text: "test"
             onClicked: {
                 get_subs()
-                media.url = fileurl.text.toString()
-                parse_input_file()
+                //media.url = fileurl.text.toString()
+                //parse_input_file()
                 //calibrate_from_subtitles()
                 //console.log(JSON.stringify(a))
                 //console.log( seconds_to_time(65) )

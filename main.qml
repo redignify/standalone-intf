@@ -54,6 +54,8 @@ ApplicationWindow {
         property string list
         property var    subtitles
         property var    subref
+        property string subtitles_srt
+        property string subref_srt
         property int    filter_status : 0
         property string msg_to_user
         property string poster_url
@@ -78,6 +80,7 @@ ApplicationWindow {
         property int pro: 1
         property bool ask: true
         property bool autoshare: true
+        property string default_player: "VLC_CONSOLE"
         property string vlc_path : "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
     }
 
@@ -203,6 +206,7 @@ ApplicationWindow {
         }
         VLC_CONSOLE.set_path( settings.vlc_path )
         VLC_TCP.set_path( settings.vlc_path )
+        set_player( settings.default_player )
     }
 
 
@@ -494,7 +498,7 @@ ApplicationWindow {
     function clean_title( str )
     {
         var tit = str.toString().split("/").pop();
-        tit = tit.replace(/mp4|avi|1080p|xvid|mkv|720p|web-dl|dvdrip|brrip|hdrip|x264|bluray|hdtv|yify|eztv|480p/gi,'');
+        tit = tit.replace(/mp4|avi|\[.*\]|\(.*\).*|1080p.*|xvid.*|mkv.*|720p.*|web-dl.*|dvdscr.*|dvdrip.*|brrip.*|bdrip.*|hdrip.*|x264.*|bluray.*|hdtv.*|yify.*|eztv.*|480p.*/gi,'');
         tit = tit.replace(/\.|_/g,' ').replace(/ +/g,' ');
         return tit
     }
@@ -674,7 +678,7 @@ ApplicationWindow {
             player.execute.unmute()
             scenelistmodel.append({
                 "type":"?",
-                "subtype":"?",
+                "subtype":"",
                 "severity":0,
                 "start": player.autoskip_start - 3,
                 "duration": time-player.autoskip_start + 2,
@@ -745,10 +749,12 @@ ApplicationWindow {
     {
         if( pl === "VLC_TCP" ) {
             player.execute = VLC_TCP
+            settings.default_player = pl
             console.log("Setting VLC TCP as player")
         }else if( pl === "VLC_CONSOLE" ) {
             player.execute = VLC_CONSOLE
             console.log("Setting VLC console as player")
+            settings.default_player = pl
         }
     }
 
@@ -813,30 +819,32 @@ ApplicationWindow {
       return a
     }
 
-    function calibrate_from_subtitles( str )
+    function calibrate_from_subtitles( )
     {
         //console.log( str )
-        if( movie.subref.length < 50 ) {
-            movie.subref = str;
-            console.log( "subref")
+        if( movie.subref_srt.length < 50 || movie.subtitles_srt.length < 50 ){
+            console.log("Waiting subs")
             return
         }
-        var ref = parseSrt( movie.subref )
-        var subs = parseSrt( str )
+
+        var ref = parseSrt( movie.subref_srt )
+        var subs = parseSrt( movie.subtitles_srt )
         var offset = []
         var rmax = Math.min(900,ref.length);
-        var dist = 0, sum = 0, num = 1, off;
+        var dist = 0, sum = 0, num = 1, off, max = -50000, min = 50000;
         for( var j = 5; j < rmax; ++j){
             var str_ref = clean( ref[j].text )
             for( var i = Math.max(0,j-dist-25), m = Math.min(subs.length,j-dist+25); i < m; ++i){
                 var str_subs = clean(subs[i].text)
                 if( str_ref === str_subs ) {
                     off = subs[i].start-ref[j].start;
-                    if( num < 8 || Math.abs( sum/num - off ) < 5 ){ // Skip those that have crazy time offset
+                    if( num < 8 || Math.abs( sum/num - off ) < 5 ){ // Skip those having crazy time offset
                         offset.push( off )
                         dist = j - i
-                        console.log( off, i, dist, str_subs, str_ref )
+                        console.log( round(off,100), i, dist, str_subs, str_ref )
                         sum += off
+                        max = Math.max( max, off )
+                        min = Math.min( min, off )
                         num++
                         break;
 
@@ -846,23 +854,38 @@ ApplicationWindow {
         }
 
         for( var i = 0, sum = 0; i < offset.length; i++ ) sum += offset[i];
-        var avg = sum/offset.length;
+        var avg = round( sum/offset.length, 1000 )
+        var margin = round( (max - min)/2, 1000 )
+        if( margin < 4 && num > 50 ){
+            apply_sync(avg,1,2);
+        }else{
+            apply_sync(avg,1,1);
+            say_to_user("Calibration migth be wrong")
+        }
+        settings.time_margin = margin
+        console.log( offset.length, avg, max-avg, min-avg )
 
-        var max_err = Math.max( offset )
-        var min_err = Math.min( offset )
+    }
 
-        console.log( offset.length, avg, max_err, min_err )
-
+    function round(num,dec){
+        return Math.round( num * dec ) / dec
     }
 
     function clean(str){
         return str.replace(/<i>|<\/i>|<b>|<\/b>|\.|,|;|/g,'').toLowerCase();
     }
 
+    function sub_ready( str ){
+        movie.subtitles_srt = str
+        calibrate_from_subtitles()
+    }
+    function ref_ready(str ){
+        movie.subref_srt = str
+        calibrate_from_subtitles()
+    }
     function get_subs( ) {
-        post("",calibrate_from_subtitles,"http://dl.opensubtitles.org/en/download/filead/"+movie.subref ); //+".gz"
-        post("",calibrate_from_subtitles,"http://dl.opensubtitles.org/en/download/filead/"+movie.subtitles ); //+".gz"
-
+        post("",ref_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subref ); //+".gz"
+        post("",sub_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subtitles ); //+".gz"
     }
 
 // Thats all folks
