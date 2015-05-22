@@ -22,6 +22,9 @@ public:
     Q_INVOKABLE void toggle_fullscreen( );
     Q_INVOKABLE bool is_playing( );
     Q_INVOKABLE bool is_autoskiping( );
+    Q_INVOKABLE void slower( );
+    Q_INVOKABLE void faster( );
+    Q_INVOKABLE void frame( );
     Q_INVOKABLE QString name();
 
 private:
@@ -29,6 +32,7 @@ private:
     QString path;
     int tuned_cli;
     int volume;
+    int rate;
     Q_INVOKABLE bool autoskip_pressed;
 };
 

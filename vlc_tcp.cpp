@@ -9,6 +9,7 @@ VLC_TCP::VLC_TCP(QObject *parent) :
 {
     lock = false;
     tuned_cli = 0;
+    rate = 1;
 }
 
 bool VLC_TCP::connect( QString file )
@@ -118,6 +119,28 @@ void VLC_TCP::set_rate( int rate )
     tcpSocket->write( cmd.toStdString().c_str() );
 }
 
+void VLC_TCP::slower()
+{
+    if( tcpSocket->state() < 2 ) return;
+    //tcpSocket->write( "slower" );
+    rate/=2;
+    set_rate(rate);
+}
+
+void VLC_TCP::faster( )
+{
+    if( tcpSocket->state() < 2 ) return;
+    //tcpSocket->write( "faster" );
+    rate*=2;
+    set_rate(rate);
+}
+
+void VLC_TCP::frame( )
+{
+    if( tcpSocket->state() < 2 ) return;
+    tcpSocket->write( "frame" );
+}
+
 void VLC_TCP::clean()
 {
     if( tcpSocket->state() < 2 ) return;
@@ -187,7 +210,7 @@ int VLC_TCP::mute( )
     QRegularExpressionMatch found;
     if( QString("%1").arg(data).contains(re,&found) )
     {
-        volume = found.captured().toInt();
+        volume = found.captured().toFloat();
     }else
     {
         volume = 100;

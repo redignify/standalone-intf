@@ -112,27 +112,38 @@ Item {
             CheckBox { id: obj; text: qsTr("Cosificación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Objetivation", checked ) }
             CheckBox { id: inf; text: qsTr("Intercambiable"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Interchangeable", checked ) }
             CheckBox { id: hum; text: qsTr("Humillación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Humiliation", checked ) }
-            CheckBox { id: mer; text: qsTr("Mercancía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Trading", checked ) }
+            CheckBox { id: mer; text: qsTr("Mercancía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Commodity", checked ) }
             CheckBox { id: red; text: qsTr("Reducción"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Reduction", checked ) }
 
             //RLabel{ Layout.columnSpan: 1; text: qsTr("Drogas") }
             //RSlider  { id: s_drugs; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
             CheckBox { id: tob;  text: qsTr("Tabaco"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Tobaco", checked ) }
+            CheckBox { id: alc;  text: qsTr("Alcohol"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Alcohol", checked ) }
+            CheckBox { id: her;  text: qsTr("Heroina"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Heroine", checked ) }
             CheckBox { id: weed; text: qsTr("Porros"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Weed", checked ) }
             CheckBox { id: coc;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Cocaine", checked ) }
+            CheckBox { id: oth;  text: qsTr("Otras"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Others", checked ) }
             //CheckBox { id: con;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Ideology", checked ) }
+
+            TextField {
+                Layout.columnSpan: 3
+                Layout.fillWidth: true
+                id: description_input
+                placeholderText: qsTr("Comentarios")
+                onTextChanged: scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
+            }
 
             RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
             CheckBox { id: plot; text: qsTr("Trama"); checked: false; onClicked: add_tag("Plot", checked ) }
-            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true; onClicked: add_tag("Graphic", checked ) }
-            //CheckBox { id: mut;  text: qsTr("Mute"); checked: false }
+//            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true; onClicked: add_tag("Graphic", checked ) }
+            CheckBox { id: mut;  text: qsTr("Mute"); checked: false; onClicked: define_action( checked) }
             CheckBox { id: cri;  text: qsTr("Crítica"); checked: false; onClicked: add_tag("Critic", checked ) }
-            RComboBox {
+            /*RComboBox {
                 Layout.minimumWidth : 50
                 id: action_combo
                 model: action_list
                 onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"action": action_list.get(currentIndex).text })
-            }
+            }*/
         }
 
         TableView {
@@ -146,7 +157,7 @@ Item {
 
            TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
            TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 70 }
-           TableViewColumn{ role: "subtype" ; title: qsTr("Tags") ; width: 120 }
+           TableViewColumn{ role: "tags" ; title: qsTr("Tags") ; width: 120 }
            TableViewColumn{ role: "action"; title: qsTr("Action"); width: 70 }
            TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 70 }
            TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 70 }
@@ -154,128 +165,197 @@ Item {
            model: scenelistmodel
            selectionMode: SelectionMode.SingleSelection
            sortIndicatorVisible: true
-           onClicked : {
+           onCurrentRowChanged: {
                var current_scene = scenelistmodel.get(tableview.currentRow)
                type_combo.currentIndex     = type_combo.find( current_scene.type )
-               action_combo.currentIndex   = action_combo.find( current_scene.action )
+               mut.checked                = current_scene.action === "Mute"
                severity.value              = current_scene.severity - 1
                start_input.text            = current_scene.start
                stop_input.text             = current_scene.stop
                description_input.text      = current_scene.description
 
                // Tags
-               race.checked     = current_scene.subtype.match("Race")
-               nati.checked     = current_scene.subtype.match("Nationality")
-               sexdisc.checked  = current_scene.subtype.match("Porn")
-               homo.checked     = current_scene.subtype.match("Homofobic")
-               rel.checked      = current_scene.subtype.match("Religion")
-               ideo.checked     = current_scene.subtype.match("Ideology")
+               race.checked     = current_scene.tags.match("Race")
+               nati.checked     = current_scene.tags.match("Nationality")
+               sexdisc.checked  = current_scene.tags.match("Porn")
+               homo.checked     = current_scene.tags.match("Homofobic")
+               rel.checked      = current_scene.tags.match("Religion")
+               ideo.checked     = current_scene.tags.match("Ideology")
 
-               phy.checked      = current_scene.subtype.match("Physical")
-               psico.checked    = current_scene.subtype.match("Psicological")
-               animal.checked   = current_scene.subtype.match("Animal")
-               sad.checked      = current_scene.subtype.match("Sadism")
-               blo.checked      = current_scene.subtype.match("Blood")
-               suf.checked      = current_scene.subtype.match("Torture")
+               phy.checked      = current_scene.tags.match("Physical")
+               psico.checked    = current_scene.tags.match("Psicological")
+               animal.checked   = current_scene.tags.match("Animal")
+               sad.checked      = current_scene.tags.match("Sadism")
+               blo.checked      = current_scene.tags.match("Blood")
+               suf.checked      = current_scene.tags.match("Torture")
 
-               nud.checked      = current_scene.subtype.match("Nudity")
-               sen.checked      = current_scene.subtype.match("Sensuality")
-               por.checked      = current_scene.subtype.match("Porn")
-               see.checked      = current_scene.subtype.match("Explicit sex")
-               obj.checked      = current_scene.subtype.match("Objetivation")
-               inf.checked      = current_scene.subtype.match("Interchangeable")
-               hum.checked      = current_scene.subtype.match("Humiliation")
-               mer.checked      = current_scene.subtype.match("Trading")
-               red.checked      = current_scene.subtype.match("Reduction")
+               nud.checked      = current_scene.tags.match("Nudity")
+               sen.checked      = current_scene.tags.match("Sensuality")
+               por.checked      = current_scene.tags.match("Porn")
+               see.checked      = current_scene.tags.match("Explicit sex")
+               obj.checked      = current_scene.tags.match("Objetivation")
+               inf.checked      = current_scene.tags.match("Interchangeable")
+               hum.checked      = current_scene.tags.match("Humiliation")
+               mer.checked      = current_scene.tags.match("Commodity")
+               red.checked      = current_scene.tags.match("Reduction")
 
-               tob.checked      = current_scene.subtype.match("Tobaco")
-               weed.checked     = current_scene.subtype.match("Weed")
-               coc.checked      = current_scene.subtype.match("Cocaine")
+               tob.checked      = current_scene.tags.match("Tobaco")
+               alc.checked      = current_scene.tags.match("Alcohol")
+               her.checked      = current_scene.tags.match("Heroine")
+               weed.checked     = current_scene.tags.match("Weed")
+               coc.checked      = current_scene.tags.match("Cocaine")
+               oth.checked      = current_scene.tags.match("Others")
 
-               plot.checked     = current_scene.subtype.match("Plot")
-               grap.checked     = current_scene.subtype.match("Graphic")
-               cri.checked      = current_scene.subtype.match("Critic")
+               plot.checked     = current_scene.tags.match("Plot")
+               //grap.checked     = current_scene.tags.match("Graphic")
+               cri.checked      = current_scene.tags.match("Critic")
            }
 
         }
 
-        TextField {
-            id: start_input
-            Layout.fillWidth: true;
-            placeholderText: qsTr("Segundo inicio")
-            onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
-            onAccepted: start_input.text = get_time()
-        }
-
-        TextField {
-            id: stop_input
-            Layout.fillWidth: true;
-            placeholderText: qsTr("Segundo fin")
-            onEditingFinished: scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
-            onAccepted: stop_input.text = get_time()
-        }
-
-        TextField {
+        GridLayout {
+            columns: 4
             Layout.columnSpan: 2
-            Layout.fillWidth: true
-            id: description_input
-            Layout.preferredWidth: 150
-            placeholderText: qsTr("Comentarios")
-            onTextChanged: scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
-        }
+            Layout.minimumWidth: 400
 
+            TextField {
+                id: start_input
+                Layout.fillWidth: true;
+                Layout.maximumWidth: 100
+                placeholderText: qsTr("Empieza")
+                onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
+                onAccepted: start_input.text = get_time()
+            }
 
-        RButton {
-            id: b_preview
-            Layout.fillWidth: true
-            text: qsTr("Preview")
-            onClicked: preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) )
-        }
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("Ahora")
+                onClicked: start_input.text = get_time()
+            }
 
-        RButton {
-            id: b_add
-            text: qsTr("Añadir escena")
-            Layout.fillWidth: true
-            onClicked: {
-                scenelistmodel.append({
-                    "type":type_list.get(type_combo.currentIndex).text,
-                    "subtype":"",//subtype_list.get(subtype_combo.currentIndex).text,
-                    "severity": severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
-                    "start": parseFloat( start_input.text ),
-                    "duration": parseFloat( stop_input.text ) - parseFloat( start_input.text ),
-                    "description": description_input.text,
-                    "stop": parseFloat( stop_input.text ),
-                    "action":action_list.get(action_combo.currentIndex).text,
-                    "skip": "No"
-                })
-                app.ask_before_close = true
-                tableview.selection.deselect(0, tableview.rowCount - 1)
-                tableview.selection.select( tableview.rowCount - 1 )
-                tableview.currentRow = tableview.rowCount - 1
+            TextField {
+                id: stop_input
+                Layout.fillWidth: true;
+                Layout.maximumWidth: 100
+                placeholderText: qsTr("Termina")
+                onEditingFinished: scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
+                onAccepted: stop_input.text = get_time()
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("Ahora")
+                onClicked: stop_input.text = get_time()
             }
         }
 
+        GridLayout {
+            columns: 7
+            Layout.columnSpan: 2
+            Layout.minimumWidth: 400
 
-        RButton {
-            id: remove
-            text: qsTr("Remover escena")
-            Layout.fillWidth: true
-            onClicked: {
-                scenelistmodel.remove(tableview.currentRow);
-                app.ask_before_close = true
-                tableview.selection.deselect( 0, tableview.rowCount - 1)
-                tableview.selection.select( tableview.rowCount - 1 )
-                tableview.currentRow = tableview.rowCount - 1
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("slower")
+                onClicked: player.execute.slower()
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("<<")
+                onClicked: set_time( get_time() - 5 )
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("<")
+                onClicked: set_time( get_time() - 0.5 )
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("frame")
+                onClicked: player.execute.frame()
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr(">")
+                onClicked: set_time( get_time() + 0.5 )
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr(">>")
+                onClicked: set_time( get_time() + 5 )
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("faster")
+                onClicked: player.execute.faster()
             }
 
         }
 
+        GridLayout {
+            columns: 4
+            Layout.columnSpan: 2
+            Layout.minimumWidth: 400
 
-        RButton {
-            id: b_share
-            text: qsTr("Compartir")
-            Layout.fillWidth: true
-            onClicked: requestPass.visible = true
+
+            RButton {
+                id: b_preview
+                Layout.fillWidth: true
+                text: qsTr("Preview")
+                onClicked: preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) )
+            }
+
+            RButton {
+                id: b_add
+                text: qsTr("Añadir escena")
+                Layout.fillWidth: true
+                onClicked: {
+                    scenelistmodel.append({
+                        "type":type_list.get(type_combo.currentIndex).text,
+                        "tags":"",
+                        "severity": severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
+                        "start": parseFloat( start_input.text ),
+                        "duration": parseFloat( stop_input.text ) - parseFloat( start_input.text ),
+                        "description": description_input.text,
+                        "stop": parseFloat( stop_input.text ),
+                        "action": mut.checked? "Mute":"Skip",
+                        "skip": "No"
+                    })
+                    app.ask_before_close = true
+                    tableview.selection.deselect(0, tableview.rowCount - 1)
+                    tableview.selection.select( tableview.rowCount - 1 )
+                    tableview.currentRow = tableview.rowCount - 1
+                }
+            }
+
+
+            RButton {
+                id: remove
+                text: qsTr("Remover escena")
+                Layout.fillWidth: true
+                onClicked: {
+                    scenelistmodel.remove(tableview.currentRow);
+                    app.ask_before_close = true
+                    tableview.selection.deselect( 0, tableview.rowCount - 1)
+                    tableview.selection.select( tableview.rowCount - 1 )
+                    tableview.currentRow = tableview.rowCount - 1
+                }
+
+            }
+
+
+            RButton {
+                id: b_share
+                text: qsTr("Compartir")
+                Layout.fillWidth: true
+                onClicked: requestPass.visible = true
+            }
         }
     }
 
@@ -283,12 +363,21 @@ Item {
 
 /*------------------- FUNCTIONS -------------------------*/
     function add_tag( tag, add ){
-        var ctag = scenelistmodel.get(tableview.currentRow).subtype
+        if( tableview.currentRow == -1 ) return;
+        var ctag = scenelistmodel.get(tableview.currentRow).tags
         if( add ) {
-            scenelistmodel.set(tableview.currentRow, {"subtype": "#"+tag+" "+ctag } )
+            scenelistmodel.set(tableview.currentRow, {"tags": "#"+tag+" "+ctag } )
         }else{
-            scenelistmodel.set(tableview.currentRow, {"subtype": ctag.replace("#"+tag,'').replace(/ +/g,' ') } )
+            scenelistmodel.set(tableview.currentRow, {"tags": ctag.replace("#"+tag,'').replace(/ +/g,' ') } )
         }
+    }
 
+    function define_action( action ){
+        if( tableview.currentRow == -1 ) return;
+        if( action ) {
+            scenelistmodel.set(tableview.currentRow, {"action": "Mute" } )
+        }else{
+            scenelistmodel.set(tableview.currentRow, {"action": "Skip" } )
+        }
     }
 }

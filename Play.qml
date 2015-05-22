@@ -9,14 +9,14 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 2
-        Component.onCompleted: { mainWindow.minimumWidth = 790; mainWindow.minimumHeight = 510}
+        Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 510}
 
         Image {
             Layout.columnSpan: 1
             Layout.rowSpan: 8
-            //width: 300; height: 445
+            Layout.maximumWidth: 300; //height: 445
             fillMode: Image.PreserveAspectFit
-            source: movie.poster_url//? movie.poster_url : "images/defaultposter.jpg
+            source: movie.poster_url? movie.poster_url : "images/" + random_poster()
         }
 
 
@@ -87,16 +87,16 @@ Item {
         GridLayout {
             TableView {
                id: playtableview
-               visible: false
-               Layout.minimumWidth: 470
+               visible: true
+               Layout.minimumWidth: 480
                Layout.minimumHeight: 250
                Layout.columnSpan : 4
                //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
                TableViewColumn{ role: "skip"; title: "Skip"; width: 50; horizontalAlignment: Text.AlignLeft }
                TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
-               TableViewColumn{ role: "subtype" ; title: "Tags" ; width: 100; horizontalAlignment: Text.AlignLeft }
                TableViewColumn{ role: "severity"; title: "Level"; width: 60; horizontalAlignment: Text.AlignLeft }
-               TableViewColumn{ role: "description" ; title: "Why?" ; width: 215; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "tags" ; title: "Tags" ; width: 100; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "description" ; title: "Comments" ; width: 215; horizontalAlignment: Text.AlignLeft }
                //TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
                //TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
                model: scenelistmodel
@@ -151,6 +151,12 @@ Item {
 
 
 /******************************* FUNCTIONS ***********************************/
+
+    function random_poster()
+    {
+        var array = ["UnknownMovie1.png","UnknownMovie2.jpg","UnknownMovie3.jpg","UnknownMovie4.jpg","UnknownMovie5.png","UnknownMovie6.jpg"];
+        return array[Math.floor(Math.random() * array.length)];
+    }
 
     function sort( column, order )
     {

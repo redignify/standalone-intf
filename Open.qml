@@ -175,7 +175,7 @@ Item {
         for ( var i = 0; i < Scenes.length; ++i ) {
             var item = {
                 "type": Scenes[i]["Category"],
-                "subtype": Scenes[i]["SubCategory"],
+                "tags": Scenes[i]["Tags"]? Scenes[i]["Tags"] : Scenes[i]["SubCategory"],
                 "severity": Scenes[i]["Severity"],
                 "start": Scenes[i]["Start"],
                 "duration": Scenes[i]["End"] - Scenes[i]["Start"],
@@ -198,7 +198,7 @@ Item {
             for ( var i = 0; i < SyncScenes.length; ++i) {
                 var item = {
                     "type": SyncScenes[i]["Category"],
-                    "subtype": SyncScenes[i]["SubCategory"],
+                    "tags": SyncScenes[i]["Tags"]? SyncScenes[i]["Tags"] : SyncScenes[i]["SubCategory"],
                     "severity": SyncScenes[i]["Severity"],
                     "start": SyncScenes[i]["Start"],
                     "duration": SyncScenes[i]["End"] - Scenes[i]["Start"],

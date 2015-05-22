@@ -10,6 +10,7 @@ VLC::VLC(QObject *parent) :
     m_process(new QProcess(this))
 {
     tuned_cli = 0;
+    rate = 1;
 }
 
 bool VLC::set_path(QString program_path)
@@ -132,6 +133,25 @@ void VLC::toggle_fullscreen( void )
     m_process->write( "f \n" );
 }
 
+void VLC::slower( void )
+{
+    //m_process->write( "slower\n" );
+    rate/=2;
+    set_rate(rate);
+}
+
+void VLC::faster( void )
+{
+    rate*=2;
+    set_rate(rate);
+    //m_process->write( "faster\n" );
+}
+
+void VLC::frame( void )
+{
+    m_process->write( "frame\n" );
+}
+
 int VLC::mute( )
 {
     if( !is_playing() ) return -1;
@@ -143,13 +163,19 @@ int VLC::mute( )
     m_process->read(data,1000);
     QRegularExpression re("(\\d+.?\\d*)");
     QRegularExpressionMatch found;
-    if( QString("%1").arg(data).contains(re,&found) ) {
-        volume = found.captured().toInt();
-    }else {
+    qDebug() << QString("%1").arg(data);
+    if( QString("%1").arg(data).contains(re,&found) )
+    {
+        qDebug() << found.captured();
+        volume = found.captured().toFloat();
+    }else
+    {
         volume = 100;
     }
     m_process->write( "volume 0\n" );
     return volume;
+
+
 }
 
 void VLC::unmute( )

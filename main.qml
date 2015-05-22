@@ -41,6 +41,7 @@ ApplicationWindow {
         property variant execute: VLC_TCP
         property bool autoskip_pressed : false
         property double autoskip_start : 0
+        property bool autoskip_if_fast : true
     }
 
     Item {
@@ -70,7 +71,7 @@ ApplicationWindow {
 
     Settings {
         id: settings
-        property string name
+        property string user
         property string password
         property double time_margin: 0.3
         property bool start_fullscreen: true
@@ -179,6 +180,12 @@ ApplicationWindow {
                 onClicked: loader.source = "Help.qml"
                 Accessible.name: "Help"
                 tooltip: "Find help"
+            }
+            ToolButton {
+                iconSource: "images/feedback.png"
+                onClicked: loader.source = "Feedback.qml"
+                Accessible.name: "Feedback"
+                tooltip: "Send Feedback"
             }
 
             Item { Layout.fillWidth: true }
@@ -292,7 +299,7 @@ ApplicationWindow {
                 placeholderText: qsTr("Título real")
                 onAccepted: {
                     loader.source = "Open.qml"
-                    post( "action=badhash&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
+                    post( "action=badhash&username="+settings.user+"&password="+settings.password+"&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
                     movie.title = movie_name.text
                     loader.source = "Open.qml"
                     media.hash = "";
@@ -304,7 +311,8 @@ ApplicationWindow {
             RButton {
                 text: "Volver a buscar"
                 onClicked: {
-                    post( "action=badhash&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
+                    loader.source = "Open.qml"
+                    post( "action=badhash&username="+settings.user+"&password="+settings.password+"&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
                     movie.title = movie_name.text
                     loader.source = "Open.qml"
                     media.hash = "";
@@ -332,6 +340,7 @@ ApplicationWindow {
             }
             TextField {
                 id:name
+                text: settings.user
                 width: 100
             }
             RLabel{
@@ -340,6 +349,7 @@ ApplicationWindow {
             TextField {
                 width: 100
                 id:pass
+                text: settings.password
                 echoMode: TextInput.Password
                 //placeholderText: "Password"
             }
@@ -347,7 +357,7 @@ ApplicationWindow {
                 text: qsTr("Estado del filtro")
             }
             RComboBox {
-                Layout.minimumWidth: 100
+                Layout.fillWidth: true
                 id: status_combo
                 model: status_list
                 currentIndex: movie.filter_status
@@ -355,6 +365,8 @@ ApplicationWindow {
             }
         }
         onAccepted: {
+            settings.password = pass.text
+            settings.user = name.text
             share( name.text, pass.text )
             requestPass.visible = false
         }
@@ -441,7 +453,7 @@ ApplicationWindow {
 
 // Share movie scene with other users
     function share( user, pass)
-    {
+    {      
     // Recover original file
         var jsonObject = JSON.parse( movie.data );
         if ( !jsonObject ) { return }
@@ -455,7 +467,7 @@ ApplicationWindow {
             jsonObject['Scenes'][i] = {}
             var scene = scenelistmodel.get(i)
             jsonObject['Scenes'][i]["Category"] = scene.type
-            jsonObject['Scenes'][i]["SubCategory"] = scene.subtype
+            jsonObject['Scenes'][i]["Tags"] = scene.tags
             jsonObject['Scenes'][i]["Severity"] = scene.severity
             jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
             jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
@@ -489,7 +501,7 @@ ApplicationWindow {
     // Format and share
         var str = JSON.stringify( jsonObject, "", 2 );
         console.log( str )
-        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){} )
+        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){ app.ask_before_close = false} )
     }
 
 
@@ -548,7 +560,7 @@ ApplicationWindow {
                     if (http.readyState == 4) {
                         if (http.status == 200) {
                             console.log("Ok");
-                            //console.log( http.responseText )
+                            console.log( http.responseText )
                             callback( http.responseText )
                         } else {
                             console.log("error: " + http.status)
@@ -615,6 +627,7 @@ ApplicationWindow {
 // Launch or connect to the user selected player.
     function watch_movie()
     {
+        player.autoskip_if_fast = true
         say_to_user("Connecting with player")
     // Try to launch selected player
         if( player.execute.launch( media.url ) ) {
@@ -660,37 +673,39 @@ ApplicationWindow {
                 say_to_user("Warning: unable to reach player!")
                 raise()
                 timer.stop()
-                return
+                return -1
             }
         }
         time = Math.round( parseFloat(time)*1000 ) / 1000
 
     // Autoskip is presed
-        var autoskip = player.execute.is_autoskiping();
-        if ( autoskip & !player.autoskip_pressed ){
-            console.log("Autoskip start")
-            player.autoskip_pressed = true
-            player.autoskip_start = time
-            player.execute.mute()
-        } else if( !autoskip & player.autoskip_pressed ){
-            console.log("Autoskip release")
-            player.autoskip_pressed = false
-            player.execute.unmute()
-            scenelistmodel.append({
-                "type":"?",
-                "subtype":"",
-                "severity":0,
-                "start": player.autoskip_start - 3,
-                "duration": time-player.autoskip_start + 2,
-                "description": "",
-                "stop": time-1,
-                "action": "Skip",
-                "skip": "Yes"
-            })
-            app.ask_before_close = true
-            player.autoskip_start = 0
-            loader.source = "Editor.qml"
-            if( settings.ask ) raise()
+        if ( player.autoskip_if_fast ){
+            var autoskip = player.execute.is_autoskiping();
+            if ( autoskip & !player.autoskip_pressed ){
+                console.log("Autoskip start")
+                player.autoskip_pressed = true
+                player.autoskip_start = time
+                player.execute.mute()
+            } else if( !autoskip & player.autoskip_pressed ){
+                console.log("Autoskip release")
+                player.autoskip_pressed = false
+                player.execute.unmute()
+                scenelistmodel.append({
+                    "type":"?",
+                    "tags":"",
+                    "severity":0,
+                    "start": player.autoskip_start - 3,
+                    "duration": time-player.autoskip_start + 2,
+                    "description": "",
+                    "stop": time-1,
+                    "action": "Skip",
+                    "skip": "Yes"
+                })
+                app.ask_before_close = true
+                player.autoskip_start = 0
+                loader.source = "Editor.qml"
+                if( settings.ask ) raise()
+            }
         }
         return time
     }
@@ -710,6 +725,7 @@ ApplicationWindow {
         preview_data.start = start
         preview_data.stop  = stop
         if( !watch_movie() ) return
+        player.autoskip_if_fast = false
         set_time( preview_data.start - 3 )
         timer.stop()
         preview_data.times_failed = 0
