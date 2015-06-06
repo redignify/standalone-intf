@@ -13,10 +13,10 @@ Item {
         Component.onCompleted: { mainWindow.minimumWidth = 485;mainWindow.minimumHeight = 350}
 
 
-        Rectangle{
+        Item{
             width: 480
-            color: true ? "#aa84b2":"#380c47"
-            radius: 10
+            //color: true ? "#aa84b2":"#380c47"
+            //radius: 10
 
             RText{
                 width: 475

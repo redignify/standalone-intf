@@ -2,8 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>images/document-open.png</file>
-        <file>images/document-save-as.png</file>
-        <file>images/preferences-system.png</file>
         <file>Editor.qml</file>
         <file>Play.qml</file>
         <file>Config.qml</file>
@@ -19,13 +17,9 @@
         <file>RComboBox.qml</file>
         <file>ToolTip.qml</file>
         <file>RCheckBox.qml</file>
-        <file>images/UnknownMovie6.jpg</file>
-        <file>images/UnknownMovie5.png</file>
-        <file>images/UnknownMovie4.jpg</file>
-        <file>images/UnknownMovie3.jpg</file>
-        <file>images/UnknownMovie2.jpg</file>
         <file>images/UnknownMovie1.png</file>
         <file>images/feedback.png</file>
         <file>Feedback.qml</file>
+        <file>images/preferences-system.png</file>
     </qresource>
 </RCC>

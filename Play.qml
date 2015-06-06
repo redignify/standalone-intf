@@ -15,8 +15,9 @@ Item {
             Layout.columnSpan: 1
             Layout.rowSpan: 8
             Layout.maximumWidth: 300; //height: 445
+            Layout.minimumWidth: 300;
             fillMode: Image.PreserveAspectFit
-            source: movie.poster_url? movie.poster_url : "images/" + random_poster()
+            source: movie.poster_url? movie.poster_url : "images/UnknownMovie1.png"
         }
 
 
@@ -101,8 +102,8 @@ Item {
                //TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
                model: scenelistmodel
                sortIndicatorVisible: true
-               onSortIndicatorColumnChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
-               onSortIndicatorOrderChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
+               //onSortIndicatorColumnChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
+               //onSortIndicatorOrderChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
                onDoubleClicked: toogle_selection()
             }
         }

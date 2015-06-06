@@ -60,13 +60,14 @@ Item {
         GridLayout {
             columns: 3
             Layout.columnSpan: 2
-            Layout.minimumWidth: 400
-            //Layout.minimumWidth:  200
-            //Layout.minimumHeight: 200
+            //Layout.minimumWidth: 400
+            Layout.preferredWidth: 400
+            Layout.minimumHeight: 150
 
             RComboBox {
                 id: type_combo
-                Layout.minimumWidth : 135
+                Layout.preferredWidth : 135
+                //Layout.maximumWidth: 135
                 model: type_list
                 onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
             }
@@ -230,7 +231,10 @@ Item {
             RButton {
                 Layout.fillWidth: true
                 text: qsTr("Ahora")
-                onClicked: start_input.text = get_time()
+                onClicked: {
+                    start_input.text = get_time()
+                    scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
+                }
             }
 
             TextField {
@@ -245,7 +249,10 @@ Item {
             RButton {
                 Layout.fillWidth: true
                 text: qsTr("Ahora")
-                onClicked: stop_input.text = get_time()
+                onClicked: {
+                    stop_input.text = get_time()
+                    scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
+                }
             }
         }
 
@@ -337,7 +344,7 @@ Item {
 
             RButton {
                 id: remove
-                text: qsTr("Remover escena")
+                text: qsTr("Eliminar escena")
                 Layout.fillWidth: true
                 onClicked: {
                     scenelistmodel.remove(tableview.currentRow);

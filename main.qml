@@ -81,7 +81,7 @@ ApplicationWindow {
         property int pro: 1
         property bool ask: true
         property bool autoshare: true
-        property string default_player: "VLC_CONSOLE"
+        property string default_player: "VLC_TCP"
         property string vlc_path : "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
     }
 
@@ -124,7 +124,7 @@ ApplicationWindow {
     ListModel {
         id: players_list
         ListElement {  text: "VLC_TCP" }
-        ListElement {  text: "VLC_CONSOLE" }
+        //ListElement {  text: "VLC_CONSOLE" }
     }
 
     ListModel {
@@ -234,10 +234,10 @@ ApplicationWindow {
 // Ask user what to do before closing
     Dialog {
         id: before_closing
-        width: 600
+        width: 350
         //height: 100
         standardButtons: StandardButton.NoButton
-        //title: "Identification required"
+        title: "Wait!"
         GridLayout {
             columns: 4
             RLabel{
@@ -634,7 +634,7 @@ ApplicationWindow {
             timer.start()
             say_to_user("Connected to " +  player.execute.name() )
             return true
-        }
+        }/* // DEBUG
     // If not possible to launch on selected player, try other players
         else{
             say_to_user("Seems it's not working. Trying other players")
@@ -646,7 +646,7 @@ ApplicationWindow {
                     return true
                 }
             }
-        }
+        }*/
         say_to_user("Oops. We are unable to start/connect with player")
         return false
     }
@@ -768,7 +768,7 @@ ApplicationWindow {
             settings.default_player = pl
             console.log("Setting VLC TCP as player")
         }else if( pl === "VLC_CONSOLE" ) {
-            player.execute = VLC_CONSOLE
+            player.execute = VLC_TCP
             console.log("Setting VLC console as player")
             settings.default_player = pl
         }

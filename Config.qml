@@ -16,6 +16,7 @@ Item {
 
         RLabel{ text: qsTr("Diferencia tiempo") }
         TextField {
+            Layout.preferredWidth: 100
             id:offset
             text: sync.applied_offset
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
@@ -24,6 +25,7 @@ Item {
 
         RLabel{ text: qsTr("Diferencia velocidad") }
         TextField {
+            Layout.preferredWidth: 100
             id:speed
             text: sync.applied_speed
             onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
@@ -33,7 +35,7 @@ Item {
         RLabel{ text: qsTr("Calibración guiada") }
         RButton {
             text: qsTr("Calibrar")
-            Layout.fillWidth: true
+            Layout.preferredWidth: 100
             onClicked: manual_calibration()
         }
 
@@ -48,6 +50,7 @@ Item {
         RLabel{ text: qsTr("Ejecutable VLC") }
         TextField {
             text: settings.vlc_path
+            Layout.minimumWidth: 250
             onEditingFinished: {
                 settings.vlc_path = text
                 VLC_CONSOLE.set_path( settings.vlc_path )

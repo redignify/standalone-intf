@@ -6,13 +6,14 @@
 #include <QTcpSocket>
 #include <QString>
 #include <QProcess>
+#include <QTimer>
 
 class VLC_TCP: public QObject
 {
     Q_OBJECT
 public:
     explicit VLC_TCP(QObject *parent = 0);
-    Q_INVOKABLE bool connect( QString );
+    Q_INVOKABLE bool connect_to_vlc( QString );
     Q_INVOKABLE bool launch(QString );
     Q_INVOKABLE bool set_path(QString);
     Q_INVOKABLE void kill( );
@@ -34,6 +35,7 @@ public:
 private:
     QProcess *m_process;
     int volume;
+    float time;
     QString path;
     bool lock;
     int rate;
@@ -41,9 +43,14 @@ private:
     QTcpSocket *tcpSocket;
     QString currentData;
     quint16 blockSize;
+    QTimer* timer;
     int tuned_cli;
-    void ready();
     void clean( );
+
+public slots:
+    void ask_time();
+    void ready();
+
 };
 
 #endif // VLC_TCP_H

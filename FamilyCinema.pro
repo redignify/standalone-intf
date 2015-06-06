@@ -22,8 +22,4 @@ HEADERS += \
 
 OTHER_FILES +=
 
-DISTFILES += \
-    images/UnknownMovie6.jpg \
-    images/UnknownMovie4.jpg \
-    images/UnknownMovie3.jpg \
-    images/UnknownMovie5.png
+DISTFILES +=

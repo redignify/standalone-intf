@@ -12,6 +12,7 @@ Item {
         anchors.margins: 5
         columns: 3
         Component.onCompleted: { mainWindow.minimumWidth = 505;mainWindow.minimumHeight = 355}
+        //Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 510}
 
         TextField {
             id: fileurl
