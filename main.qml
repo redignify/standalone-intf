@@ -81,7 +81,7 @@ ApplicationWindow {
         property int pro: 1
         property bool ask: true
         property bool autoshare: true
-        property string default_player: "VLC_TCP"
+        property string default_player: "VLC_HTTP"
         property string vlc_path : "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
     }
 
@@ -123,7 +123,9 @@ ApplicationWindow {
 
     ListModel {
         id: players_list
+        ListElement {  text: "VLC_HTTP" }
         ListElement {  text: "VLC_TCP" }
+        ListElement {  text: "VLC_HTTP" }
         //ListElement {  text: "VLC_CONSOLE" }
     }
 
@@ -213,6 +215,7 @@ ApplicationWindow {
         }
         VLC_CONSOLE.set_path( settings.vlc_path )
         VLC_TCP.set_path( settings.vlc_path )
+        VLC_HTTP.set_path( settings.vlc_path )
         set_player( settings.default_player )
     }
 
@@ -255,6 +258,7 @@ ApplicationWindow {
             RButton {
                 text: "Save changes"
                 onClicked: {
+                    save_work()
                     app.ask_before_close = false
                     before_closing.visible = false
                     close()
@@ -453,57 +457,72 @@ ApplicationWindow {
 
 // Share movie scene with other users
     function share( user, pass)
-    {      
-    // Recover original file
+    {
         var jsonObject = JSON.parse( movie.data );
         if ( !jsonObject ) { return }
+        var str = pack_data()
+        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){ app.ask_before_close = false} )
+        save_to_file( str, jsonObject["ImdbCode"] )
+    }
 
-    // Update filter status
-        jsonObject["FilterStatus"] = movie.filter_status
+    function save_work()
+    {
+        var jsonObject = JSON.parse( movie.data );
+        if ( !jsonObject ) { return }
+        var str = pack_data()
+        save_to_file( str, jsonObject["ImdbCode"] )
+    }
 
-    // Update scenes data
-        jsonObject['Scenes'] = [];
-        for( var i = 0; i < scenelistmodel.count; ++i){
-            jsonObject['Scenes'][i] = {}
-            var scene = scenelistmodel.get(i)
-            jsonObject['Scenes'][i]["Category"] = scene.type
-            jsonObject['Scenes'][i]["Tags"] = scene.tags
-            jsonObject['Scenes'][i]["Severity"] = scene.severity
-            jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
-            jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
-            jsonObject['Scenes'][i]["Action"] = scene.action
-            jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
-        }
+    function pack_data(){
+        // Recover original file
+            var jsonObject = JSON.parse( movie.data );
+            if ( !jsonObject ) { return }
 
-        if( media.hash ){
-    // Update sync data
-            if( !jsonObject["SyncInfo"] ) jsonObject["SyncInfo"] = []
+        // Update filter status
+            jsonObject["FilterStatus"] = movie.filter_status
 
-            var sync_updated_flag = 0
-            for( i=0; i<jsonObject["SyncInfo"].length; ++i ){
-                if( jsonObject["SyncInfo"][i]["Hash"] == media.hash ){
+        // Update scenes data
+            jsonObject['Scenes'] = [];
+            for( var i = 0; i < scenelistmodel.count; ++i){
+                jsonObject['Scenes'][i] = {}
+                var scene = scenelistmodel.get(i)
+                jsonObject['Scenes'][i]["Category"] = scene.type
+                jsonObject['Scenes'][i]["Tags"] = scene.tags
+                jsonObject['Scenes'][i]["Severity"] = scene.severity
+                jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
+                jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
+                jsonObject['Scenes'][i]["Action"] = scene.action
+                jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
+            }
+
+            if( media.hash ){
+        // Update sync data
+                if( !jsonObject["SyncInfo"] ) jsonObject["SyncInfo"] = []
+
+                var sync_updated_flag = 0
+                for( i=0; i<jsonObject["SyncInfo"].length; ++i ){
+                    if( jsonObject["SyncInfo"][i]["Hash"] == media.hash ){
+                        jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
+                        jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
+                        jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
+                        sync_updated_flag = 1
+                    }
+                }
+                if (sync_updated_flag == 0) {
+                    i = jsonObject["SyncInfo"].length
+                    jsonObject["SyncInfo"][i] = {}
+                    jsonObject["SyncInfo"][i]["Hash"] = media.hash
                     jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
                     jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
                     jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
-                    sync_updated_flag = 1
                 }
             }
-            if (sync_updated_flag == 0) {
-                i = jsonObject["SyncInfo"].length
-                jsonObject["SyncInfo"][i] = {}
-                jsonObject["SyncInfo"][i]["Hash"] = media.hash
-                jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
-                jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
-                jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
-            }
-        }
 
-    // Format and share
-        var str = JSON.stringify( jsonObject, "", 2 );
-        console.log( str )
-        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){ app.ask_before_close = false} )
+        // Format and share
+            var str = JSON.stringify( jsonObject, "", 2 );
+            console.log( str )
+            return str
     }
-
 
 
 // Get title from file name
@@ -528,18 +547,47 @@ ApplicationWindow {
 
 
 // Read content of local file
-    function read_file( path )
+    function read_from_file( name )
     {
-
+        return Utils.read_data( name + ".json")
     }
 
 
 // Write data to local file
-    function save_to_file( path, data )
+    function save_to_file( data, name )
     {
-
+        Utils.write_data( data, name + ".json")
     }
 
+//
+    function search_cached_index( hash )
+    {
+        var str_o = read_from_file( "index" )
+
+        console.log( str_o )
+        if( !str_o ) { console.log("Searching but no index!"); return}
+        var index = JSON.parse( str_o )
+        if( !index ) { console.log("Searching but index is corrupted"); return}
+        if( index[hash] ){
+            var str = read_from_file( index[hash] )
+            if( !str ) return
+            movie.data = str
+            return true
+        }
+        return
+    }
+
+    function add_to_index( code, hash )
+    {
+        var str_o = read_from_file( "index" )
+        if( !str_o ) { console.log("Adding to index, no file found"); str_o = "{}"};
+        var index = JSON.parse( str_o )
+        if( !index ) { console.log("Adding to index, corrupted file"); return;}
+        index[hash] = code
+        var str = JSON.stringify( index );
+        console.log( str )
+        save_to_file( str, "index" );
+    }
 
 // Post params to fcinema.org/api. Call callback when data is ready
     function post(  params, callback, url )
@@ -669,7 +717,7 @@ ApplicationWindow {
         var time = player.execute.get_time()
         if ( time == -1){ // @disable-check M126
             say_to_user("Reconecting with player")
-            if( !player.execute.connect("") ){
+            if( !player.execute.connect_to_vlc( true ) ){
                 say_to_user("Warning: unable to reach player!")
                 raise()
                 timer.stop()
@@ -763,15 +811,21 @@ ApplicationWindow {
 // Set the default player
     function set_player( pl )
     {
+        pl = "VLC_HTTP";
         if( pl === "VLC_TCP" ) {
             player.execute = VLC_TCP
             settings.default_player = pl
             console.log("Setting VLC TCP as player")
         }else if( pl === "VLC_CONSOLE" ) {
-            player.execute = VLC_TCP
+            player.execute = VLC_CONSOLE
             console.log("Setting VLC console as player")
             settings.default_player = pl
+        }else if( pl === "VLC_HTTP" ) {
+            player.execute = VLC_HTTP
+            console.log("Setting VLC http as player")
+            settings.default_player = pl
         }
+
     }
 
     function seconds_to_time( sec ) {

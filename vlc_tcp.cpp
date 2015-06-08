@@ -18,7 +18,7 @@ VLC_TCP::VLC_TCP(QObject *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(ask_time()));
 }
 
-bool VLC_TCP::connect_to_vlc( QString file )
+bool VLC_TCP::connect_to_vlc( bool fast )
 {
     if(lock) return false;
     lock = true;
@@ -27,7 +27,8 @@ bool VLC_TCP::connect_to_vlc( QString file )
     tcpSocket->abort();
     tcpSocket->connectToHost("localhost", 4212 );
     timer->start(250);
-    for (int i=1;i<10;i++) {
+    int max = fast? 2 : 10;
+    for (int i=1;i<max;i++) {
         qDebug() << tcpSocket->state();
         if( get_time() != -1 ){
             qDebug() << "Connected";
@@ -65,7 +66,7 @@ bool VLC_TCP::set_path(QString program_path)
 bool VLC_TCP::launch( QString file )
 {
     qDebug("Checking if VLC is listining over TCP");
-    if( connect_to_vlc("") ) return true;
+    if( connect_to_vlc( true ) ) return true;
 
     if( !file.isEmpty() ){
         qDebug() << "Starting VLC with " << file;
@@ -81,7 +82,7 @@ bool VLC_TCP::launch( QString file )
             delay(500);
         }
         if( m_process->state() == 0 ) return false;
-        return connect_to_vlc("");
+        return connect_to_vlc( false );
     }
 
 }

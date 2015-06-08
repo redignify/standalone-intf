@@ -5,7 +5,8 @@ QT += qml quick widgets
 SOURCES += main.cpp \
     utils.cpp \
     vlc_tcp.cpp \
-    vlc_console.cpp
+    vlc_console.cpp \
+    vlc_http.cpp
 
 RESOURCES += qml.qrc
 
@@ -18,7 +19,8 @@ include(deployment.pri)
 HEADERS += \
     utils.h \
     vlc_tcp.h \
-    vlc_console.h
+    vlc_console.h \
+    vlc_http.h
 
 OTHER_FILES +=
 

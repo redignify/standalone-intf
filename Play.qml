@@ -115,7 +115,7 @@ Item {
                 Layout.minimumWidth : 150
                 model: players_list
                 //currentIndex: player.execute.name()
-                onActivated: set_player( players_list.get(currentIndex).text )
+                onActivated: set_player( currentText )
             }
 
             RButton {

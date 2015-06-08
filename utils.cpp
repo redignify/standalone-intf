@@ -88,12 +88,43 @@ QString Utils::get_hash( QString filename)
     return hash;
 }
 
-bool Utils::write_data(QString data, QString file)
+bool Utils::write_data(QString data, QString filename )
 {
-    qDebug()<< QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    QString path = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    qDebug()<< "Writting data to " << filename;
+    if( !QDir( path ).exists() ){
+        qDebug() << "Creating dir...";
+        QDir().mkdir( path );
+    }
+    QFile file( path + '//' + filename );
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << file.errorString();
+    }else{
+        qDebug() << file.write(data.toStdString().c_str() );
+        file.close();
+        if( file.exists() ) return true;
+    }
+    qDebug() << "Unable to write data";
+    return false;
 }
 
-QString Utils::read_data(QString file)
+QString Utils::read_data(QString filename)
 {
+    QString path = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    qDebug()<< "Reading data from " << filename;
 
+    QFile file( path + '//' + filename );
+    if( !file.exists() ){
+        qDebug() << "No file!";
+        return false;
+    }
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
+        qDebug() << file.errorString();
+    }else{
+        QString output = file.readAll();
+        qDebug() << "Readed! " << output;
+        file.close();
+        return output;
+    }
+    return false;
 }

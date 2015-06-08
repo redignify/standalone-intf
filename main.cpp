@@ -11,6 +11,7 @@
 // include our new type
 #include "vlc_console.h"
 #include "vlc_tcp.h"
+#include "vlc_http.h"
 #include "utils.h"
 
 
@@ -25,6 +26,9 @@ int main(int argc, char *argv[])
 
     VLC_TCP o_vlc_tcp;
     context->setContextProperty("VLC_TCP", &o_vlc_tcp);
+
+    VLC_HTTP o_vlc_http;
+    context->setContextProperty("VLC_HTTP", &o_vlc_http);
 
     Utils o_utils;
     context->setContextProperty("Utils", &o_utils);

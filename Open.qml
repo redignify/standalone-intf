@@ -77,7 +77,7 @@ Item {
             id: testing
             text: "test"
             onClicked: {
-                get_subs()
+                //get_subs()
                 //media.url = fileurl.text.toString()
                 //parse_input_file()
                 //calibrate_from_subtitles()
@@ -135,7 +135,12 @@ Item {
 // Ask server for movie information
     function search_movie()
     {
-        post( "action=search&filename="+ title.text + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+        if( search_cached_index( media.hash ) ){
+            loader.source = "Play.qml"
+            load_movie()
+        }else{
+            post( "action=search&filename="+ title.text + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+        }
     }
 
 // Great! We have the content of the current movie. Load the data.
@@ -149,11 +154,9 @@ Item {
         var data = JSON.parse( movie.data )
 
     // Update filter status
-        if( data["FilterStatus"]){
-            movie.filter_status = data["FilterStatus"]
-            if( movie.filter_status < 2){
-                say_to_user("Movie information might be incomplete")
-            }
+        movie.filter_status = data["FilterStatus"]? data["FilterStatus"] : 0
+        if( movie.filter_status < 2){
+            say_to_user("Movie information might be incomplete")
         }
         if( data["Poster"] ) movie.poster_url = data["Poster"]
         if( data["Director"] ) movie.director = data["Director"]
@@ -241,6 +244,8 @@ Item {
             movie.data = str
             loader.source = "Play.qml"
             load_movie()
+            save_to_file( str, jsonObject["ImdbCode"] )
+            add_to_index( jsonObject["ImdbCode"], media.hash )
         }else if ( jsonObject['Season'] ){
             movie.list = str
             movielistmodel.clear()

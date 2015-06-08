@@ -281,8 +281,9 @@ Item {
 
             RButton {
                 Layout.fillWidth: true
-                text: qsTr("frame")
-                onClicked: player.execute.frame()
+                text: qsTr("play")
+                //onClicked: player.execute.frame()
+                onClicked: player.execute.play()
             }
 
             RButton {
