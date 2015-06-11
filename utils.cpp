@@ -65,7 +65,19 @@ double Utils::get_size( QString filename ){
     return in.tellg();
 }
 
+QString Utils::get_vlc_path()
+{
+    qDebug() << "Computing path";
+    QString x86 = "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe";
+    QFile file( x86 ); if( file.exists() ) return x86;
 
+    QString x64 = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
+    QFile file64( x64 ); if( file64.exists() ) return x64;
+
+    return "vlc";
+
+
+}
 
 QString Utils::get_hash( QString filename)
 {
@@ -117,6 +129,27 @@ QString Utils::read_data(QString filename)
     if( !file.exists() ){
         qDebug() << "No file!";
         return false;
+    }
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
+        qDebug() << file.errorString();
+    }else{
+        QString output = file.readAll();
+        qDebug() << "Readed! " << output;
+        file.close();
+        return output;
+    }
+    return false;
+}
+
+QString Utils::read_external_data(QString filename)
+{
+    filename = QQmlFile::urlToLocalFileOrQrc(filename);
+    qDebug()<< "Reading data from " << filename;
+
+    QFile file( filename );
+    if( !file.exists() ){
+        qDebug() << "No file!";
+        //return false;
     }
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
         qDebug() << file.errorString();

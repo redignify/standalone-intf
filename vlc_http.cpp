@@ -34,7 +34,7 @@ VLC_HTTP::VLC_HTTP(QObject *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(ask_time()));
 }
 
-bool VLC_HTTP::connect_to_vlc( bool fast )
+bool VLC_HTTP::connect_to_player( bool fast )
 {
     if(lock) return false;
     lock = true;
@@ -76,14 +76,18 @@ bool VLC_HTTP::set_path(QString program_path)
 
 bool VLC_HTTP::launch( QString file )
 {
+    if(lock) return false;
+    lock = true;
+    m_process->close();
     qDebug("Checking if VLC is listining over HTTP");
-    if( connect_to_vlc( true ) ) return true;
+    if( connect_to_player( true ) ) return true;
 
     if( !file.isEmpty() ){
         qDebug() << "Starting VLC with " << file;
         QString program = path;
         QStringList arguments;
         arguments << "--intf"<<"qt"<<"--extraintf"<<"http"<<"--http-host"<<"localhost:8080"<<"--http-password"<<"pass" << file;
+        //arguments << "--intf=qt"<<"--extraintf=http"<<"--http-host=localhost:8080"<<"--http-password=pass" << file;
         qDebug() << arguments;
         m_process->start(program, arguments);
         for (int i=1;i<10;i++){
@@ -91,8 +95,9 @@ bool VLC_HTTP::launch( QString file )
             if( m_process->state() != 0 ) break;
             delay(500);
         }
+        lock = false;
         if( m_process->state() == 0 ) return false;
-        return connect_to_vlc( false );
+        return connect_to_player( false );
     }
 }
 
@@ -126,7 +131,7 @@ void VLC_HTTP::ready( QNetworkReply* reply )
 
         if( output.contains(re_vol,&found) ){
             int vol = found.capturedTexts()[1].toFloat();
-            volume = vol == 0? volume : vol;
+            volume = vol == 0? volume : vol; // Avoid capturing volume when muted
             qDebug() << "Volume is: " << volume;
         }
         if( output.contains(re_len,&found) ){
@@ -155,16 +160,21 @@ void VLC_HTTP::ready( QNetworkReply* reply )
 
 void VLC_HTTP::kill()
 {
+  // Elegant solution
     QNetworkRequest req(QUrl( "http://localhost:8080/requests/status.xml?command=shutdown" ));
     manager->get(req);
+
+  // Hardcore solution
+    m_process->close();
 }
 
 
-/*void VLC_HTTP::seek( float sec )
+void VLC_HTTP::seek( float sec )
 {
     QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=seek&val=%1\%").arg( sec/length*100 ) ));
     manager->get(req);
-}*/
+}
+/*
 
 void VLC_HTTP::seek( float sec )
 {
@@ -188,7 +198,7 @@ void VLC_HTTP::seek( float sec )
     manager->get(req5);
 }
 
-
+*/
 void VLC_HTTP::toggle_fullscreen( void )
 {
     QNetworkRequest req(QUrl( "http://localhost:8080/requests/status.xml?command=fullscreen" ));
@@ -197,25 +207,25 @@ void VLC_HTTP::toggle_fullscreen( void )
 
 void VLC_HTTP::play( void )
 {
-    QNetworkRequest req(QUrl( "http://localhost:8080/requests/status.xml?command=play" ));
+    QNetworkRequest req(QUrl( "http://localhost:8080/requests/status.xml?command=pl_pause" ));
     manager->get(req);
 }
 
 void VLC_HTTP::set_rate( float rate )
 {
-    QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=seek&val=%1\%").arg( rate ) ));
+    QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=seek&val=%1").arg( rate ) ));
     manager->get(req);
 }
 
 void VLC_HTTP::slower()
 {
-    QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=rate&val=%1\%").arg( rate/2 ) ));
+    QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=rate&val=%1").arg( rate/2 ) ));
     manager->get(req);
 }
 
 void VLC_HTTP::faster( )
 {
-    QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=rate&val=%1\%").arg( rate*2 ) ));
+    QNetworkRequest req(QUrl( QString("http://localhost:8080/requests/status.xml?command=rate&val=%1").arg( rate*2 ) ));
     manager->get(req);
 }
 

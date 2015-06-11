@@ -13,8 +13,8 @@ import Qt.labs.settings 1.0
 ApplicationWindow {
     id: mainWindow
     visible: true
-    minimumWidth: 485//gridLayout.implicitWidth
-    minimumHeight: 380//gridLayout.implicitHeight
+    //minimumWidth: 485//gridLayout.implicitWidth
+    //minimumHeight: 380//gridLayout.implicitHeight
     title: qsTr("Redignify")
 
 
@@ -50,6 +50,7 @@ ApplicationWindow {
         property string director
         property string pgcode
         property string imdbrating
+        property string imdbcode
         property string scenes
         property string data
         property string list
@@ -82,7 +83,7 @@ ApplicationWindow {
         property bool ask: true
         property bool autoshare: true
         property string default_player: "VLC_HTTP"
-        property string vlc_path : "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
+        property string vlc_path : ""
     }
 
     Item {
@@ -110,6 +111,16 @@ ApplicationWindow {
         ListElement {  text: "Incomplete" }
         ListElement {  text: "On going" }
         ListElement {  text: "Finished" }
+    }
+
+    ListModel {
+        id: status_list_pro
+        ListElement {  text: "None" }
+        ListElement {  text: "All level 5" }
+        ListElement {  text: "All level 4+" }
+        ListElement {  text: "All level 3+" }
+        ListElement {  text: "All level 2+" }
+        ListElement {  text: "All scenes" }
     }
 
     ListModel {
@@ -155,13 +166,21 @@ ApplicationWindow {
             width: parent.width
             ToolButton {
                 iconSource: "images/play.png"
-                onClicked: loader.source = "Play.qml"
+                onClicked: {
+                    //mainWindow.minimumWidth = 800
+                    //mainWindow.minimumHeight = 510
+                    loader.source = "Play.qml"
+                }
                 Accessible.name: "Play"
                 tooltip: "Enjoy your film"
             }
             ToolButton {
                 iconSource: "images/document-open.png"
-                onClicked: loader.source = "Open.qml"
+                onClicked: {
+                    //mainWindow.minimumWidth = 505
+                    //mainWindow.minimumHeight = 355
+                    loader.source = "Open.qml"
+                }
                 Accessible.name: "Open"
                 tooltip: "Open new movie"
             }
@@ -213,6 +232,7 @@ ApplicationWindow {
             movie.title = clean_title( media.url );
             loader.item.parse_input_file()
         }
+        if( settings.vlc_path === "" ) settings.vlc_path = Utils.get_vlc_path()
         VLC_CONSOLE.set_path( settings.vlc_path )
         VLC_TCP.set_path( settings.vlc_path )
         VLC_HTTP.set_path( settings.vlc_path )
@@ -237,7 +257,7 @@ ApplicationWindow {
 // Ask user what to do before closing
     Dialog {
         id: before_closing
-        width: 350
+        width: 275
         //height: 100
         standardButtons: StandardButton.NoButton
         title: "Wait!"
@@ -245,18 +265,10 @@ ApplicationWindow {
             columns: 4
             RLabel{
                 Layout.columnSpan: 4
-                text: "Want to do something before closing?"
+                text: qsTr( "Has hecho algunos cambios... ¿que quieres hacer?" )
             }
             RButton {
-                text: "Nop, discard"
-                onClicked: {
-                    app.ask_before_close = false
-                    before_closing.visible = false
-                    close()
-                }
-            }
-            RButton {
-                text: "Save changes"
+                text: qsTr( "Guardar" )
                 onClicked: {
                     save_work()
                     app.ask_before_close = false
@@ -265,7 +277,7 @@ ApplicationWindow {
                 }
             }
             RButton {
-                text: "Share improvements"
+                text: qsTr( "Compartir" )
                 onClicked: {
                     before_closing.visible = false
                     requestPass.visible = true
@@ -274,7 +286,15 @@ ApplicationWindow {
                 }
             }
             RButton {
-                text: "Don't close"
+                text: qsTr( "Cerrar" )
+                onClicked: {
+                    app.ask_before_close = false
+                    before_closing.visible = false
+                    close()
+                }
+            }
+            RButton {
+                text: qsTr( "Cancelar" )
                 onClicked: {
                     before_closing.visible = false
                 }
@@ -287,7 +307,7 @@ ApplicationWindow {
 
     Dialog {
         id: bad_movie
-        width: 400
+        width: 310
         //height: 100
         standardButtons: StandardButton.NoButton
         //title: "Identification required"
@@ -313,7 +333,7 @@ ApplicationWindow {
                 }
             }
             RButton {
-                text: "Volver a buscar"
+                text: qsTr("Volver a buscar")
                 onClicked: {
                     loader.source = "Open.qml"
                     post( "action=badhash&username="+settings.user+"&password="+settings.password+"&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
@@ -329,12 +349,153 @@ ApplicationWindow {
 
     }
 
+    Dialog {
+        id: dialog_import
+        width: 310
+        //height: 100
+        standardButtons: StandardButton.NoButton
+        //title: "Identification required"
+        GridLayout {
+            columns: 2
+            RLabel{
+                Layout.columnSpan: 2
+                text: qsTr("Perdón, intentaremos corregir el error.")
+            }
+
+            TextField {
+                Layout.minimumWidth: 200
+                placeholderText: qsTr("Filter file")
+            }
+            Button {
+                text: "Browse"
+                onClicked: filterDialog.visible = true
+            }
+        }
+
+    }
+
+    FileDialog {
+        id: filterDialog
+        title: "Choose a filer"
+        selectExisting: true //fileDialogSelectExisting.checked
+        onAccepted: {
+            console.log(fileUrl)
+            import_from_file(fileUrl)
+        }
+        onRejected: { console.log("Rejected") }
+    }
+
+
+// Survey about quality...
+        Dialog {
+            id: survey
+            width: 250
+            height: 350
+            standardButtons: StandardButton.Ok | StandardButton.Cancel
+            title: qsTr("¿tú que opinas?")
+            GridLayout {
+                columns: 1
+                Label{
+                    text: qsTr("¿hemos filtrado bien?")
+                    font.family: "Helvetica"
+                    font.pointSize: 16
+                    font.bold: true
+                }
+//                RLabel{ text: qsTr("Violencia") }
+                GroupBox {
+                    title: "Violence"
+                    Layout.fillWidth: true
+                    RowLayout {
+                        anchors.fill: parent
+                        ExclusiveGroup { id: vioGroup }
+                        RadioButton { text: "Genial"; exclusiveGroup: vioGroup; checked: true }
+                        RadioButton { text: "Justo"; exclusiveGroup: vioGroup }
+                        RadioButton { text: "Horrible"; exclusiveGroup: vioGroup }
+                    }
+                }
+                GroupBox {
+                    title: "Sex"
+                    Layout.fillWidth: true
+                    RowLayout {
+                        anchors.fill: parent
+                        ExclusiveGroup { id: sexGroup }
+                        RadioButton { text: "Genial"; exclusiveGroup: sexGroup; checked: true }
+                        RadioButton { text: "Justo"; exclusiveGroup: sexGroup }
+                        RadioButton { text: "Horrible"; exclusiveGroup: sexGroup }
+                    }
+                }
+                GroupBox {
+                    title: "Drogas"
+                    Layout.fillWidth: true
+                    RowLayout {
+                        anchors.fill: parent
+                        ExclusiveGroup { id: drugsGroup }
+                        RadioButton { text: "Genial"; exclusiveGroup: drugsGroup; checked: true }
+                        RadioButton { text: "Justo"; exclusiveGroup: drugsGroup }
+                        RadioButton { text: "Horrible"; exclusiveGroup: drugsGroup }
+                    }
+                }
+                GroupBox {
+                    title: "Discriminación"
+                    Layout.fillWidth: true
+                    RowLayout {
+                        anchors.fill: parent
+                        ExclusiveGroup { id: discGroup }
+                        RadioButton { text: "Genial"; exclusiveGroup: discGroup; checked: true  }
+                        RadioButton { text: "Justo"; exclusiveGroup: discGroup }
+                        RadioButton { text: "Horrible"; exclusiveGroup: discGroup; id: discBad }
+                    }
+                }
+                TextField {
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("¿En que podemos mejorar?")
+                    visible: discBad.checked
+                }
+
+                GroupBox {
+                    title: "Calidad cortes"
+                    Layout.fillWidth: true
+                    RowLayout {
+                        anchors.fill: parent
+                        ExclusiveGroup { id: calGroup }
+                        RadioButton { text: "No se nota"; exclusiveGroup: calGroup; checked: true  }
+                        RadioButton { text: "No molesta"; exclusiveGroup: calGroup }
+                        RadioButton { text: "Estropan"; exclusiveGroup: calGroup; id:calBad }
+                    }
+                }
+                TextField {
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("¿En que podemos mejorar?")
+                    visible: calBad.checked
+                }
+            }
+            onAccepted: {
+                requestPass.visible = true
+                if( c_new_user.checked ){
+                    if( pass.text !== pass2.text ){
+                        say_to_user("Password must be the same");
+                        pass.text = ""
+                        pass2.text = ""
+                        return
+                    }
+                    post( "action=newuser&username="+name.text+"&password="+pass.text+"&email="+email.text, new_user )
+                }else{
+                    settings.password = pass.text
+                    settings.user = name.text
+                    share( name.text, pass.text )
+                }
+            }
+            onRejected: {
+                requestPass.visible = false
+            }
+        }
+
 
 // Request user password before sharing
     Dialog {
         id: requestPass
-        width: 300
-        height: 100
+        width: 250
+        //height: 200
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         title: "Identification required"
         GridLayout {
@@ -357,22 +518,83 @@ ApplicationWindow {
                 echoMode: TextInput.Password
                 //placeholderText: "Password"
             }
+
             RLabel{
-                text: qsTr("Estado del filtro")
+                text: qsTr("Confirmar")
+                visible: c_new_user.checked
             }
+            TextField {
+                width: 100
+                id:pass2
+                visible: c_new_user.checked
+                text: settings.password
+                echoMode: TextInput.Password
+                //placeholderText: "Password"
+            }
+
+            RLabel{
+                text: qsTr("Email")
+                visible: c_new_user.checked
+            }
+            TextField {
+                width: 100
+                id: email
+                visible: c_new_user.checked
+                placeholderText: "Optional"
+            }
+
+            RLabel{ text: qsTr("Violencia etiquetada") }
             RComboBox {
                 Layout.fillWidth: true
-                id: status_combo
-                model: status_list
-                currentIndex: movie.filter_status
-                onCurrentIndexChanged: movie.filter_status =  currentIndex
+                id: status_combo_violence
+                model: status_list_pro
+                currentIndex: settings.v
+            }
+
+            Label{ text: qsTr("Sexo etiquetada") }
+            ComboBox {
+                Layout.fillWidth: true
+                id: status_combo_sn
+                model: status_list_pro
+                currentIndex: settings.sn
+            }
+
+            Label{ text: qsTr("Discrimi. etiquetada") }
+            RComboBox {
+                Layout.fillWidth: true
+                id: status_combo_pro
+                model: status_list_pro
+                currentIndex: settings.pro
+            }
+
+            RLabel{ text: qsTr("Drogas etiquetada") }
+            RComboBox {
+                Layout.fillWidth: true
+                id: status_combo_dro
+                model: status_list_pro
+                currentIndex: settings.d
+            }
+            CheckBox {
+                id: c_new_user
+                text: qsTr("New user");
+                onClicked: checked? requestPass.height = 250 : requestPass.height = 200
             }
         }
         onAccepted: {
-            settings.password = pass.text
-            settings.user = name.text
-            share( name.text, pass.text )
-            requestPass.visible = false
+            requestPass.visible = true
+            if( c_new_user.checked ){
+                if( pass.text !== pass2.text ){
+                    say_to_user("Password must be the same");
+                    pass.text = ""
+                    pass2.text = ""
+                    return
+                }
+                post( "action=newuser&username="+name.text+"&password="+pass.text+"&email="+email.text, new_user )
+            }else{
+                settings.password = pass.text
+                settings.user = name.text
+                share( name.text, pass.text )
+            }
         }
         onRejected: {
             requestPass.visible = false
@@ -390,7 +612,7 @@ ApplicationWindow {
             columns: 1
             RLabel{
                 id: user_instructions
-                text: "Click the button when the scene ends"// + scenelistmodel.get(get_sync_scene_index).description + " ends"
+                text: qsTr( "Haz click cuando oigas" ) // + scenelistmodel.get(get_sync_scene_index).description + " ends"
             }
             RButton {
                 text: qsTr("Velocidad x3")
@@ -402,7 +624,7 @@ ApplicationWindow {
                 text: "Normal rate"
                 tooltip: "Play at 1x speed"
                 id: b_rate_normal
-                onClicked: player.execute.set_rate( 0 )
+                onClicked: player.execute.set_rate( 1 )
             }
             RButton {
                 text: "Now it ends"
@@ -454,74 +676,132 @@ ApplicationWindow {
 /*---------------------------------FUNCTIONS-----------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
 
+// Create new user on the db
+    function new_user( str )
+    {
+        try {
+            var jo = JSON.parse( str )
+        } catch(e){
+            say_to_user( qsTr( "Error en el servidor") )
+            return
+        }
+        if( jo && jo["Status"] && jo["Status"] === "Ok" ){
+            settings.password = pass.text
+            settings.user = name.text
+            share( name.text, pass.text )
+        }else{
+            say_to_user("Some extrange error just happen")
+        }
+    }
 
 // Share movie scene with other users
     function share( user, pass)
     {
-        var jsonObject = JSON.parse( movie.data );
-        if ( !jsonObject ) { return }
+        requestPass.visible = true
+        try{
+            var jsonObject = JSON.parse( movie.data );
+        }catch(e){
+            say_to_user( "No movie ID")
+            return
+        }
         var str = pack_data()
-        post( "action=modify&data="+str+"&username="+user+"&password="+pass, function(){ app.ask_before_close = false} )
-        save_to_file( str, jsonObject["ImdbCode"] )
+        post( "action=modify&data="+str+"&username="+user+"&password="+pass, thanks_for_sharing )
+        //save_to_file( str, jsonObject["ImdbCode"] ) autosave to disk when sharing
+    }
+
+    function thanks_for_sharing( str ){
+        try {
+            var jo = JSON.parse( str )
+        } catch(e){
+            say_to_user( qsTr( "Error en el servidor") )
+            return
+        }
+
+        if( jo && jo["Status"] && jo["Status"] === "Ok" ){
+            app.ask_before_close = false
+            requestPass.visible = false
+            say_to_user( qsTr( "En nombre de todos los usuarios, ¡gracias por ayudar!") )
+        }else{
+            say_to_user( qsTr( "Imposible compartir. Ha ocurrido un error") )
+        }
+
     }
 
     function save_work()
     {
-        var jsonObject = JSON.parse( movie.data );
-        if ( !jsonObject ) { return }
+        var jsonObject = {}
+        try{
+            jsonObject = JSON.parse( movie.data );
+        } catch(e){
+            if( !media.hash || media.hash == "Error" || media.hash == "" ){
+                say_to_user("No pienso guardar esto (No hay ninguna película asociada)")
+                return
+            }
+            jsonObject["ImdbCode"] = media.hash;
+            movie.data = JSON.stringify( jsonObject )
+            add_to_index( media.hash, media.hash)
+        }
         var str = pack_data()
         save_to_file( str, jsonObject["ImdbCode"] )
+        say_to_user("Guardado!")
     }
 
+
+    //function import
     function pack_data(){
-        // Recover original file
+    // Recover original file
+        try{
             var jsonObject = JSON.parse( movie.data );
-            if ( !jsonObject ) { return }
+        }catch(e){
+            say_to_user( "No movie ID")
+            var jsonObject = {};
+        }
 
-        // Update filter status
-            jsonObject["FilterStatus"] = movie.filter_status
+    // Update filter status
+        jsonObject["FilterStatus"] = movie.filter_status
 
-        // Update scenes data
-            jsonObject['Scenes'] = [];
-            for( var i = 0; i < scenelistmodel.count; ++i){
-                jsonObject['Scenes'][i] = {}
-                var scene = scenelistmodel.get(i)
-                jsonObject['Scenes'][i]["Category"] = scene.type
-                jsonObject['Scenes'][i]["Tags"] = scene.tags
-                jsonObject['Scenes'][i]["Severity"] = scene.severity
-                jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
-                jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
-                jsonObject['Scenes'][i]["Action"] = scene.action
-                jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
-            }
+    // Update scenes data
+        jsonObject['Scenes'] = [];
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            jsonObject['Scenes'][i] = {}
+            var scene = scenelistmodel.get(i)
+            jsonObject['Scenes'][i]["Category"] = scene.type
+            jsonObject['Scenes'][i]["Tags"] = scene.tags
+            jsonObject['Scenes'][i]["Severity"] = scene.severity
+            jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
+            jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
+            jsonObject['Scenes'][i]["Action"] = scene.action
+            jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
+            jsonObject['Scenes'][i]["id"] = scene.id
+        }
 
-            if( media.hash ){
-        // Update sync data
-                if( !jsonObject["SyncInfo"] ) jsonObject["SyncInfo"] = []
+        if( media.hash ){
+    // Update sync data
+            if( !jsonObject["SyncInfo"] ) jsonObject["SyncInfo"] = []
 
-                var sync_updated_flag = 0
-                for( i=0; i<jsonObject["SyncInfo"].length; ++i ){
-                    if( jsonObject["SyncInfo"][i]["Hash"] == media.hash ){
-                        jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
-                        jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
-                        jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
-                        sync_updated_flag = 1
-                    }
-                }
-                if (sync_updated_flag == 0) {
-                    i = jsonObject["SyncInfo"].length
-                    jsonObject["SyncInfo"][i] = {}
-                    jsonObject["SyncInfo"][i]["Hash"] = media.hash
+            var sync_updated_flag = 0
+            for( i=0; i<jsonObject["SyncInfo"].length; ++i ){
+                if( jsonObject["SyncInfo"][i]["Hash"] == media.hash ){
                     jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
                     jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
                     jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
+                    sync_updated_flag = 1
                 }
             }
+            if (sync_updated_flag == 0) {
+                i = jsonObject["SyncInfo"].length
+                jsonObject["SyncInfo"][i] = {}
+                jsonObject["SyncInfo"][i]["Hash"] = media.hash
+                jsonObject["SyncInfo"][i]["SpeedFactor"] = sync.applied_speed
+                jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
+                jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
+            }
+        }
 
-        // Format and share
-            var str = JSON.stringify( jsonObject, "", 2 );
-            console.log( str )
-            return str
+    // Format and share
+        var str = JSON.stringify( jsonObject, "", 2 );
+        console.log( str )
+        return str
     }
 
 
@@ -545,6 +825,39 @@ ApplicationWindow {
         return -1
     }
 
+
+    function import_from_file( url )
+    {
+        var str = Utils.read_external_data( url )
+        console.log("here we are 2")
+        if( !str ) return
+        console.log("here we are")
+        console.log(str)
+        var data = str.split(/\r?\n/);
+
+        for(var i = 0; i < data.length; i++){
+            console.log(data[i])
+            var line = data[i].split(',')
+            console.log(line[1] )
+            console.log( line[2] )
+            scenelistmodel.append({
+                "type": "",
+                "tags": "",
+                "severity": 0,
+                "start": line[1]/1000,
+                "duration": (line[2]-line[1])/1000,
+                "description": "",
+                "stop": line[2]/1000,
+                "action": line[0] == 0? "Mute":"Skip",
+                "skip": "Yes",
+                "id": Math.random().toString()
+            })
+        }
+        app.ask_before_close = true
+        dialog_import.visible = false
+        loader.source = "Editor.qml"
+        say_to_user("Imported!");
+    }
 
 // Read content of local file
     function read_from_file( name )
@@ -579,6 +892,7 @@ ApplicationWindow {
 
     function add_to_index( code, hash )
     {
+        if( hash === "Error" || hash === "" ) return
         var str_o = read_from_file( "index" )
         if( !str_o ) { console.log("Adding to index, no file found"); str_o = "{}"};
         var index = JSON.parse( str_o )
@@ -611,7 +925,8 @@ ApplicationWindow {
                             console.log( http.responseText )
                             callback( http.responseText )
                         } else {
-                            console.log("error: " + http.status)
+                            say_to_user( qsTr("Comprueba tu conexión a internet") )
+                            console.log("Network error: " + http.status)
                         }
                     }
                 }
@@ -661,6 +976,7 @@ ApplicationWindow {
         if( time > start - settings.time_margin & time + 1 < stop ) {
             set_time( stop + 0.1 + 5*preview_data.times_failed )
             preview_data.times_failed = preview_data.times_failed + 1
+            preview_timer.stop()
             console.log("Times failed", preview_data.times_failed )
         }
     }
@@ -669,12 +985,14 @@ ApplicationWindow {
 // Display message to user. Normally important warnings she/he must take care of
     function say_to_user( msg ){
         console.log("This is a message to the user: ", msg )
+        if( msg !=="" && movie.msg_to_user === msg ) msg = msg+"!! Hey, I'm here!!"
         movie.msg_to_user = msg
     }
 
 // Launch or connect to the user selected player.
     function watch_movie()
     {
+        if( player.execute.get_time() != -1 ) return;
         player.autoskip_if_fast = true
         say_to_user("Connecting with player")
     // Try to launch selected player
@@ -695,7 +1013,11 @@ ApplicationWindow {
                 }
             }
         }*/
-        say_to_user("Oops. We are unable to start/connect with player")
+        if( !media.url ){
+            say_to_user("Oops, unable to reach player! (No input file selected)")
+        }else{
+            say_to_user("Oops, unable to reach player!")
+        }
         return false
     }
 
@@ -716,13 +1038,14 @@ ApplicationWindow {
     {
         var time = player.execute.get_time()
         if ( time == -1){ // @disable-check M126
-            say_to_user("Reconecting with player")
-            if( !player.execute.connect_to_vlc( true ) ){
-                say_to_user("Warning: unable to reach player!")
+            //say_to_user("Reconecting with player")
+            //if( !player.execute.connect_to_player( false ) ){
+                player.execute.kill()
+                say_to_user("Oops, unable to reach player!")
                 raise()
                 timer.stop()
                 return -1
-            }
+            //}
         }
         time = Math.round( parseFloat(time)*1000 ) / 1000
 
@@ -747,7 +1070,8 @@ ApplicationWindow {
                     "description": "",
                     "stop": time-1,
                     "action": "Skip",
-                    "skip": "Yes"
+                    "skip": "Yes",
+                    "id": Math.random().toString()
                 })
                 app.ask_before_close = true
                 player.autoskip_start = 0
@@ -772,7 +1096,9 @@ ApplicationWindow {
     {
         preview_data.start = start
         preview_data.stop  = stop
-        if( !watch_movie() ) return
+        if( player.execute.get_time() == -1 ){
+            if( !watch_movie() ) return
+        }
         player.autoskip_if_fast = false
         set_time( preview_data.start - 3 )
         timer.stop()

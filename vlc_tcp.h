@@ -13,7 +13,7 @@ class VLC_TCP: public QObject
     Q_OBJECT
 public:
     explicit VLC_TCP(QObject *parent = 0);
-    Q_INVOKABLE bool connect_to_vlc( bool );
+    Q_INVOKABLE bool connect_to_player( bool );
     Q_INVOKABLE bool launch(QString );
     Q_INVOKABLE bool set_path(QString);
     Q_INVOKABLE void kill( );

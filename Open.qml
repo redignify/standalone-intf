@@ -7,6 +7,9 @@ import QtQuick.Dialogs 1.0
 
 Item {
 
+    /*width: 505; // root item so give a size
+    height: 355;*/
+
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
@@ -16,7 +19,7 @@ Item {
 
         TextField {
             id: fileurl
-            Layout.preferredWidth: 400
+            Layout.preferredWidth: 425
             placeholderText: "Filename/url"
             Layout.columnSpan : 2
             text: media.url
@@ -33,10 +36,20 @@ Item {
 
         TextField {
             id: title
-            Layout.preferredWidth: 400
+            Layout.preferredWidth: 355
             placeholderText: "Title"
-            Layout.columnSpan : 2
+            Layout.columnSpan : 1
             text: movie.title
+            onAccepted: search_movie()
+            //onTextChanged: search_movie()
+        }
+
+        TextField {
+            id: imdb_input
+            Layout.preferredWidth: 60
+            placeholderText: "IMDB id"
+            Layout.columnSpan : 1
+            text: movie.imdbcode
             onAccepted: search_movie()
             //onTextChanged: search_movie()
         }
@@ -46,6 +59,8 @@ Item {
             text: "Search"
             onClicked: search_movie()
         }
+
+
 
         TableView {
            id: movielist
@@ -66,25 +81,23 @@ Item {
             id: movielistmodel
         }
 
-        RButton {
+
+/*
+        RLabel{
+            id: l_msg
+            Layout.columnSpan : 1
+            color: "red"
+            text: movie.msg_to_user
+            font.bold : true
+        }*/
+
+        Button {
             id: select
-            Layout.row: 3
+            //Layout.row: 3
             text: "Select"
             onClicked: get_movie_data( movielist.currentRow )
         }
 
-        RButton {
-            id: testing
-            text: "test"
-            onClicked: {
-                //get_subs()
-                //media.url = fileurl.text.toString()
-                //parse_input_file()
-                //calibrate_from_subtitles()
-                //console.log(JSON.stringify(a))
-                //console.log( seconds_to_time(65) )
-            }
-        }
     }
 
     FileDialog {
@@ -108,7 +121,8 @@ Item {
     {
         var data = JSON.parse( movie.list )
         if ( !data ) return;
-        var imdbid = data["IDs"][id]
+        var imdbid = imdb_input.text? imdb_input.text : data["IDs"][id]
+        if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
         post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
     }
 
@@ -139,7 +153,9 @@ Item {
             loader.source = "Play.qml"
             load_movie()
         }else{
-            post( "action=search&filename="+ title.text + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+            var imdbid = imdb_input.text
+            if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
         }
     }
 
@@ -158,10 +174,11 @@ Item {
         if( movie.filter_status < 2){
             say_to_user("Movie information might be incomplete")
         }
-        if( data["Poster"] ) movie.poster_url = data["Poster"]
-        if( data["Director"] ) movie.director = data["Director"]
-        if( data["PGCode"] ) movie.pgcode = data["PGCode"]
-        if( data["ImdbRating"] ) movie.imdbrating = data["ImdbRating"]
+        movie.poster_url = data["Poster"]? data["Poster"] : ""
+        movie.director = data["Director"]? data["Director"]: ""
+        movie.pgcode = data["PGCode"]? "PG-Code: "+data["PGCode"]: ""
+        movie.imdbrating = data["ImdbRating"]? "Imdb Rating: " + data["ImdbRating"] : ""
+        movie.imdbcode = data["ImdbCode"]? data["ImdbCode"] : ""
         if( data["SubLink"] ){
             for( var i=0; i < data["SubLink"].length; ++i ){
                 if( data["SubLink"][i]["Hash"] === media.hash ){
@@ -174,7 +191,7 @@ Item {
 
     // Parse scenes
         scenelistmodel.clear()
-        movie.title = data["Title"]
+        movie.title = data["Title"]? data["Title"] : "Unkown"
         var Scenes = data["Scenes"]
         for ( var i = 0; i < Scenes.length; ++i ) {
             var item = {
@@ -186,7 +203,8 @@ Item {
                 "description": Scenes[i]["AdditionalInfo"],
                 "stop": Scenes[i]["End"],
                 "action": Scenes[i]["Action"],
-                "skip": "Yes"
+                "skip": "Yes",
+                "id": Scenes[i]["id"]
             }
             if( Scenes[i]["Category"] == "syn" ){
                 //syncscenelistmodel.append( item )
@@ -241,6 +259,7 @@ Item {
         if ( !jsonObject ) {
             return
         } else if ( jsonObject['ImdbCode'] && !jsonObject["IDs"] ){
+            console.log( str )
             movie.data = str
             loader.source = "Play.qml"
             load_movie()
@@ -249,15 +268,15 @@ Item {
         }else if ( jsonObject['Season'] ){
             movie.list = str
             movielistmodel.clear()
-            dir.title = "Chapter"
+            dir.title = "Episode"
             yea.title = "Season"
             dir.width = 90
             for ( var i = 0; i < jsonObject["Titles"].length; ++i) {
-                if( jsonObject["Chapter"][i] === null ) continue
+                if( jsonObject["Episode"][i] === null ) continue
                 var item = {
                     "title": jsonObject["Titles"][i],
                     "year": jsonObject["Season"][i],
-                    "director": jsonObject["Chapter"][i]? jsonObject["Chapter"][i].toString() : "?"
+                    "director": jsonObject["Episode"][i]? jsonObject["Episode"][i].toString() : "?"
                 }
                 movielistmodel.append( item )
             }

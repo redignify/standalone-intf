@@ -18,7 +18,7 @@ VLC_TCP::VLC_TCP(QObject *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(ask_time()));
 }
 
-bool VLC_TCP::connect_to_vlc( bool fast )
+bool VLC_TCP::connect_to_player( bool fast )
 {
     if(lock) return false;
     lock = true;
@@ -66,7 +66,7 @@ bool VLC_TCP::set_path(QString program_path)
 bool VLC_TCP::launch( QString file )
 {
     qDebug("Checking if VLC is listining over TCP");
-    if( connect_to_vlc( true ) ) return true;
+    if( connect_to_player( true ) ) return true;
 
     if( !file.isEmpty() ){
         qDebug() << "Starting VLC with " << file;
@@ -82,7 +82,7 @@ bool VLC_TCP::launch( QString file )
             delay(500);
         }
         if( m_process->state() == 0 ) return false;
-        return connect_to_vlc( false );
+        return connect_to_player( false );
     }
 
 }

@@ -23,10 +23,11 @@ Item {
 
         GridLayout {
             columns: 4
+            Layout.maximumWidth: 480
             RLabel{
                 Layout.columnSpan: 4
                 font.family: "Helvetica"
-                font.pointSize: 24
+                font.pointSize: movie.title.length > 20? 16 : 24
                 font.bold: true
                 text: movie.title? movie.title : "Unknow title"
                 horizontalAlignment: Text.AlignHCenter
@@ -39,7 +40,7 @@ Item {
             }
 
             RLabel{
-                text: movie.imdbrating? "IMBD " + movie.imdbrating : ""
+                text: movie.imdbrating? movie.imdbrating : ""
                 horizontalAlignment: Text.AlignHCenter
             }
 
@@ -51,6 +52,13 @@ Item {
         GridLayout {
             columns: 4
 
+            RLabel{
+                Layout.columnSpan: 4
+                text: qsTr("Selecciona la severidad del filtrado")
+                color: "green"
+                font.bold: true
+                horizontalAlignment: Text.AlignHCenter
+            }
 
             RLabel{ text: qsTr("Discriminación") }
             RSlider {
@@ -93,13 +101,13 @@ Item {
                Layout.minimumHeight: 250
                Layout.columnSpan : 4
                //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
-               TableViewColumn{ role: "skip"; title: "Skip"; width: 50; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "skip"; title: "Skip"; width: 40; horizontalAlignment: Text.AlignLeft }
                TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
-               TableViewColumn{ role: "severity"; title: "Level"; width: 60; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "severity"; title: "Level"; width: 45; horizontalAlignment: Text.AlignLeft }
+               TableViewColumn{ role: "duration" ; title: "Length" ; width: 60; horizontalAlignment: Text.AlignLeft }
                TableViewColumn{ role: "tags" ; title: "Tags" ; width: 100; horizontalAlignment: Text.AlignLeft }
                TableViewColumn{ role: "description" ; title: "Comments" ; width: 215; horizontalAlignment: Text.AlignLeft }
                //TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
-               //TableViewColumn{ role: "duration" ; title: "Length" ; width: 70; horizontalAlignment: Text.AlignLeft }
                model: scenelistmodel
                sortIndicatorVisible: true
                //onSortIndicatorColumnChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
@@ -110,20 +118,6 @@ Item {
 
         GridLayout {
             columns: 4
-            RComboBox {
-                id: player_combo
-                Layout.minimumWidth : 150
-                model: players_list
-                //currentIndex: player.execute.name()
-                onActivated: set_player( currentText )
-            }
-
-            RButton {
-                id: watch
-                tooltip: "Click to redignify and watch film"
-                text: "redignify"
-                onClicked: sync_and_play()
-            }
 
             RButton {
                 id: b_advanded
@@ -141,11 +135,37 @@ Item {
                 }
             }
 
+            RComboBox {
+                id: player_combo
+                Layout.minimumWidth : 100
+                model: players_list
+                //currentIndex: player.execute.name()
+                onActivated: set_player( currentText )
+            }
+
+            Button {
+                id: watch
+                tooltip: "Click to redignify and watch film"
+                style: ButtonStyle {
+                  label: RText {
+                    //renderType: Text.NativeRendering
+                    //verticalAlignment: Text.AlignVCenter
+                    //horizontalAlignment: Text.AlignHCenter
+                    font.pixelSize: 12
+                    //font.bold: true
+                    color: "green"
+                    text: "Watch clean movie"
+                  }
+                }
+                onClicked: sync_and_play()
+            }
+
             RLabel{
                 Layout.columnSpan : 4
                 id: l_msg
                 color: "red"
                 text: movie.msg_to_user
+                font.bold : true
             }
         }
     }
@@ -204,6 +224,15 @@ Item {
                 }
             }
         }
+        if( typ == "Sex"){
+            settings.sn = slider_sn.value
+        }else if( typ == "Violence"){
+            settings.v = slider_v.value
+        }else if( typ == "Drugs"){
+            settings.d = slider_d.value
+        }else if( typ == "Discrimination"){
+            settings.pro = slider_pro.value
+        }
     }
     function apply_filters( )
     {
@@ -218,7 +247,7 @@ Item {
                 selected_severity = slider_v.value
             }else if( type == "Drugs"){
                 selected_severity = slider_d.value
-            }else if( type == "Profanity"){
+            }else if( type == "Discrimination"){
                 selected_severity = slider_pro.value
             }else if( type == "Sync"){
                 scenelistmodel.get(i).skip = "No"

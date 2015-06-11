@@ -69,12 +69,26 @@ Item {
                 Layout.preferredWidth : 135
                 //Layout.maximumWidth: 135
                 model: type_list
-                onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
+                onCurrentIndexChanged: {
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+                    scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
+                }
             }
 
 
             //RLabel{ Layout.columnSpan: 1; text: qsTr("Discriminación") }
-            RSlider{ id: severity; Layout.columnSpan: 2; Layout.fillWidth: true; maximumValue: 4; value: 0; onValueChanged: scenelistmodel.set(tableview.currentRow, {"severity": value + 1 } ) }
+            RSlider{
+                id: severity;
+                Layout.columnSpan: 2;
+//                Layout.fillWidth: true;
+                Layout.minimumWidth : 180
+                maximumValue: 4;
+                value: 0;
+                onValueChanged: {
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+                    scenelistmodel.set(tableview.currentRow, {"severity": value + 1 } )
+                }
+            }
             RCheckBox { id: race; text: qsTr("Raza"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Race", checked ) }
             RCheckBox { id: nati; text: qsTr("Nacionalidad"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Nationality", checked ) }
             RCheckBox { id: sexdisc;  text: qsTr("Machismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Machismo", checked ) }
@@ -131,7 +145,10 @@ Item {
                 Layout.fillWidth: true
                 id: description_input
                 placeholderText: qsTr("Comentarios")
-                onTextChanged: scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
+                onTextChanged:{
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+                    scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
+                }
             }
 
             RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
@@ -157,16 +174,17 @@ Item {
            Layout.rowSpan: 6
 
            TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
-           TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 70 }
-           TableViewColumn{ role: "tags" ; title: qsTr("Tags") ; width: 120 }
-           TableViewColumn{ role: "action"; title: qsTr("Action"); width: 70 }
+           TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 50 }
            TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 70 }
            TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 70 }
+           TableViewColumn{ role: "tags" ; title: qsTr("Tags") ; width: 120 }
+           TableViewColumn{ role: "action"; title: qsTr("Action"); width: 60 }
            TableViewColumn{ role: "description" ; title: qsTr("Comments") ; width: 190 }
            model: scenelistmodel
            selectionMode: SelectionMode.SingleSelection
            sortIndicatorVisible: true
            onCurrentRowChanged: {
+               say_to_user("");
                var current_scene = scenelistmodel.get(tableview.currentRow)
                type_combo.currentIndex     = type_combo.find( current_scene.type )
                mut.checked                = current_scene.action === "Mute"
@@ -215,7 +233,7 @@ Item {
         }
 
         GridLayout {
-            columns: 4
+            columns: 6
             Layout.columnSpan: 2
             Layout.minimumWidth: 400
 
@@ -232,9 +250,16 @@ Item {
                 Layout.fillWidth: true
                 text: qsTr("Ahora")
                 onClicked: {
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
                     start_input.text = get_time()
                     scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
                 }
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("Ir")
+                onClicked: player.execute.seek( parseFloat( start_input.text ) )
             }
 
             TextField {
@@ -242,7 +267,10 @@ Item {
                 Layout.fillWidth: true;
                 Layout.maximumWidth: 100
                 placeholderText: qsTr("Termina")
-                onEditingFinished: scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
+                onEditingFinished: {
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+                    scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
+                }
                 onAccepted: stop_input.text = get_time()
             }
 
@@ -250,9 +278,16 @@ Item {
                 Layout.fillWidth: true
                 text: qsTr("Ahora")
                 onClicked: {
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
                     stop_input.text = get_time()
                     scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
                 }
+            }
+
+            RButton {
+                Layout.fillWidth: true
+                text: qsTr("Ir")
+                onClicked: player.execute.seek( parseFloat( stop_input.text ) )
             }
         }
 
@@ -281,7 +316,7 @@ Item {
 
             RButton {
                 Layout.fillWidth: true
-                text: qsTr("play")
+                text: qsTr("Play")
                 //onClicked: player.execute.frame()
                 onClicked: player.execute.play()
             }
@@ -307,16 +342,14 @@ Item {
         }
 
         GridLayout {
-            columns: 4
+            columns: 5
             Layout.columnSpan: 2
             Layout.minimumWidth: 400
 
 
-            RButton {
-                id: b_preview
-                Layout.fillWidth: true
-                text: qsTr("Preview")
-                onClicked: preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) )
+            CheckBox {
+                text: qsTr("Preview");
+                onClicked: checked? preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) ) : preview_timer.stop()
             }
 
             RButton {
@@ -325,20 +358,22 @@ Item {
                 Layout.fillWidth: true
                 onClicked: {
                     scenelistmodel.append({
-                        "type":type_list.get(type_combo.currentIndex).text,
+                        "type": type_list.get(type_combo.currentIndex).text,
                         "tags":"",
-                        "severity": severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
-                        "start": parseFloat( start_input.text ),
-                        "duration": parseFloat( stop_input.text ) - parseFloat( start_input.text ),
-                        "description": description_input.text,
-                        "stop": parseFloat( stop_input.text ),
-                        "action": mut.checked? "Mute":"Skip",
-                        "skip": "No"
+                        "severity": 6,//severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
+                        "start": 0,//parseFloat( start_input.text ),
+                        "duration": 0,//parseFloat( stop_input.text ) - parseFloat( start_input.text ),
+                        "description": "",//description_input.text,
+                        "stop": 0,//parseFloat( stop_input.text ),
+                        "action": "Skip",//mut.checked? "Mute":"Skip",
+                        "skip": "No",
+                        "id": Math.random().toString()
                     })
                     app.ask_before_close = true
                     tableview.selection.deselect(0, tableview.rowCount - 1)
                     tableview.selection.select( tableview.rowCount - 1 )
                     tableview.currentRow = tableview.rowCount - 1
+                    say_to_user("");
                 }
             }
 
@@ -348,6 +383,7 @@ Item {
                 text: qsTr("Eliminar escena")
                 Layout.fillWidth: true
                 onClicked: {
+                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
                     scenelistmodel.remove(tableview.currentRow);
                     app.ask_before_close = true
                     tableview.selection.deselect( 0, tableview.rowCount - 1)
@@ -364,14 +400,31 @@ Item {
                 Layout.fillWidth: true
                 onClicked: requestPass.visible = true
             }
+
+            RButton {
+                id: b_save
+                text: qsTr("Guardar")
+                Layout.fillWidth: true
+                onClicked: save_work()
+            }
+
+
+            RLabel{
+                Layout.columnSpan : 4
+                id: l_msg
+                color: "red"
+                text: movie.msg_to_user
+                font.bold : true
+            }
         }
+
     }
 
 
 
 /*------------------- FUNCTIONS -------------------------*/
     function add_tag( tag, add ){
-        if( tableview.currentRow == -1 ) return;
+        if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
         var ctag = scenelistmodel.get(tableview.currentRow).tags
         if( add ) {
             scenelistmodel.set(tableview.currentRow, {"tags": "#"+tag+" "+ctag } )
@@ -381,7 +434,7 @@ Item {
     }
 
     function define_action( action ){
-        if( tableview.currentRow == -1 ) return;
+        if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
         if( action ) {
             scenelistmodel.set(tableview.currentRow, {"action": "Mute" } )
         }else{

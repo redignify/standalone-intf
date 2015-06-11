@@ -14,6 +14,9 @@ public:
     Q_INVOKABLE double get_size( QString );
     Q_INVOKABLE bool write_data( QString, QString );
     Q_INVOKABLE QString read_data(QString );
+    Q_INVOKABLE QString read_external_data(QString );
+    Q_INVOKABLE QString get_vlc_path( );
+
 };
 
 void delay( int millisecondsToWait );

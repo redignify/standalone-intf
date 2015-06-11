@@ -82,6 +82,25 @@ Item {
             onClicked: settings.autoshare = checked
         }
 
+        Button {
+            text: "Import/Export"
+            onClicked: dialog_import.visible = true
+        }
+
+        RButton {
+            id: testing
+            text: "test"
+            onClicked: {
+                survey.visible = true
+                //get_subs()
+                //media.url = fileurl.text.toString()
+                //parse_input_file()
+                //calibrate_from_subtitles()
+                //console.log(JSON.stringify(a))
+                //console.log( seconds_to_time(65) )
+            }
+        }
+
     }
 }
 
