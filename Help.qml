@@ -10,22 +10,23 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 3
-        Component.onCompleted: { mainWindow.minimumWidth = 485;mainWindow.minimumHeight = 350}
+        Component.onCompleted: { mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425; say_to_user("")}
 
 
         Item{
-            width: 480
+            width: 750
             //color: true ? "#aa84b2":"#380c47"
             //radius: 10
 
             RText{
-                width: 475
+                x: 15
+                width: 720
                 horizontalAlignment: Text.AlignJustify
                 wrapMode: "WordWrap"
                 font.bold: false
-                text: qsTr("
+                text: qsTr("Aquí se explica como usar este programa así como las distintas categorias y criterios. Pero como ves esta incompleta")
 
-
+/*
 <ul>
   <li>Raza: Discriminación debida al origen étnico </li>
   <li>Nationalidad: </li>
@@ -79,7 +80,7 @@ Item {
   <li>Crítia</li>
 </ul>
 
-")
+")//*/
             }
         }
     }

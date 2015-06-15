@@ -1,45 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the Qt Quick Controls module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
-
-
 
 
 import QtQuick 2.2
@@ -54,23 +12,38 @@ Item {
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
-        columns: 8
-        Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 350}
+        columns: 2
+        Component.onCompleted: { mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425; say_to_user("")}
 
-        GridLayout {
+
+        GroupBox {
+            Layout.minimumWidth: 350
+
+
+            GridLayout {
             columns: 3
-            Layout.columnSpan: 2
             //Layout.minimumWidth: 400
-            Layout.preferredWidth: 400
-            Layout.minimumHeight: 150
+            //Layout.preferredWidth: 400
+            Layout.preferredHeight: 130
 
-            RComboBox {
+            Label{
+                Layout.columnSpan: 3
+                //font.family: "Helvetica"
+                color: "Green"
+                font.pointSize: 10
+                font.bold: true
+                text: "Contenido de la escena"
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            ComboBox {
                 id: type_combo
                 Layout.preferredWidth : 135
+                currentIndex: 1
                 //Layout.maximumWidth: 135
                 model: type_list
                 onCurrentIndexChanged: {
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+                    if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
                     scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
                 }
             }
@@ -85,7 +58,7 @@ Item {
                 maximumValue: 4;
                 value: 0;
                 onValueChanged: {
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+                    if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
                     scenelistmodel.set(tableview.currentRow, {"severity": value + 1 } )
                 }
             }
@@ -140,21 +113,10 @@ Item {
             CheckBox { id: oth;  text: qsTr("Otras"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Others", checked ) }
             //CheckBox { id: con;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Ideology", checked ) }
 
-            TextField {
-                Layout.columnSpan: 3
-                Layout.fillWidth: true
-                id: description_input
-                placeholderText: qsTr("Comentarios")
-                onTextChanged:{
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
-                    scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
-                }
-            }
-
-            RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
-            CheckBox { id: plot; text: qsTr("Trama"); checked: false; onClicked: add_tag("Plot", checked ) }
+            //RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
+            CheckBox { id: plot; text: qsTr("Afecta a la trama"); checked: false; onClicked: add_tag("Plot", checked ) }
 //            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true; onClicked: add_tag("Graphic", checked ) }
-            CheckBox { id: mut;  text: qsTr("Mute"); checked: false; onClicked: define_action( checked) }
+            CheckBox { id: mut;  text: qsTr("Sólo quitar sonido"); checked: false; onClicked: define_action( checked) }
             CheckBox { id: cri;  text: qsTr("Crítica"); checked: false; onClicked: add_tag("Critic", checked ) }
             /*RComboBox {
                 Layout.minimumWidth : 50
@@ -162,36 +124,74 @@ Item {
                 model: action_list
                 onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"action": action_list.get(currentIndex).text })
             }*/
+            TextField {
+                Layout.columnSpan: 3
+                Layout.fillWidth: true
+                id: description_input
+                placeholderText: qsTr("Comentarios")
+                onTextChanged:{
+                    if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
+                    scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
+                }
+            }
+        }
         }
 
-        TableView {
-           id: tableview
-           sortIndicatorOrder: 1
-           sortIndicatorColumn: 1
-           Layout.preferredWidth: 385
-           Layout.preferredHeight: 290
-           Layout.columnSpan : 6
-           Layout.rowSpan: 6
+        GroupBox{
+            Layout.rowSpan: 3
+            //Layout.preferredWidth: 385
+            //Layout.preferredHeight: 250
 
-           TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
-           TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 50 }
-           TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 70 }
-           TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 70 }
-           TableViewColumn{ role: "tags" ; title: qsTr("Tags") ; width: 120 }
-           TableViewColumn{ role: "action"; title: qsTr("Action"); width: 60 }
-           TableViewColumn{ role: "description" ; title: qsTr("Comments") ; width: 190 }
-           model: scenelistmodel
-           selectionMode: SelectionMode.SingleSelection
-           sortIndicatorVisible: true
-           onCurrentRowChanged: {
+        GridLayout{
+            columns: 1
+            Layout.rowSpan: 5
+
+            Label{
+                //Layout.columnSpan: 4
+                //font.family: "Helvetica"
+                color: "Green"
+                font.pointSize: 10
+                font.bold: true
+                text: qsTr("Lista de escenas")
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            TableView {
+               id: tableview
+               sortIndicatorOrder: 1
+               sortIndicatorColumn: 1
+               Layout.preferredWidth: 365
+               Layout.preferredHeight: 250
+               //Layout.rowSpan: 3
+
+               TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
+               TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 50 }
+               TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 70 }
+               TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 70 }
+               TableViewColumn{ role: "tags" ; title: qsTr("Tags") ; width: 120 }
+               TableViewColumn{ role: "action"; title: qsTr("Action"); width: 60 }
+               TableViewColumn{ role: "description" ; title: qsTr("Comments") ; width: 190 }
+               model: scenelistmodel
+               selectionMode: SelectionMode.SingleSelection
+               sortIndicatorVisible: true
+               onCurrentRowChanged: {
                say_to_user("");
                var current_scene = scenelistmodel.get(tableview.currentRow)
-               type_combo.currentIndex     = type_combo.find( current_scene.type )
-               mut.checked                = current_scene.action === "Mute"
-               severity.value              = current_scene.severity - 1
-               start_input.text            = current_scene.start
-               stop_input.text             = current_scene.stop
-               description_input.text      = current_scene.description
+               if( current_scene ){
+                   type_combo.currentIndex     = type_combo.find( current_scene.type )
+                   mut.checked                 = current_scene.action === "Mute"
+                   severity.value              = current_scene.severity - 1
+                   start_input.text            = isNaN(current_scene.start)? "":current_scene.start
+                   stop_input.text             = isNaN(current_scene.stop)? "":current_scene.stop
+                   description_input.text      = current_scene.description
+               }else{
+                   current_scene = {};
+                   current_scene.tags = "q";
+                   mut.checked = false
+                   description_input.text = ""
+                   start_input.text = ""
+                   stop_input.text = ""
+               }
 
                // Tags
                race.checked     = current_scene.tags.match("Race")
@@ -230,190 +230,216 @@ Item {
                cri.checked      = current_scene.tags.match("Critic")
            }
 
-        }
-
-        GridLayout {
-            columns: 6
-            Layout.columnSpan: 2
-            Layout.minimumWidth: 400
-
-            TextField {
-                id: start_input
-                Layout.fillWidth: true;
-                Layout.maximumWidth: 100
-                placeholderText: qsTr("Empieza")
-                onEditingFinished: scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
-                onAccepted: start_input.text = get_time()
             }
+            RowLayout{
 
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("Ahora")
-                onClicked: {
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
-                    start_input.text = get_time()
-                    scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ) })
+                RButton {
+                    text: qsTr("Quitar de la lista")
+                    Layout.fillWidth: true
+                    onClicked: {
+                        if( tableview.currentRow == -1 ){ say_to_user("Please select a scene"); return }
+                        scenelistmodel.remove(tableview.currentRow);
+                        app.ask_before_close = true
+                        tableview.selection.deselect( 0, tableview.rowCount - 1)
+                        tableview.selection.select( tableview.rowCount - 1 )
+                        tableview.currentRow = 0
+                        tableview.currentRow = tableview.rowCount - 1
+                    }
+                }
+
+                RButton {
+                    text: qsTr("Compartir online")
+                    Layout.fillWidth: true
+                    onClicked: requestPass.visible = true
+                }
+
+                RButton {
+                    text: qsTr("Guardar")
+                    Layout.fillWidth: true
+                    onClicked: save_work()
+                }
+
+                Button {
+                    text: "Import/Export"
+                    Layout.fillWidth: true
+                    onClicked: dialog_import.visible = true
                 }
             }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("Ir")
-                onClicked: player.execute.seek( parseFloat( start_input.text ) )
-            }
-
-            TextField {
-                id: stop_input
-                Layout.fillWidth: true;
-                Layout.maximumWidth: 100
-                placeholderText: qsTr("Termina")
-                onEditingFinished: {
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
-                    scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
-                }
-                onAccepted: stop_input.text = get_time()
-            }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("Ahora")
-                onClicked: {
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
-                    stop_input.text = get_time()
-                    scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ) })
-                }
-            }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("Ir")
-                onClicked: player.execute.seek( parseFloat( stop_input.text ) )
             }
         }
 
-        GridLayout {
-            columns: 7
-            Layout.columnSpan: 2
-            Layout.minimumWidth: 400
+        GroupBox {
+            //title: qsTr("Navega e inicio y fin")
+            Layout.minimumWidth: 350
+            GridLayout {
+                columns: 4
+                //Layout.minimumWidth: 400
 
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("slower")
-                onClicked: player.execute.slower()
+                Label{
+                    Layout.columnSpan: 4
+                    //font.family: "Helvetica"
+                    color: "Green"
+                    font.pointSize: 10
+                    font.bold: true
+                    text: qsTr("Inicio y fin de la escena")
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                RowLayout {
+                    //Layout.minimumWidth: 400
+                    Layout.columnSpan: 4
+
+                    /*Button {
+                        Layout.fillWidth: true
+                        text: qsTr("slower")
+                        onClicked: player.execute.slower()
+                    }*/
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: qsTr("<<")
+                        onClicked: set_time( get_time() - 5 )
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: qsTr("<")
+                        onClicked: set_time( get_time() - 0.5 )
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: qsTr("Play")
+                        //onClicked: player.execute.frame()
+                        onClicked: player.execute.play()
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: qsTr(">")
+                        onClicked: set_time( get_time() + 0.5 )
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        text: qsTr(">>")
+                        onClicked: set_time( get_time() + 5 )
+                    }
+
+                   /* Button {
+                        Layout.fillWidth: true
+                        text: qsTr("faster")
+                        onClicked: player.execute.faster()
+                    }*/
+
+                }
+                TextField {
+                    id: start_input
+                    Layout.fillWidth: true;
+                    Layout.maximumWidth: 100
+                    placeholderText: qsTr("Empieza")
+                    onEditingFinished:{
+                        if( tableview.currentRow == -1 ){ add_blank_scene() }
+                        scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                    }
+                    onAccepted: start_input.text = get_time()
+                }
+
+                Button {
+                    Layout.fillWidth: true
+                    text: qsTr("Ahora")
+                    onClicked: {
+                        if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
+                        start_input.text = get_time()
+                        scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                    }
+                }
+
+                Button {
+                    Layout.fillWidth: true
+                    text: qsTr("Ir")
+                    onClicked: player.execute.seek( parseFloat( start_input.text ) )
+                }
+
+                Label{ Layout.minimumWidth: 100}
+                TextField {
+                    id: stop_input
+                    Layout.fillWidth: true;
+                    Layout.maximumWidth: 100
+                    placeholderText: qsTr("Termina")
+                    onEditingFinished: {
+                        if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
+                        scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                    }
+                    onAccepted: stop_input.text = get_time()
+                }
+
+                Button {
+                    Layout.fillWidth: true
+                    text: qsTr("Ahora")
+                    onClicked: {
+                        if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
+                        stop_input.text = get_time()
+                        scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                    }
+                }
+
+                Button {
+                    Layout.fillWidth: true
+                    text: qsTr("Ir")
+                    onClicked: player.execute.seek( parseFloat( stop_input.text ) )
+                }
+
+
             }
 
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("<<")
-                onClicked: set_time( get_time() - 5 )
-            }
 
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("<")
-                onClicked: set_time( get_time() - 0.5 )
-            }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("Play")
-                //onClicked: player.execute.frame()
-                onClicked: player.execute.play()
-            }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr(">")
-                onClicked: set_time( get_time() + 0.5 )
-            }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr(">>")
-                onClicked: set_time( get_time() + 5 )
-            }
-
-            RButton {
-                Layout.fillWidth: true
-                text: qsTr("faster")
-                onClicked: player.execute.faster()
-            }
 
         }
 
-        GridLayout {
-            columns: 5
-            Layout.columnSpan: 2
-            Layout.minimumWidth: 400
+        GroupBox {
+            //title: qsTr("Navega e inicio y fin")
+            Layout.minimumWidth: 350
+            GridLayout {
+                columns: 4
 
 
-            CheckBox {
-                text: qsTr("Preview");
-                onClicked: checked? preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) ) : preview_timer.stop()
-            }
-
-            RButton {
-                id: b_add
-                text: qsTr("Añadir escena")
-                Layout.fillWidth: true
-                onClicked: {
-                    scenelistmodel.append({
-                        "type": type_list.get(type_combo.currentIndex).text,
-                        "tags":"",
-                        "severity": 6,//severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
-                        "start": 0,//parseFloat( start_input.text ),
-                        "duration": 0,//parseFloat( stop_input.text ) - parseFloat( start_input.text ),
-                        "description": "",//description_input.text,
-                        "stop": 0,//parseFloat( stop_input.text ),
-                        "action": "Skip",//mut.checked? "Mute":"Skip",
-                        "skip": "No",
-                        "id": Math.random().toString()
-                    })
-                    app.ask_before_close = true
-                    tableview.selection.deselect(0, tableview.rowCount - 1)
-                    tableview.selection.select( tableview.rowCount - 1 )
-                    tableview.currentRow = tableview.rowCount - 1
-                    say_to_user("");
-                }
-            }
-
-
-            RButton {
-                id: remove
-                text: qsTr("Eliminar escena")
-                Layout.fillWidth: true
-                onClicked: {
-                    if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
-                    scenelistmodel.remove(tableview.currentRow);
-                    app.ask_before_close = true
-                    tableview.selection.deselect( 0, tableview.rowCount - 1)
-                    tableview.selection.select( tableview.rowCount - 1 )
-                    tableview.currentRow = tableview.rowCount - 1
+                Label{
+                    Layout.columnSpan: 4
+                    //font.family: "Helvetica"
+                    color: "Green"
+                    font.pointSize: 10
+                    font.bold: true
+                    text: qsTr("Comprobar y finalizar")
+                    horizontalAlignment: Text.AlignHCenter
                 }
 
-            }
 
+                CheckBox {
+                    Layout.minimumWidth: 75
+                    text: qsTr("Previsualizar");
+                    onClicked: checked? preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) ) : preview_timer.stop()
+                }
 
-            RButton {
-                id: b_share
-                text: qsTr("Compartir")
-                Layout.fillWidth: true
-                onClicked: requestPass.visible = true
-            }
+                Button {
+                    id: b_add
+                    Layout.minimumWidth: 250
+                    text: qsTr("Finalizar edición y añadir nueva")
+                    Layout.fillWidth: true
+                    Layout.columnSpan: 3
+                    onClicked: add_blank_scene()
+                }
+           }
+        }
 
-            RButton {
-                id: b_save
-                text: qsTr("Guardar")
-                Layout.fillWidth: true
-                onClicked: save_work()
-            }
-
-
+        RowLayout{
             RLabel{
-                Layout.columnSpan : 4
                 id: l_msg
                 color: "red"
                 text: movie.msg_to_user
+                textFormat: Text.PlainText
+                verticalAlignment: Text.AlignVCenter
+                Layout.fillWidth: true
                 font.bold : true
             }
         }
@@ -424,21 +450,43 @@ Item {
 
 /*------------------- FUNCTIONS -------------------------*/
     function add_tag( tag, add ){
-        if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+        if( tableview.currentRow == -1 ){ add_blank_scene() }
         var ctag = scenelistmodel.get(tableview.currentRow).tags
         if( add ) {
             scenelistmodel.set(tableview.currentRow, {"tags": "#"+tag+" "+ctag } )
         }else{
             scenelistmodel.set(tableview.currentRow, {"tags": ctag.replace("#"+tag,'').replace(/ +/g,' ') } )
         }
+        tableview.currentRow = tableview.currentRow-1
+        tableview.currentRow = tableview.currentRow+1
     }
 
     function define_action( action ){
-        if( tableview.currentRow == -1 ){ say_to_user("Please select or add a scene"); return }
+        if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
         if( action ) {
             scenelistmodel.set(tableview.currentRow, {"action": "Mute" } )
         }else{
             scenelistmodel.set(tableview.currentRow, {"action": "Skip" } )
         }
+    }
+
+    function add_blank_scene(){
+        scenelistmodel.append({
+            "type": type_list.get(type_combo.currentIndex).text,
+            "tags":"",
+            "severity": 0,//severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
+            "start": parseFloat(""),//parseFloat( start_input.text ),
+            "duration": parseFloat(""),//parseFloat( stop_input.text ) - parseFloat( start_input.text ),
+            "description": "",//description_input.text,
+            "stop": parseFloat(""),//parseFloat( stop_input.text ),
+            "action": "Skip",//mut.checked? "Mute":"Skip",
+            "skip": "No",
+            "id": Math.random().toString()
+        })
+        app.ask_before_close = true
+        tableview.selection.deselect(0, tableview.rowCount - 1)
+        tableview.selection.select( tableview.rowCount - 1 )
+        tableview.currentRow = tableview.rowCount - 1
+        say_to_user("");
     }
 }

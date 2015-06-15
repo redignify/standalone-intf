@@ -11,95 +11,210 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 2
-        Component.onCompleted: { mainWindow.minimumWidth = 485; mainWindow.minimumHeight = 350 }
+        //Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 350 }
+        Component.onCompleted: { mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425; say_to_user("")}
+
+        GroupBox {
+
+            Layout.fillWidth: true
+            GridLayout {
+                anchors.fill: parent
+                anchors.margins: 5
+                columns: 2
+
+                Label{
+                    Layout.columnSpan: 2
+                    //font.family: "Helvetica"
+                    color: "Green"
+                    font.pointSize: 10
+                    font.bold: true
+                    text: qsTr("Básico")
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                RLabel{ text: qsTr("Actualizar manualmente") }
+                Button{
+                    text: "Actualizar"
+                    onClicked: {
+                        Utils.update("")
+                    }
+                }
+
+                /*RLabel{ text: qsTr("Preguntar al añadir escena") }
+                CheckBox {
+                    text: qsTr("")
+                    checked: settings.ask
+                    onClicked: settings.ask = checked
+                }*/
 
 
-        RLabel{ text: qsTr("Diferencia tiempo") }
-        TextField {
-            Layout.preferredWidth: 100
-            id:offset
-            text: sync.applied_offset
-            onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
+                Label{ text: qsTr("Empezar en pantalla completa") }
+                CheckBox {
+                    text: qsTr("")
+                    checked: settings.start_fullscreen
+                    onClicked: settings.start_fullscreen = checked
+                }
+
+
+                Label{ text: qsTr("Compartir información automáticamente") }
+                CheckBox {
+                    text: qsTr("")
+                    checked: settings.autoshare
+                    onClicked: settings.autoshare = checked
+                }
+
+                Label{ text: qsTr("Reproductor favorito") }
+                RComboBox {
+                    id: player_combo
+                    Layout.minimumWidth : 100
+                    model: players_list
+                    //currentIndex: player.execute.name()
+                    onActivated: set_player( currentText )
+                }
+            }
         }
 
+        GroupBox {
 
-        RLabel{ text: qsTr("Diferencia velocidad") }
-        TextField {
-            Layout.preferredWidth: 100
-            id:speed
-            text: sync.applied_speed
-            onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
-        }
+            Layout.fillWidth: true
+            GridLayout {
+                anchors.fill: parent
+                anchors.margins: 5
+                columns: 2
+
+                Label{
+                    Layout.columnSpan: 2
+                    //font.family: "Helvetica"
+                    color: "Green"
+                    font.pointSize: 10
+                    font.bold: true
+                    text: qsTr("Avanzado")
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                RLabel{ text: qsTr("Calibración guiada") }
+                RButton {
+                    text: qsTr("Calibrar")
+                    Layout.preferredWidth: 100
+                    onClicked: manual_calibration()
+                }
 
 
-        RLabel{ text: qsTr("Calibración guiada") }
-        RButton {
-            text: qsTr("Calibrar")
-            Layout.preferredWidth: 100
-            onClicked: manual_calibration()
-        }
+                RLabel{ text: qsTr("Saltar antes de las escenas") }
+                TextField {
+                    text: settings.time_margin
+                    onEditingFinished: settings.time_margin = parseFloat(text)
+                }
 
+                RLabel{ text: qsTr("Ejecutable VLC") }
+                TextField {
+                    text: settings.vlc_path
+                    Layout.minimumWidth: 250
+                    onEditingFinished: {
+                        settings.vlc_path = text
+                        VLC_CONSOLE.set_path( settings.vlc_path )
+                        VLC_TCP.set_path( settings.vlc_path )
+                    }
+                }
 
-        RLabel{ text: qsTr("Margen de seguridad") }
-        TextField {
-            text: settings.time_margin
-            onEditingFinished: settings.time_margin = parseFloat(text)
-        }
-
-
-        RLabel{ text: qsTr("Ejecutable VLC") }
-        TextField {
-            text: settings.vlc_path
-            Layout.minimumWidth: 250
-            onEditingFinished: {
-                settings.vlc_path = text
-                VLC_CONSOLE.set_path( settings.vlc_path )
-                VLC_TCP.set_path( settings.vlc_path )
             }
         }
 
 
-        RLabel{ text: qsTr("Preguntar al añadir escena") }
-        CheckBox {
-            text: qsTr("")
-            checked: settings.ask
-            onClicked: settings.ask = checked
-        }
+
+        GroupBox {
+
+            Layout.fillWidth: true
+            GridLayout {
+                anchors.fill: parent
+                anchors.margins: 5
+                columns: 2
+
+                Label{
+                    Layout.columnSpan: 2
+                    //font.family: "Helvetica"
+                    color: "Green"
+                    font.pointSize: 10
+                    font.bold: true
+                    text: qsTr("Ninja")
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                RLabel{ text: qsTr("Beta testers") }
+                RButton {
+                    id: testing
+                    text: "No pulsar jamás"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        survey.visible = true
+                        //Utils.update("")
+                        //get_subs()
+                        //media.url = fileurl.text.toString()
+                        //parse_input_file()
+                        //calibrate_from_subtitles()
+                        //console.log(JSON.stringify(a))
+                        //console.log( seconds_to_time(65) )
+                    }
+                }
+                RLabel{ text: qsTr("Diferencia tiempo entre versiones") }
+                TextField {
+                    Layout.fillWidth: true
+                    id:offset
+                    text: sync.applied_offset
+                    onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
+                }
 
 
-        RLabel{ text: qsTr("Lanzar en pantalla completa") }
-        CheckBox {
-            text: qsTr("")
-            checked: settings.start_fullscreen
-            onClicked: settings.start_fullscreen = checked
-        }
-
-
-        RLabel{ text: qsTr("Compartir información automáticamente") }
-        CheckBox {
-            text: qsTr("")
-            checked: settings.autoshare
-            onClicked: settings.autoshare = checked
-        }
-
-        Button {
-            text: "Import/Export"
-            onClicked: dialog_import.visible = true
-        }
-
-        RButton {
-            id: testing
-            text: "test"
-            onClicked: {
-                survey.visible = true
-                //get_subs()
-                //media.url = fileurl.text.toString()
-                //parse_input_file()
-                //calibrate_from_subtitles()
-                //console.log(JSON.stringify(a))
-                //console.log( seconds_to_time(65) )
+                RLabel{ text: qsTr("Diferencia velocidad entre versiones") }
+                TextField {
+                    Layout.fillWidth: true
+                    id:speed
+                    text: sync.applied_speed
+                    onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
+                }
             }
         }
+
+
+        GroupBox {
+
+            Layout.fillWidth: true
+            GridLayout {
+                anchors.fill: parent
+                anchors.margins: 5
+                columns: 2
+
+                Label{
+                    Layout.columnSpan: 2
+                    color: "Green"
+                    font.pointSize: 10
+                    font.bold: true
+                    text: qsTr("Feedback")
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                RLabel{
+                    Layout.columnSpan: 2
+                    text: qsTr("Muchas gracias por tu opinión")
+                }
+                TextField {
+                    id: feedback
+                    Layout.fillWidth: true
+                    onAccepted: {
+                        post( "action=feedback&idea="+feedback.text, function(){} )
+                        loader.source = "Open.qml"
+                    }
+                }
+                RButton {
+                    text: "Enviar feedback"
+                    onClicked: {
+                        post( "action=feedback&idea="+feedback.text, function(){} )
+                        loader.source = "Open.qml"
+                    }
+                }
+            }
+        }
+
 
     }
 }

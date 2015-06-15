@@ -10,11 +10,11 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         columns: 1
-        Component.onCompleted: { mainWindow.minimumWidth = 485;mainWindow.minimumHeight = 350}
+        Component.onCompleted: { mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425; say_to_user("")}
 
 
         RLabel{
-            text: qsTr("Perdón, intentaremos corregir el error.")
+            text: qsTr("Muchas gracias por tu opinión")
         }
         TextField {
             id: feedback

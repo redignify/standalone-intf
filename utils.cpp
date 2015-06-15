@@ -11,6 +11,84 @@
 #include <fstream>
 #include <QCoreApplication>
 #include <QTime>
+#include <QByteArray>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QProcess>
+#include <QApplication>
+
+#ifdef Q_OS_WIN  // Implement genWin32ShellExecute() especially for UAC
+    #include "qt_windows.h"
+    #include "qwindowdefs_win.h"
+    #include <shellapi.h>
+
+int genWin32ShellExecute(QString AppFullPath,
+                         QString Verb,
+                         QString Params,
+                         bool ShowAppWindow,
+                         bool WaitToFinish);
+#endif
+
+
+// Execute/Open the specified Application/Document with the given command
+// line Parameters
+// (if WaitToFinish == true, wait for the spawn process to finish)
+//
+// Verb parameter values:
+// ""           The degault verb for the associated AppFullPath
+// "edit"       Launches an editor and opens the document for editing.
+// "find"       Initiates a search starting from the specified directory.
+// "open"       Launches an application. If this file is not an executable file, its associated application is launched.
+// "print"      Prints the document file.
+// "properties" Displays the object's properties.
+//
+// Ret: 0 = success
+//     <0 = error
+#ifdef Q_OS_WIN
+int genWin32ShellExecute(QString AppFullPath,
+                         QString Verb,
+                         QString Params,
+                         bool ShowAppWindow,
+                         bool WaitToFinish)
+{
+    int Result = 0;
+
+    // Setup the required structure
+    SHELLEXECUTEINFO ShExecInfo;
+    memset(&ShExecInfo, 0, sizeof(SHELLEXECUTEINFO));
+    ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    ShExecInfo.hwnd = NULL;
+    ShExecInfo.lpVerb = NULL;
+    if (Verb.length() > 0)
+        ShExecInfo.lpVerb = reinterpret_cast<const WCHAR *>(Verb.utf16());
+    ShExecInfo.lpFile = NULL;
+    if (AppFullPath.length() > 0)
+        ShExecInfo.lpFile = reinterpret_cast<const WCHAR *>(AppFullPath.utf16());
+    ShExecInfo.lpParameters = NULL;
+    if (Params.length() > 0)
+        ShExecInfo.lpParameters = reinterpret_cast<const WCHAR *>(Params.utf16());
+    ShExecInfo.lpDirectory = NULL;
+    ShExecInfo.nShow = (ShowAppWindow ? SW_SHOW : SW_HIDE);
+    ShExecInfo.hInstApp = NULL;
+
+    // Spawn the process
+    if (ShellExecuteEx(&ShExecInfo) == FALSE)
+    {
+        Result = -1; // Failed to execute process
+    } else if (WaitToFinish)
+    {
+        WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+    }
+
+    return Result;
+}
+#endif
+
+
+
+
 
 void delay( int millisecondsToWait )
 {
@@ -79,6 +157,52 @@ QString Utils::get_vlc_path()
 
 }
 
+
+bool Utils::update( QString url )
+{
+    manager = new QNetworkAccessManager();
+    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(ready(QNetworkReply*)));
+    QNetworkRequest req(QUrl("http://fcinema.org/updater.exe"));
+    manager->get(req);
+}
+
+
+void Utils::ready( QNetworkReply* reply )
+{
+    if (reply->error() == QNetworkReply::NoError) {
+        QString tempPath =  QStandardPaths::writableLocation( QStandardPaths::TempLocation );
+        QString updater = tempPath + "\\updater.exe";
+        qDebug() << "Updater path: " << updater;
+        QByteArray data =  reply->readAll();
+        QFile file( updater );
+        if( file.exists() ) file.remove();
+        if(!file.open(QIODevice::WriteOnly )) {
+            qDebug() << file.errorString();
+        }else{
+            qDebug() << file.write( data );
+            file.close();
+            QString AppToExec = updater;
+            // Put any required parameters of App2.exe to AppParams string
+            QString AppParams = "";
+            if (0 != genWin32ShellExecute(AppToExec,
+                                          "",    // default verb: "open" or "exec"
+                                          AppParams,
+                                          false, // run hidden
+                                          false)) // wait to finish
+            {
+                qDebug() << "Error";
+            }
+            QApplication::quit();
+
+        }
+        delete reply;
+    }
+    else {
+        qDebug() << "Failure" <<reply->errorString();
+        delete reply;
+    }
+
+}
 QString Utils::get_hash( QString filename)
 {
     FILE * handle;
@@ -105,8 +229,9 @@ bool Utils::write_data(QString data, QString filename )
     QString path = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
     qDebug()<< "Writting data to " << filename;
     if( !QDir( path ).exists() ){
+        QDir().mkpath( path );
         qDebug() << "Creating dir...";
-        QDir().mkdir( path );
+        //QDir().mkdir( path );
     }
     QFile file( path + '//' + filename );
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {

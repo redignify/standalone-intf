@@ -15,7 +15,7 @@ ApplicationWindow {
     visible: true
     //minimumWidth: 485//gridLayout.implicitWidth
     //minimumHeight: 380//gridLayout.implicitHeight
-    title: qsTr("Redignify")
+    title: qsTr("Family Cinema")
 
 
 
@@ -26,6 +26,8 @@ ApplicationWindow {
         property string url
         property string hash
         property double bytesize
+        property bool ignore_hash_on_search : false
+        property bool ignore_imdb_on_search : true
     }
 
     Item {
@@ -82,7 +84,7 @@ ApplicationWindow {
         property int pro: 1
         property bool ask: true
         property bool autoshare: true
-        property string default_player: "VLC_HTTP"
+        property string default_player: "VLC"
         property string vlc_path : ""
     }
 
@@ -129,15 +131,16 @@ ApplicationWindow {
         ListElement {  text: "Violence" }
         ListElement {  text: "Sex" }
         ListElement {  text: "Drugs" }
-        ListElement {  text: "Sync" }
+        //ListElement {  text: "Sync" }
     }
 
     ListModel {
         id: players_list
-        ListElement {  text: "VLC_HTTP" }
-        ListElement {  text: "VLC_TCP" }
-        ListElement {  text: "VLC_HTTP" }
-        //ListElement {  text: "VLC_CONSOLE" }
+        ListElement {  text: "VLC" }
+        ListElement {  text: "BSPlayer" }
+        ListElement {  text: "MPlayer" }
+        ListElement {  text: "XBMC" }
+        ListElement {  text: "WMP" }
     }
 
     ListModel {
@@ -162,18 +165,8 @@ ApplicationWindow {
         id: toolbar
         RowLayout {
             id: toolbarLayout
-            //spacing: 0
+            spacing: 20
             width: parent.width
-            ToolButton {
-                iconSource: "images/play.png"
-                onClicked: {
-                    //mainWindow.minimumWidth = 800
-                    //mainWindow.minimumHeight = 510
-                    loader.source = "Play.qml"
-                }
-                Accessible.name: "Play"
-                tooltip: "Enjoy your film"
-            }
             ToolButton {
                 iconSource: "images/document-open.png"
                 onClicked: {
@@ -183,6 +176,16 @@ ApplicationWindow {
                 }
                 Accessible.name: "Open"
                 tooltip: "Open new movie"
+            }
+            ToolButton {
+                iconSource: "images/play.png"
+                onClicked: {
+                    //mainWindow.minimumWidth = 800
+                    //mainWindow.minimumHeight = 510
+                    loader.source = "Play.qml"
+                }
+                Accessible.name: "Play"
+                tooltip: "Enjoy your film"
             }
             ToolButton {
                 iconSource: "images/editcut.png"
@@ -202,12 +205,12 @@ ApplicationWindow {
                 Accessible.name: "Help"
                 tooltip: "Find help"
             }
-            ToolButton {
+           /* ToolButton {
                 iconSource: "images/feedback.png"
                 onClicked: loader.source = "Feedback.qml"
                 Accessible.name: "Feedback"
                 tooltip: "Send Feedback"
-            }
+            }*/
 
             Item { Layout.fillWidth: true }
         }
@@ -307,19 +310,23 @@ ApplicationWindow {
 
     Dialog {
         id: bad_movie
-        width: 310
+        width: 290
         //height: 100
         standardButtons: StandardButton.NoButton
         //title: "Identification required"
         GridLayout {
-            columns: 2
-            RLabel{
-                Layout.columnSpan: 2
-                text: qsTr("Perdón, intentaremos corregir el error.")
+            columns: 3
+            Label{
+                Layout.columnSpan: 3
+                color: "Green"
+                font.pointSize: 10
+                font.bold: true
+                text: qsTr("¿No es esta la película que estas viendo?")
             }
             TextField {
                 id: movie_name
-                Layout.minimumWidth: 200
+                Layout.minimumWidth: 260
+                Layout.columnSpan: 3
                 placeholderText: qsTr("Título real")
                 onAccepted: {
                     loader.source = "Open.qml"
@@ -330,9 +337,19 @@ ApplicationWindow {
                     media.bytesize = -1;
                     post( "action=search&filename="+ movie_name.text, loader.item.show_list )
                     bad_movie.visible = false
+                    movie.imdbcode = ""
+                    imdb_input.text = ""
                 }
             }
-            RButton {
+            Button{
+                text: qsTr("Sí, sí es")
+                onClicked: {
+                    bad_movie.visible = false
+                }
+            }
+            Label{ Layout.minimumWidth: 100 }
+
+            Button {
                 text: qsTr("Volver a buscar")
                 onClicked: {
                     loader.source = "Open.qml"
@@ -343,6 +360,8 @@ ApplicationWindow {
                     media.bytesize = -1;
                     post( "action=search&filename="+ movie_name.text, loader.item.show_list )
                     bad_movie.visible = false
+                    movie.imdbcode = ""
+                    imdb_input.text = ""
                 }
             }
         }
@@ -359,7 +378,7 @@ ApplicationWindow {
             columns: 2
             RLabel{
                 Layout.columnSpan: 2
-                text: qsTr("Perdón, intentaremos corregir el error.")
+                text: qsTr("Seleccione el fichero a importar")
             }
 
             TextField {
@@ -367,7 +386,7 @@ ApplicationWindow {
                 placeholderText: qsTr("Filter file")
             }
             Button {
-                text: "Browse"
+                text: "Archivo"
                 onClicked: filterDialog.visible = true
             }
         }
@@ -460,7 +479,7 @@ ApplicationWindow {
                         ExclusiveGroup { id: calGroup }
                         RadioButton { text: "No se nota"; exclusiveGroup: calGroup; checked: true  }
                         RadioButton { text: "No molesta"; exclusiveGroup: calGroup }
-                        RadioButton { text: "Estropan"; exclusiveGroup: calGroup; id:calBad }
+                        RadioButton { text: "Molestanq"; exclusiveGroup: calGroup; id:calBad }
                     }
                 }
                 TextField {
@@ -470,10 +489,10 @@ ApplicationWindow {
                 }
             }
             onAccepted: {
-                requestPass.visible = true
+                /*requestPass.visible = true
                 if( c_new_user.checked ){
                     if( pass.text !== pass2.text ){
-                        say_to_user("Password must be the same");
+                        say_to_user("Las contraseñas deben coincidir");
                         pass.text = ""
                         pass2.text = ""
                         return
@@ -483,10 +502,10 @@ ApplicationWindow {
                     settings.password = pass.text
                     settings.user = name.text
                     share( name.text, pass.text )
-                }
+                }*/
             }
             onRejected: {
-                requestPass.visible = false
+                survey.visible = false
             }
         }
 
@@ -584,7 +603,7 @@ ApplicationWindow {
             requestPass.visible = true
             if( c_new_user.checked ){
                 if( pass.text !== pass2.text ){
-                    say_to_user("Password must be the same");
+                    say_to_user("Las contraseñas deben coincidir");
                     pass.text = ""
                     pass2.text = ""
                     return
@@ -808,9 +827,11 @@ ApplicationWindow {
 // Get title from file name
     function clean_title( str )
     {
-        var tit = str.toString().split("/").pop();
+        console.log("Cleaning: " + str )
+        var tit = str.toString().replace(/\\/g,'/').split("/").pop();
         tit = tit.replace(/mp4|avi|\[.*\]|\(.*\).*|1080p.*|xvid.*|mkv.*|720p.*|web-dl.*|dvdscr.*|dvdrip.*|brrip.*|bdrip.*|hdrip.*|x264.*|bluray.*|hdtv.*|yify.*|eztv.*|480p.*/gi,'');
         tit = tit.replace(/\.|_/g,' ').replace(/ +/g,' ');
+        console.log("Result: " + tit )
         return tit
     }
 
@@ -994,11 +1015,11 @@ ApplicationWindow {
     {
         if( player.execute.get_time() != -1 ) return;
         player.autoskip_if_fast = true
-        say_to_user("Connecting with player")
+        say_to_user("Conectando con el reproductor")
     // Try to launch selected player
         if( player.execute.launch( media.url ) ) {
             timer.start()
-            say_to_user("Connected to " +  player.execute.name() )
+            say_to_user("Conectado con " +  player.execute.name() )
             return true
         }/* // DEBUG
     // If not possible to launch on selected player, try other players
@@ -1014,9 +1035,9 @@ ApplicationWindow {
             }
         }*/
         if( !media.url ){
-            say_to_user("Oops, unable to reach player! (No input file selected)")
+            say_to_user("Antes debes seleccionar una película")
         }else{
-            say_to_user("Oops, unable to reach player!")
+            say_to_user("Oops, fallo técnico. VLC no encontrado")
         }
         return false
     }
@@ -1041,7 +1062,7 @@ ApplicationWindow {
             //say_to_user("Reconecting with player")
             //if( !player.execute.connect_to_player( false ) ){
                 player.execute.kill()
-                say_to_user("Oops, unable to reach player!")
+                say_to_user("Oops, imposible leer tiempos!")
                 raise()
                 timer.stop()
                 return -1
@@ -1137,7 +1158,7 @@ ApplicationWindow {
 // Set the default player
     function set_player( pl )
     {
-        pl = "VLC_HTTP";
+        pl = "VLC";
         if( pl === "VLC_TCP" ) {
             player.execute = VLC_TCP
             settings.default_player = pl
@@ -1146,7 +1167,7 @@ ApplicationWindow {
             player.execute = VLC_CONSOLE
             console.log("Setting VLC console as player")
             settings.default_player = pl
-        }else if( pl === "VLC_HTTP" ) {
+        }else if( pl === "VLC" ) {
             player.execute = VLC_HTTP
             console.log("Setting VLC http as player")
             settings.default_player = pl
@@ -1272,16 +1293,38 @@ ApplicationWindow {
     }
 
     function sub_ready( str ){
-        movie.subtitles_srt = str
-        calibrate_from_subtitles()
+        if( !str || str.length < 100 ){
+            get_subs()
+        }else{
+            movie.subtitles_srt = str
+            calibrate_from_subtitles()
+        }
     }
-    function ref_ready(str ){
-        movie.subref_srt = str
-        calibrate_from_subtitles()
+    function ref_ready( str ){
+        if( !str || str.length < 100 ){
+            get_ref()
+        }else{
+            movie.subref_srt = str
+            calibrate_from_subtitles()
+        }
     }
     function get_subs( ) {
-        post("",ref_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subref ); //+".gz"
         post("",sub_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subtitles ); //+".gz"
+    }
+    function get_ref(){
+        post("",ref_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subref ); //+".gz"
+    }
+
+    function try_to_sync_from_sub(){
+        /*if( data["SubLink"] ){
+            for( var i=0; i < data["SubLink"].length; ++i ){
+                if( data["SubLink"][i]["Hash"] === media.hash ){
+                    movie.subtitles = data["SubLink"][i]["Link"]
+                }else{
+                    movie.subref = data["SubLink"][i]["Link"]
+                }
+            }
+        }*/
     }
 
 // Thats all folks

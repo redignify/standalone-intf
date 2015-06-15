@@ -7,20 +7,20 @@ import QtQuick.Dialogs 1.0
 
 Item {
 
-    /*width: 505; // root item so give a size
-    height: 355;*/
-
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
         columns: 3
-        Component.onCompleted: { mainWindow.minimumWidth = 505;mainWindow.minimumHeight = 355}
-        //Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 510}
+        Component.onCompleted: {
+            mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425;
+            //mainWindow.minimumWidth = 505;mainWindow.minimumHeight = 355;
+            if(movie.imdbcode){bad_movie.visible = true}
+        }
 
         TextField {
             id: fileurl
             Layout.preferredWidth: 425
-            placeholderText: "Filename/url"
+            placeholderText: "Ruta al fichero o url"
             Layout.columnSpan : 2
             text: media.url
             onEditingFinished: parse_input_file()
@@ -29,34 +29,35 @@ Item {
 
         RButton {
             id: open
-            text: "Browse"
-//            Layout.fillWidth: true
+            text: "Archivo"
             onClicked: fileDialog.open()
         }
 
         TextField {
             id: title
-            Layout.preferredWidth: 355
-            placeholderText: "Title"
+            Layout.preferredWidth: 360
+            placeholderText: "Título de la película"
             Layout.columnSpan : 1
             text: movie.title
-            onAccepted: search_movie()
-            //onTextChanged: search_movie()
+            onAccepted: {
+                search_movie()
+            }
         }
 
         TextField {
             id: imdb_input
             Layout.preferredWidth: 60
-            placeholderText: "IMDB id"
+            placeholderText: "IMDB ID"
             Layout.columnSpan : 1
             text: movie.imdbcode
-            onAccepted: search_movie()
-            //onTextChanged: search_movie()
+            onAccepted: {
+                search_movie()
+            }
         }
 
         RButton {
             id: search
-            text: "Search"
+            text: "Buscar"
             onClicked: search_movie()
         }
 
@@ -82,22 +83,32 @@ Item {
         }
 
 
-/*
-        RLabel{
-            id: l_msg
-            Layout.columnSpan : 1
-            color: "red"
-            text: movie.msg_to_user
-            font.bold : true
-        }*/
+        RowLayout {
+            Layout.columnSpan: 3
+            Button {
+                id: select
+                text: "Ir"
+                onClicked: get_movie_data( movielist.currentRow )
+            }
 
-        Button {
-            id: select
-            //Layout.row: 3
-            text: "Select"
-            onClicked: get_movie_data( movielist.currentRow )
+            Button {
+                id: b_not_this_movie
+                Layout.minimumWidth: 150
+                visible: movie.imdbcode? true : false
+                tooltip: "Advanced filters"
+                text: qsTr("Película erronea")
+                onClicked: {
+                    bad_movie.visible = true
+                }
+            }
+
+            RLabel{
+                Layout.columnSpan : 1
+                color: "red"
+                text: movie.msg_to_user
+                font.bold : true
+            }
         }
-
     }
 
     FileDialog {
@@ -110,11 +121,16 @@ Item {
         onAccepted: {
             console.log(fileUrl)
             media.url = fileUrl;
-            title.text =  clean_title( fileUrl)
+            title.text =  clean_title( fileUrl )
             parse_input_file()
         }
         onRejected: { console.log("Rejected") }
     }
+
+
+
+
+//------------------------- FUNCTIONS -----------------------------//
 
 // Ask server for content of a specific movie
     function get_movie_data( id )
@@ -123,7 +139,11 @@ Item {
         if ( !data ) return;
         var imdbid = imdb_input.text? imdb_input.text : data["IDs"][id]
         if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
-        post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+        if( settings.user && settings.password ){
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize + "&username="+settings.user+"&password="+settings.password, show_list )
+        }else{
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+        }
     }
 
 // A new input file has being selected, get hash and try to identify
@@ -171,23 +191,11 @@ Item {
 
     // Update filter status
         movie.filter_status = data["FilterStatus"]? data["FilterStatus"] : 0
-        if( movie.filter_status < 2){
-            say_to_user("Movie information might be incomplete")
-        }
         movie.poster_url = data["Poster"]? data["Poster"] : ""
         movie.director = data["Director"]? data["Director"]: ""
         movie.pgcode = data["PGCode"]? "PG-Code: "+data["PGCode"]: ""
         movie.imdbrating = data["ImdbRating"]? "Imdb Rating: " + data["ImdbRating"] : ""
         movie.imdbcode = data["ImdbCode"]? data["ImdbCode"] : ""
-        if( data["SubLink"] ){
-            for( var i=0; i < data["SubLink"].length; ++i ){
-                if( data["SubLink"][i]["Hash"] === media.hash ){
-                    movie.subtitles = data["SubLink"][i]["Link"]
-                }else{
-                    movie.subref = data["SubLink"][i]["Link"]
-                }
-            }
-        }
 
     // Parse scenes
         scenelistmodel.clear()
@@ -245,7 +253,12 @@ Item {
                 }
             }
         }else{
-            sync.confidence = 2;
+            if( Scenes.length == 0 ){
+                sync.confidence = 2; // We are the first!
+            }else{
+                sync.confidence = 0; // This should never happen
+                console.log("Empty SyncInfo received, but it was needed...")
+            }
         }
 
     // Apply filters
