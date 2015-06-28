@@ -10,6 +10,18 @@ SOURCES += main.cpp \
 
 RESOURCES += qml.qrc
 
+TRANSLATIONS = en.ts
+
+lupdate_only{
+SOURCES += main.qml \
+    Collab.qml \
+    Config.qml \
+    Editor.qml \
+    Help.qml \
+    Open.qml \
+    Play.qml
+}
+
 RC_ICONS = logo.ico
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

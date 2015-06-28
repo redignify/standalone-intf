@@ -51,6 +51,7 @@ public slots:
     void ask_time();
     void ready();
 
+
 };
 
 #endif // VLC_TCP_H

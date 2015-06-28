@@ -27,15 +27,16 @@ ApplicationWindow {
         property string hash
         property double bytesize
         property bool ignore_hash_on_search : false
-        property bool ignore_imdb_on_search : true
     }
 
     Item {
         id: preview_data
         property double start
         property double stop
-        property int last_skipped
-        property int times_failed
+        property int last_skipped : -1
+        property int times_failed : 0
+        property bool preview_active : false
+        property bool watch_active : false
     }
 
     Item {
@@ -43,7 +44,6 @@ ApplicationWindow {
         property variant execute: VLC_TCP
         property bool autoskip_pressed : false
         property double autoskip_start : 0
-        property bool autoskip_if_fast : true
     }
 
     Item {
@@ -70,6 +70,11 @@ ApplicationWindow {
         property double applied_speed: 1
         property double applied_offset: 0
         property int confidence: 0
+        property double stimated_error: 0
+        property bool play_after_sync: false
+        property bool shot_sync_failed: false
+        property bool sub_sync_failed: false
+        property int subtitles_tried: 0
     }
 
     Settings {
@@ -78,10 +83,10 @@ ApplicationWindow {
         property string password
         property double time_margin: 0.3
         property bool start_fullscreen: true
-        property int sn: 3
+        property int sn: 2
         property int v: 2
-        property int d: 1
-        property int pro: 1
+        property int d: 2
+        property int pro: 2
         property bool ask: true
         property bool autoshare: true
         property string default_player: "VLC"
@@ -151,6 +156,10 @@ ApplicationWindow {
        id: syncscenelistmodel
     }
 
+    ListModel{
+        id: skiplist
+    }
+
 //------------------------------------ DIALOGS ---------------------------------//
 
 // This loads the dialogs! Set loader.source to "Play.qml" to launch that dialog
@@ -205,12 +214,12 @@ ApplicationWindow {
                 Accessible.name: "Help"
                 tooltip: "Find help"
             }
-           /* ToolButton {
-                iconSource: "images/feedback.png"
-                onClicked: loader.source = "Feedback.qml"
-                Accessible.name: "Feedback"
-                tooltip: "Send Feedback"
-            }*/
+            ToolButton {
+                iconSource: "images/collaborate.png"
+                onClicked: loader.source = "Collab.qml"
+                Accessible.name: "Collaborate"
+                tooltip: "Build up by volunteers"
+            }
 
             Item { Layout.fillWidth: true }
         }
@@ -247,13 +256,13 @@ ApplicationWindow {
     Timer {
         id: timer
         interval: 250; running: false; repeat: true
-        onTriggered: edl_check()
+        onTriggered: console.log("timer?")//edl_check( get_time() )
     }
 
     Timer {
         id: preview_timer
         interval: 250; running: false; repeat: true
-        onTriggered: preview_check()
+        onTriggered: console.log("timer?")//preview_check( get_time() )
     }
 
 
@@ -273,7 +282,7 @@ ApplicationWindow {
             RButton {
                 text: qsTr( "Guardar" )
                 onClicked: {
-                    save_work()
+                    save_work( false )
                     app.ask_before_close = false
                     before_closing.visible = false
                     close()
@@ -333,12 +342,10 @@ ApplicationWindow {
                     post( "action=badhash&username="+settings.user+"&password="+settings.password+"&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
                     movie.title = movie_name.text
                     loader.source = "Open.qml"
-                    media.hash = "";
-                    media.bytesize = -1;
+                    media.ignore_hash_on_search = true
                     post( "action=search&filename="+ movie_name.text, loader.item.show_list )
                     bad_movie.visible = false
                     movie.imdbcode = ""
-                    imdb_input.text = ""
                 }
             }
             Button{
@@ -356,12 +363,10 @@ ApplicationWindow {
                     post( "action=badhash&username="+settings.user+"&password="+settings.password+"&filename="+ movie.title + "&hash=" + media.hash + "&bytesize=" + media.bytesize, function(){} )
                     movie.title = movie_name.text
                     loader.source = "Open.qml"
-                    media.hash = "";
-                    media.bytesize = -1;
+                    media.ignore_hash_on_search = true
                     post( "action=search&filename="+ movie_name.text, loader.item.show_list )
                     bad_movie.visible = false
                     movie.imdbcode = ""
-                    imdb_input.text = ""
                 }
             }
         }
@@ -694,6 +699,214 @@ ApplicationWindow {
 /*-----------------------------------------------------------------------------------------*/
 /*---------------------------------FUNCTIONS-----------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
+    Connections{
+        target: VLC_HTTP
+        onTimeChanged:{
+            if( preview_data.watch_active ){
+                edl_check( time )
+            }else if( preview_data.preview_active ){
+                preview_check( time )
+            }
+        }
+    }
+    Connections{
+        target: VLC_HTTP
+        onPlayerLost:{
+            player.execute.kill()
+            say_to_user("Conexión con el reproductor perdida")
+        }
+    }
+
+    Connections {
+        target: Utils
+        onCalibDataReady: {
+            console.log("Calib data "+num+" ready");
+            var shot_str = num==1? "Shots" : "Shots2"
+            var shotsDiffs_str = num==1? "ShotsDiffs" : "ShotsDiffs2"
+
+        // Get data
+            try {
+                var data = JSON.parse( movie.data )
+            } catch(e){
+                // probably calib was faster than movie selection
+                say_to_user( qsTr( "Esto no debería haber pasado") )
+                return
+            }
+            var c_times = JSON.parse(times)
+            var c_diffs = JSON.parse(diffs)
+            if( c_times.length < 10 ){
+                console.log("Shot info "+num+" is incomplete")
+                return
+            }
+
+            var index = sync_info_hash_index(data,media.hash)
+
+
+        // If there is no shot info, add it
+            if( !data["SyncInfo"][index][shot_str] || !data["SyncInfo"][index][shotsDiffs_str] ){
+                data["SyncInfo"][index][shot_str]        = c_times
+                data["SyncInfo"][index][shotsDiffs_str]  = c_diffs
+                movie.data = JSON.stringify(data);
+                save_work( true )
+            }
+
+
+        // If movie is already on sync we are done
+            if( sync.confidence >= 2 ) return
+
+
+        // Try to sync. Find reference cuts and try to sync using them
+            var ref_times, ref_diffs, t_off, s_off
+            for( var i=0; i<data["SyncInfo"].length; ++i ){
+                console.log( data["SyncInfo"][i]["Hash"] !== media.hash, data["SyncInfo"][i][shot_str] !== undefined , data["SyncInfo"][i]["Confidence"] >= 2 )
+                if( data["SyncInfo"][i]["Hash"] !== media.hash && data["SyncInfo"][i][shot_str] && data["SyncInfo"][i]["Confidence"] >= 2 ){
+                    ref_times = data["SyncInfo"][i][shot_str]
+                    ref_diffs = data["SyncInfo"][i][shotsDiffs_str]
+                    t_off = data["SyncInfo"][index]["TimeOffset"]
+                    s_off = data["SyncInfo"][index]["SpeedFactor"]
+                    if( calibFromShots(c_times, c_diffs, ref_times, ref_diffs, t_off, s_off ) ){
+                        save_work( true )
+                        return
+                    }
+                }
+            }
+            if( sync.confidence == 0 ){
+                say_to_user("Error al analizar la película")
+                sync.shot_sync_failed = true
+                sync.play_after_sync = false
+            }else{
+                save_work( true )
+            }
+
+            //try_to_sync_from_sub()
+        }
+    }
+
+    function calibFromShots(c_times, c_diffs, r_times, r_diffs, t_off, s_off )
+    {
+        console.log("Calibrating form subs")
+
+        for( var step=0.1; step<3; step+=0.1 ){
+            for( var min = 0; min < 0.5; min+=0.025){
+                //for( var speed = 0.990; speed<1.010; speed+=0.005){
+                //for( var max = 5; max<15; max+=1){
+                    if( correlation(c_times,c_diffs,r_times,r_diffs, step, min, 10, t_off, s_off ) ) return true
+                //}
+            }
+        }
+        console.log("No more correlations functions")
+    }
+
+    function correlation(c_times, c_diffs, r_times, r_diffs, step, min, max, t_off, s_off )
+    {
+    // Correlation algorithm. For each time offset 'd' compare ref with current shots. Gives high value for similar scene change probability
+        var sum = []
+        var prod = []
+        var dif = []
+        for( var c=1; c<c_times.length; ++c ){
+            for( var r=1; r<r_times.length; ++r ){
+                if( c_diffs[c] < min || r_diffs[r] < min ) continue
+                var d = Math.round( ( c_times[c] - r_times[r] ) / step ) + 2500
+                if( !sum[d] || sum[d] === undefined ) {sum[d] = 0; prod[d] = 0; dif[d] = 0 }
+                var p = (c_diffs[c] * r_diffs[r])
+                var m = Math.abs(c_diffs[c] - r_diffs[r] )
+                dif[d]+= p/m > 10? 10 : p/m
+                prod[d]+= p
+                sum[d]+= 1/m > 10? 10 : 1/m
+            }
+        }
+
+        var cor = is_correlated( dif, "Dif", step, min, max )
+        if( cor === 2 ){
+            /*if( sync.confidence < 2 ){
+                var c_t_off = (index-2500)*step - t_off // Here we are ignoring speeds
+                apply_sync(c_t_off,1,2,step);
+            }*/
+            //say_to_user("Autocalib is amazing")
+            return true
+        }else if (cor === 1){
+            //if( sync.confidence < 1 ) apply_sync((index-2500)*step,1,1,step);
+            say_to_user("Autocalib is cool")
+        }
+     }
+
+    function is_correlated( arr, met, step, min, speed )
+    {
+        var max = 0;    var max2 = 0;    var max3;
+        var index = 0;  var index2 = 0;  var index3;
+        var sum = 0;    var tot = 0;
+        for( var i=0; i<arr.length; i++ ){
+            if( ! arr[i] > 0 ) continue;
+            sum+= arr[i]
+            tot++
+            if( arr[i] > max ){
+                max3 = max2
+                index3 = index2
+                max2 = max
+                index2 = index
+                max = arr[i]
+                index = i
+            }else if(arr[i] > max2 ){
+                max3 = max2
+                index3 = index2
+                index2 = i
+                max2 = arr[i]
+            }else if( arr[i] > max3 ){
+                max3 = max2
+                index3 = index2
+            }
+        }
+        //console.log( max +" / "+ max2)
+        var mratio  = max/max2
+        var mratio2 = max/max3
+        var dist    = Math.floor( Math.abs( (index-index2)*step )*10 ) / 10
+        var dist2   = Math.floor( Math.abs( (index-index3)*step )*10 ) / 10
+     // Case we are positive about sync
+        if( (mratio > 2 && dist < 1) || (mratio > 2.5 && dist < 2)  || (mratio > 3) ){
+            console.log( max +" with ratio: "+Math.floor(max/max2*10)/10+" step: "+Math.floor(step*10)/10+" min: "+Math.floor(1000*min)/1000+" at "+Math.floor((index-2500)*step*10)/10+" speed "+speed +" distance "+dist )
+            //var c_t_off = (index-2500)*step - t_off // Here we are ignoring speeds
+            say_to_user("Autocalib is amazing")
+            if( sync.confidence <= 2 ) apply_sync((index-2500)*step,1,2,step);
+            return 2
+        }
+     // Case we are not sure
+        if( (mratio > 1.5 && dist < 2 ) || (mratio > 2.5 && dist < 3 )  || (mratio > 3) || ( max/(sum/tot) > 10 && dist < 3 ) ){
+            console.log( "Not sure about: "+max +" with ratio: "+Math.floor(max/max2*10)/10+" step: "+Math.floor(step*10)/10+" min: "+Math.floor(1000*min)/1000+" at "+Math.floor((index-2500)*step*10)/10+" speed "+speed +" distance "+dist )
+            if( sync.confidence == 0 ) apply_sync((index-2500)*step,1,1,step);
+            return 1
+        }
+        return 0
+    }
+
+    function sync_info_hash_index( data, hash )
+    {
+        var index = -1
+        if( !data["SyncInfo"] || data["SyncInfo"] === undefined ){
+            data["SyncInfo"] = [];
+        }else{
+            for( var i=0; i<data["SyncInfo"].length; ++i ){
+                if( data["SyncInfo"][i]["Hash"] === hash ){
+                    index = i
+                    break
+                }
+            }
+        }
+    // data is an object, so is given as a reference and we can modify it globaly
+        if( index == -1 ){
+            index = data["SyncInfo"].length
+            data["SyncInfo"][index] = {}
+            data["SyncInfo"][index]["Hash"] = hash
+            data["SyncInfo"][index]["TimeOffset"] = 0
+            data["SyncInfo"][index]["SpeedFactor"] = 1
+            if( index == 0){
+                console.log("No other sync references, set ourself as reference")
+                data["SyncInfo"][index]["Confidence"] = 3
+            }else{
+                data["SyncInfo"][index]["Confidence"] = 0
+            }
+        }
+        return index;
+    }
 
 // Create new user on the db
     function new_user( str )
@@ -746,7 +959,7 @@ ApplicationWindow {
 
     }
 
-    function save_work()
+    function save_work( silent )
     {
         var jsonObject = {}
         try{
@@ -762,7 +975,8 @@ ApplicationWindow {
         }
         var str = pack_data()
         save_to_file( str, jsonObject["ImdbCode"] )
-        say_to_user("Guardado!")
+        if( !silent ) say_to_user("Guardado!")
+        app.ask_before_close = false
     }
 
 
@@ -773,7 +987,7 @@ ApplicationWindow {
             var jsonObject = JSON.parse( movie.data );
         }catch(e){
             say_to_user( "No movie ID")
-            var jsonObject = {};
+            jsonObject = {};
         }
 
     // Update filter status
@@ -787,8 +1001,8 @@ ApplicationWindow {
             jsonObject['Scenes'][i]["Category"] = scene.type
             jsonObject['Scenes'][i]["Tags"] = scene.tags
             jsonObject['Scenes'][i]["Severity"] = scene.severity
-            jsonObject['Scenes'][i]["Start"] = (scene.start - sync.applied_offset)/sync.applied_speed
-            jsonObject['Scenes'][i]["End"] = (scene.stop - sync.applied_offset)/sync.applied_speed
+            jsonObject['Scenes'][i]["Start"] = secToStr( ( hmsToSec( scene.start ) - sync.applied_offset)/sync.applied_speed )
+            jsonObject['Scenes'][i]["End"] = secToStr( ( hmsToSec( scene.stop ) - sync.applied_offset)/sync.applied_speed )
             jsonObject['Scenes'][i]["Action"] = scene.action
             jsonObject['Scenes'][i]["AdditionalInfo"] = scene.description
             jsonObject['Scenes'][i]["id"] = scene.id
@@ -805,6 +1019,7 @@ ApplicationWindow {
                     jsonObject["SyncInfo"][i]["TimeOffset"] = sync.applied_offset
                     jsonObject["SyncInfo"][i]["Confidence"] = sync.confidence
                     sync_updated_flag = 1
+                    break
                 }
             }
             if (sync_updated_flag == 0) {
@@ -849,10 +1064,9 @@ ApplicationWindow {
 
     function import_from_file( url )
     {
+        console.log("Importing scenes from " + url)
         var str = Utils.read_external_data( url )
-        console.log("here we are 2")
         if( !str ) return
-        console.log("here we are")
         console.log(str)
         var data = str.split(/\r?\n/);
 
@@ -865,10 +1079,10 @@ ApplicationWindow {
                 "type": "",
                 "tags": "",
                 "severity": 0,
-                "start": line[1]/1000,
-                "duration": (line[2]-line[1])/1000,
+                "start": secToStr(line[1]/1000),
+                "duration": secToStr( (line[2]-line[1])/1000 ),
                 "description": "",
-                "stop": line[2]/1000,
+                "stop": secToStr(line[2]/1000),
                 "action": line[0] == 0? "Mute":"Skip",
                 "skip": "Yes",
                 "id": Math.random().toString()
@@ -896,18 +1110,19 @@ ApplicationWindow {
 //
     function search_cached_index( hash )
     {
+        console.log( "Looking for movie on local index..." )
         var str_o = read_from_file( "index" )
-
-        console.log( str_o )
-        if( !str_o ) { console.log("Searching but no index!"); return}
+        if( !str_o ) { console.log("No index!"); return}
         var index = JSON.parse( str_o )
-        if( !index ) { console.log("Searching but index is corrupted"); return}
+        if( !index ) { console.log("Corrupted index"); return}
         if( index[hash] ){
+            console.log( "Movie is in local index!" )
             var str = read_from_file( index[hash] )
             if( !str ) return
             movie.data = str
             return true
         }
+        console.log( "Movie is not at local index :(" )
         return
     }
 
@@ -919,7 +1134,7 @@ ApplicationWindow {
         var index = JSON.parse( str_o )
         if( !index ) { console.log("Adding to index, corrupted file"); return;}
         index[hash] = code
-        var str = JSON.stringify( index );
+        var str = JSON.stringify( index, "", 2 );
         console.log( str )
         save_to_file( str, "index" );
     }
@@ -955,41 +1170,57 @@ ApplicationWindow {
         http.send(params);
     }
 
+    function fillSkipList(){
+        skiplist.clear()
+        if( !scenelistmodel.get(0) ) return -1
+        for( var i = 0; i < scenelistmodel.count; ++i){
+            if( scenelistmodel.get(i).skip === "Yes" && scenelistmodel.get(i).type !== "Sync" ){
+                var item = {
+                    "start": hmsToSec( scenelistmodel.get(i).start ) - sync.stimated_error/2 - settings.time_margin,
+                    "stop": hmsToSec( scenelistmodel.get(i).stop  ) + sync.stimated_error/2,
+                    "action": scenelistmodel.get(i).action,
+                }
+                skiplist.append( item )
+            }
+        }
+        return skiplist.count;
+    }
+
 
 // If the player selected by user doesn't support EDL we have to do it "manually".
 // Just check frequently if the player is playing an unwanted second, if so, tell it to jump to next "friendly" time
-    function edl_check()
+    function edl_check( time )
     {
     // Get current time and prepare
-        var time = get_time()
-        if( !scenelistmodel.get(0) ) return
+        if( !skiplist.get(0) ) return
         console.log( "Checking ", time)
         var start, stop
     // Check current time against all unwanted scenes
-        for( var i = 0; i < scenelistmodel.count; ++i){
-            if( scenelistmodel.get(i).skip === "Yes" && scenelistmodel.get(i).type !== "Sync" )
-                start = parseFloat( scenelistmodel.get(i).start );
-                stop  = parseFloat( scenelistmodel.get(i).stop );
-                if( time > start - settings.time_margin & time + 1 < stop ) {
-                    if( preview_data.last_skipped == i){
-                        preview_data.times_failed = preview_data.times_failed + 1
-                        set_time( stop + 0.1 + 5*preview_data.times_failed )
-                        console.log("Times failed", preview_data.times_failed )
-                    }else{
-                        preview_data.times_failed = 0;
-                        set_time( stop + 0.1 )
-                        console.log("Times failed", preview_data.times_failed )
-                    }
-                    time = stop // When several scenes overlap, jump to the end of the last one
+        for( var i = 0; i < skiplist.count; ++i){
+            start = skiplist.get(i).start;
+            stop  = skiplist.get(i).stop;
+            if( time > start & time + 1 < stop ) {
+                set_time( stop + 0.1 + 5*preview_data.times_failed )
+                time = stop // Update time, just in case scenes overlap
+
+            // In some formats like mkv, VLC jumps before the selected time
+                if( preview_data.last_skipped == i){
+                    preview_data.times_failed = preview_data.times_failed + 1
+                    console.log("Times failed", preview_data.times_failed )
+                }else{
+                    preview_data.times_failed = 0;
                     preview_data.last_skipped = i
                 }
+            }
         }
+
+    // Check autoskip
+        check_autoskip(time)
     }
 
-    function preview_check()
+    function preview_check( time )
     {
     // Same but just one time for preview
-        var time = get_time()
         console.log( "Checking ", time, " vs ", preview_data.start, preview_data.stop )
 
         var start = preview_data.start
@@ -997,7 +1228,7 @@ ApplicationWindow {
         if( time > start - settings.time_margin & time + 1 < stop ) {
             set_time( stop + 0.1 + 5*preview_data.times_failed )
             preview_data.times_failed = preview_data.times_failed + 1
-            preview_timer.stop()
+            preview_data.preview_active = false
             console.log("Times failed", preview_data.times_failed )
         }
     }
@@ -1005,39 +1236,46 @@ ApplicationWindow {
 
 // Display message to user. Normally important warnings she/he must take care of
     function say_to_user( msg ){
-        console.log("This is a message to the user: ", msg )
-        if( msg !=="" && movie.msg_to_user === msg ) msg = msg+"!! Hey, I'm here!!"
+        if( msg !=="" ){
+            console.log("This is a message to the user: ", msg )
+            if( movie.msg_to_user === msg ) msg = msg+"!! Estoy aquí!!"
+        }
         movie.msg_to_user = msg
     }
 
 // Launch or connect to the user selected player.
-    function watch_movie()
+    function watch_movie( preview )
     {
-        if( player.execute.get_time() != -1 ) return;
-        player.autoskip_if_fast = true
-        say_to_user("Conectando con el reproductor")
-    // Try to launch selected player
-        if( player.execute.launch( media.url ) ) {
-            timer.start()
-            say_to_user("Conectado con " +  player.execute.name() )
-            return true
-        }/* // DEBUG
-    // If not possible to launch on selected player, try other players
-        else{
-            say_to_user("Seems it's not working. Trying other players")
-            for( var i = 0; i < players_list.count; ++i){
-                set_player( players_list.get(i).text )
-                if( player.execute.launch( media.url ) ) {
-                    timer.start()
-                    say_to_user("Connected to " + player.execute.name() )
-                    return true
-                }
+    // No matter what activate watching mode
+        preview_data.watch_active = true
+
+    // Fill skip list
+        fillSkipList()
+        //if( fillSkipList() === -1 ) return
+
+    // Make sure we are on sync
+        if( sync.confidence < 1 ){
+            if( sync.shot_sync_failed ){
+                say_to_user("La pelicula no esta sincronizada")
+            }else{
+                say_to_user("Analizando película... solo unos segundos")
             }
-        }*/
-        if( !media.url ){
+            sync.play_after_sync = true
+            return
+        }
+
+    // Avoid relaunching player
+        if( player.execute.get_time() != -1 ) return;
+
+    // Try to launch selected player
+        say_to_user("Conectando con el reproductor")
+        if( player.execute.launch( media.url, preview ) ) {
+            say_to_user("Conectado con " +  player.execute.name( ) )
+            return true
+        }else if( !media.url ){
             say_to_user("Antes debes seleccionar una película")
         }else{
-            say_to_user("Oops, fallo técnico. VLC no encontrado")
+            say_to_user("Oops, fallo técnico. VLC no encontrado?")
         }
         return false
     }
@@ -1046,7 +1284,7 @@ ApplicationWindow {
 // Start procces of manual calibration
     function manual_calibration(){
         calibrate.visible = true
-        watch_movie()
+        watch_movie(true)
         var i = get_sync_scene_index()
         var start_search = Math.max( 1, scenelistmodel.get(i).start - 30 )
         preview_scene( 0, start_search ) // just a trick to "wait" until movie is loaded before jump
@@ -1058,49 +1296,46 @@ ApplicationWindow {
     function get_time()
     {
         var time = player.execute.get_time()
-        if ( time == -1){ // @disable-check M126
-            //say_to_user("Reconecting with player")
-            //if( !player.execute.connect_to_player( false ) ){
-                player.execute.kill()
-                say_to_user("Oops, imposible leer tiempos!")
-                raise()
-                timer.stop()
-                return -1
-            //}
+        if ( time == -1) {// @disable-check M126
+            say_to_user("Imposible leer tiempos")
+            return -1
         }
         time = Math.round( parseFloat(time)*1000 ) / 1000
-
-    // Autoskip is presed
-        if ( player.autoskip_if_fast ){
-            var autoskip = player.execute.is_autoskiping();
-            if ( autoskip & !player.autoskip_pressed ){
-                console.log("Autoskip start")
-                player.autoskip_pressed = true
-                player.autoskip_start = time
-                player.execute.mute()
-            } else if( !autoskip & player.autoskip_pressed ){
-                console.log("Autoskip release")
-                player.autoskip_pressed = false
-                player.execute.unmute()
-                scenelistmodel.append({
-                    "type":"?",
-                    "tags":"",
-                    "severity":0,
-                    "start": player.autoskip_start - 3,
-                    "duration": time-player.autoskip_start + 2,
-                    "description": "",
-                    "stop": time-1,
-                    "action": "Skip",
-                    "skip": "Yes",
-                    "id": Math.random().toString()
-                })
-                app.ask_before_close = true
-                player.autoskip_start = 0
-                loader.source = "Editor.qml"
-                if( settings.ask ) raise()
-            }
-        }
         return time
+    }
+
+    function check_autoskip( time ){
+
+        // Autoskip is presed
+        if ( preview_data.preview_active && !preview_data.watch_active ) return
+
+        var autoskip = player.execute.is_autoskiping();
+        if ( autoskip & !player.autoskip_pressed ){
+            console.log("Autoskip start")
+            player.autoskip_pressed = true
+            player.autoskip_start = time
+            player.execute.mute()
+        } else if( !autoskip & player.autoskip_pressed ){
+            console.log("Autoskip release")
+            player.autoskip_pressed = false
+            player.execute.unmute()
+            scenelistmodel.append({
+                "type":"?",
+                "tags":"",
+                "severity":0,
+                "start": secToStr( player.autoskip_start - 3 ),
+                "duration": secToStr( time-player.autoskip_start + 2 ),
+                "description": "",
+                "stop": secToStr( time-1 ),
+                "action": "Skip",
+                "skip": "Yes",
+                "id": Math.random().toString()
+            })
+            app.ask_before_close = true
+            player.autoskip_start = 0
+            loader.source = "Editor.qml"
+            if( settings.ask ) raise()
+        }
     }
 
 
@@ -1118,24 +1353,23 @@ ApplicationWindow {
         preview_data.start = start
         preview_data.stop  = stop
         if( player.execute.get_time() == -1 ){
-            if( !watch_movie() ) return
+            if( !watch_movie( true ) ) return
         }
-        player.autoskip_if_fast = false
         set_time( preview_data.start - 3 )
-        timer.stop()
         preview_data.times_failed = 0
-        preview_timer.stop()
-        preview_timer.start()
+        preview_data.preview_active = true
+        preview_data.watch_active = false
     }
 
 
 // Modify scenes start and end times to match the current movie.
-    function apply_sync( offset, speed, confidence )
+    function apply_sync( offset, speed, confidence, stimated_error )
     {
     // Prepare variables
-        console.log( "Applying sync: ", offset, speed, confidence )
         offset = parseFloat(offset)
         speed = parseFloat(speed)
+        stimated_error = stimated_error? stimated_error : 0
+        console.log( "Applying sync: ", offset, speed, confidence, stimated_error )
         var applied_offset = parseFloat( sync.applied_offset )
         var applied_speed  = parseFloat( sync.applied_speed  )
         if ( typeof offset !== 'number' || typeof speed !== 'number' ) return;
@@ -1143,15 +1377,23 @@ ApplicationWindow {
     // Loop over scenes unsyncing and applying new sync
         for( var i = 0; i < scenelistmodel.count; ++i){
             scene = scenelistmodel.get(i)
-            raw_start = (scene.start - applied_offset) / applied_speed
-            raw_end   = (scene.stop  - applied_offset) / applied_speed
-            scene.start = raw_start*speed + offset
-            scene.stop  = raw_end  *speed + offset
+            raw_start = ( hmsToSec(scene.start) - applied_offset ) / applied_speed
+            raw_end   = ( hmsToSec(scene.stop ) - applied_offset ) / applied_speed
+            scene.start = secToStr( raw_start*speed + offset )
+            scene.stop  = secToStr( raw_end  *speed + offset )
         }
     // Update applied values (needed for resync and sharing)
         sync.applied_offset = offset
         sync.applied_speed  = speed
         sync.confidence     = confidence
+        sync.stimated_error = stimated_error
+
+    // Play if user is waiting...
+        if( sync.confidence >= 2 && sync.play_after_sync == true ){
+            sync.play_after_sync = false
+            watch_movie( false )
+            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
+        }
     }
 
 
@@ -1175,14 +1417,50 @@ ApplicationWindow {
 
     }
 
-    function seconds_to_time( sec ) {
-        var hours      = Math.floor( sec/60/60 )
-        var minutes    = Math.floor( (sec - hours*60*60)/60 )
-        var seconds    = Math.floor( sec%60 )
-        var millis     = (sec*1000)%1000
-        return hours+":"+minutes+":"+seconds+":"+millis
+    function secToStr( time ) {
+    //http://stackoverflow.com/a/11486026/3766869
+        // Minutes and seconds
+        // var mins = ~~(time / 60);
+        // var secs = time % 60;
+        if( !time || time === -1) return ""
+        if(typeof time == "string" && time.match(":")) return time
+
+        // Hours, minutes and seconds
+        var hrs = ~~(time / 3600);
+        var mins = ~~((time % 3600) / 60);
+        var secs = ~~((time % 60)*1000)/1000;
+
+        // Output like "1:01" or "4:03:59" or "123:03:59"
+        var ret = "";
+
+        if (hrs > 0)
+            ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
+
+        ret += "" + mins + ":" + (secs < 10 ? "0" : "");
+        ret += "" + secs;
+        //console.log( "secToStr " +  time +" => " + ret )
+        return ret;
     }
 
+    function hmsToSec( str ){
+    //http://stackoverflow.com/a/9640417/3766869
+        if( !str ) return -1
+        if( isNumber(str) ) return str
+
+        var p = str.split(':'),
+            s = 0, m = 1;
+
+        while (p.length > 0) {
+            s += m * parseFloat(p.pop(), 10);
+            m *= 60;
+        }
+        //console.log( "hmsToSec " +  str +" => " + s )
+        return s;
+    }
+
+    function isNumber(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+    }
     function srtTimeToSeconds(time) {
       var match = time.match(/(\d\d):(\d\d):(\d\d),(\d\d\d)/);
       var hours        = +match[1],
@@ -1294,7 +1572,8 @@ ApplicationWindow {
 
     function sub_ready( str ){
         if( !str || str.length < 100 ){
-            get_subs()
+            console.log("bad sub")
+            //get_subs()
         }else{
             movie.subtitles_srt = str
             calibrate_from_subtitles()
@@ -1302,7 +1581,8 @@ ApplicationWindow {
     }
     function ref_ready( str ){
         if( !str || str.length < 100 ){
-            get_ref()
+            console.log("bad sub ref")
+            //get_ref()
         }else{
             movie.subref_srt = str
             calibrate_from_subtitles()
@@ -1316,15 +1596,33 @@ ApplicationWindow {
     }
 
     function try_to_sync_from_sub(){
-        /*if( data["SubLink"] ){
+        say_to_user("Imposible asegurar la sincronización")
+        /*try {
+            var data = JSON.parse( movie.data )
+        } catch(e){
+            say_to_user( qsTr( "Esto no debería haber pasado") )
+            return
+        }
+        if( data["SubLink"] ){
+            console.log("We have sublink")
             for( var i=0; i < data["SubLink"].length; ++i ){
+                console.log("We have sublink "+i)
                 if( data["SubLink"][i]["Hash"] === media.hash ){
-                    movie.subtitles = data["SubLink"][i]["Link"]
+                    console.log("We have sublink hash")
+                    movie.subtitles_eng = data["SubLink"][i]["Link"]["eng"]
+                    movie.subtitles_spa = data["SubLink"][i]["Link"]["spa"]
+                    movie.subtitles_por = data["SubLink"][i]["Link"]["por"]
+                    //movie.subtitles_eng = data["SubLink"][i]["Link"]["eng"]
                 }else{
-                    movie.subref = data["SubLink"][i]["Link"]
+                    console.log("We have sublink no hash")
+                    movie.subref_eng += ","+data["SubLink"][i]["Link"]["eng"]
+                    movie.subref_spa += ","+data["SubLink"][i]["Link"]["spa"]
+                    movie.subref_por += ","+data["SubLink"][i]["Link"]["por"]
                 }
             }
-        }*/
+        }
+        get_subs()
+        get_ref()*/
     }
 
 // Thats all folks

@@ -32,7 +32,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                RLabel{ text: qsTr("Actualizar manualmente") }
+                Label{ text: qsTr("Actualizar manualmente") }
                 Button{
                     text: "Actualizar"
                     onClicked: {
@@ -146,6 +146,7 @@ Item {
                     text: "No pulsar jamás"
                     Layout.fillWidth: true
                     onClicked: {
+                        Utils.get_shots("")
                         survey.visible = true
                         //Utils.update("")
                         //get_subs()
@@ -174,47 +175,6 @@ Item {
                 }
             }
         }
-
-
-        GroupBox {
-
-            Layout.fillWidth: true
-            GridLayout {
-                anchors.fill: parent
-                anchors.margins: 5
-                columns: 2
-
-                Label{
-                    Layout.columnSpan: 2
-                    color: "Green"
-                    font.pointSize: 10
-                    font.bold: true
-                    text: qsTr("Feedback")
-                    horizontalAlignment: Text.AlignHCenter
-                }
-
-                RLabel{
-                    Layout.columnSpan: 2
-                    text: qsTr("Muchas gracias por tu opinión")
-                }
-                TextField {
-                    id: feedback
-                    Layout.fillWidth: true
-                    onAccepted: {
-                        post( "action=feedback&idea="+feedback.text, function(){} )
-                        loader.source = "Open.qml"
-                    }
-                }
-                RButton {
-                    text: "Enviar feedback"
-                    onClicked: {
-                        post( "action=feedback&idea="+feedback.text, function(){} )
-                        loader.source = "Open.qml"
-                    }
-                }
-            }
-        }
-
 
     }
 }

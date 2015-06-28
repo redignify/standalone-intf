@@ -18,8 +18,8 @@
         <file>ToolTip.qml</file>
         <file>RCheckBox.qml</file>
         <file>images/UnknownMovie1.png</file>
-        <file>images/feedback.png</file>
-        <file>Feedback.qml</file>
+        <file>Collab.qml</file>
         <file>images/preferences-system.png</file>
+        <file>images/collaborate.png</file>
     </qresource>
 </RCC>

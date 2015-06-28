@@ -31,7 +31,8 @@ Item {
             Label{
                 font.family: "Helvetica"
                 Layout.minimumWidth: 480
-                font.pointSize: movie.title.length > 20? 16 : 24
+                Layout.maximumWidth: 480
+                font.pointSize: movie.title.length > 15? 16 : 18
                 font.bold: true
                 text: movie.title? movie.title : qsTr("Título desconocido")
                 horizontalAlignment: Text.AlignHCenter
@@ -61,7 +62,7 @@ Item {
                         color: "Green"
                         font.pointSize: 10
                         font.bold: true
-                        text: "Indica tu sensibilidad"
+                        text: "Indica los niveles máximos"
                         horizontalAlignment: Text.AlignHCenter
                     }
                     Label{
@@ -165,7 +166,6 @@ Item {
                    TableViewColumn{ role: "duration" ; title: "Length" ; width: 60; horizontalAlignment: Text.AlignLeft }
                    TableViewColumn{ role: "tags" ; title: "Tags" ; width: 100; horizontalAlignment: Text.AlignLeft }
                    TableViewColumn{ role: "description" ; title: "Comments" ; width: 215; horizontalAlignment: Text.AlignLeft }
-                   //TableViewColumn{ role: "start" ; title: "Start" ; width: 70; horizontalAlignment: Text.AlignLeft }
                    model: scenelistmodel
                    sortIndicatorVisible: true
                    //onSortIndicatorColumnChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
@@ -181,65 +181,81 @@ Item {
             GridLayout {
                 columns: 5
 
-                Label{
-                    Layout.columnSpan: 2
-                    //font.family: "Helvetica"
-                    color: "Green"
-                    font.pointSize: 10
-                    font.bold: true
-                    text: "Disfruta de la pelicula"
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Label{
-                    text: "(?)"
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            var msg = "Haz click en el botón para ver la película cortada"
-                            movie.msg_to_user = ""
-                            l_help_play.text = l_help_play.text == msg? "" : msg
-                            //l_msg.color = "blue"
+                RowLayout{
+                    Layout.columnSpan: 5
 
+                    Label{
+                        //font.family: "Helvetica"
+                        color: "Green"
+                        font.pointSize: 10
+                        font.bold: true
+                        text: "Disfruta de la pelicula"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Label{
+                        text: "(?)"
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                var msg = "Haz click en el botón para ver la película cortada"
+                                movie.msg_to_user = ""
+                                l_help_play.text = l_help_play.text == msg? "" : msg
+                                //l_msg.color = "blue"
+
+                            }
                         }
+                    }
+
+                    Label{
+                        id: l_help_play
+                        text:""
+                        font.bold: true
+                        color: "blue"
+                    }
+
+                    Label{
+                        //Layout.columnSpan : 2
+                        id: l_msg
+                        color: "red"
+                        text: movie.msg_to_user
+                        font.bold : true
+                        onTextChanged: l_help_play.text = ""
                     }
                 }
 
-                Label{
-                    id: l_help_play
-                    text:""
-                    font.bold: true
-                    color: "blue"
+                RowLayout{
+                    Layout.columnSpan: 5
+
+                    Button {
+                        id: watch
+                        tooltip: "Click to redignify and watch film"
+                        text: "Ver película personalizada"
+                        onClicked: {
+                            watch_movie( false )
+                            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
+                        }
+                    }
+
+                    Button {
+                        id: classic_watch
+                        visible: sync.shot_sync_failed
+                        text: "Ver película SIN personalizar"
+                        onClicked: {
+                            var confidence = sync.confidence
+                            sync.confidence = 2
+                            watch_movie( false )
+                            sync.confidence = confidence
+                            preview_data.watch_active = false
+                            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
+                        }
+                    }
+
+                    ProgressBar {
+                        visible: sync.play_after_sync
+                        indeterminate: true
+                    }
                 }
-
-                Label{
-                    //Layout.columnSpan : 2
-                    id: l_msg
-                    color: "red"
-                    text: movie.msg_to_user
-                    font.bold : true
-                    onTextChanged: l_help_play.text = ""
-                }
-
-
-                Button {
-                    id: watch
-                    tooltip: "Click to redignify and watch film"
-                    /*style: ButtonStyle {
-                      label: RText {
-                        //renderType: Text.NativeRendering
-                        //verticalAlignment: Text.AlignVCenter
-                        //horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: 10
-                        //font.bold: true
-                        color: "green"
-                        text: "Ver película sin escenas"
-                      }
-                    }*/
-                    text: "Ver película sin escenas"
-                    onClicked: sync_and_play()
-                }
-
-
             }
         }
     }
@@ -266,16 +282,6 @@ Item {
     }
 
 
-    function sync_and_play(){
-        if( sync.confidence === 0 ){
-            watch_movie()
-            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
-        }else{
-            watch_movie()
-            if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
-        }
-    }
-
     function toogle_selection()
     {
         if (scenelistmodel.get( playtableview.currentRow ).skip == "No" )
@@ -294,7 +300,7 @@ Item {
         for( var i = 0; i < scenelistmodel.count; ++i){
             if( typ === scenelistmodel.get(i).type )
             {
-                if( scenelistmodel.get(i).severity > 5 - val  ){
+                if( scenelistmodel.get(i).severity > val  ){  // severity > 5 - val
                     scenelistmodel.get(i).skip = "Yes"
                 }else{
                     scenelistmodel.get(i).skip = "No"
@@ -310,12 +316,12 @@ Item {
         }else if( typ == "Discrimination"){
             settings.pro = slider_pro.value
         }
-        if( slider_sn.value > 4 || slider_v.value > 3 || slider_d.value > 3 || slider_pro.value > 2 ){
+        /*if( slider_sn.value > 4 || slider_v.value > 3 || slider_d.value > 3 || slider_pro.value > 2 ){
             l_sensibiltiy.text = "Puede que alguna escena no sea filtrada"
             l_sensibiltiy.color = "red"
         }else{
             l_sensibiltiy.text = ""
-        }
+        }*/
 
     }
     function apply_filters( )
@@ -338,7 +344,7 @@ Item {
                 continue
             } else { continue; }
 
-            if( severity > 5 - selected_severity  ){
+            if( severity > selected_severity  ){
                 scenelistmodel.get(i).skip = "Yes"
             }else{
                 scenelistmodel.get(i).skip = "No"

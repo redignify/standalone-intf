@@ -24,7 +24,7 @@ Item {
             columns: 3
             //Layout.minimumWidth: 400
             //Layout.preferredWidth: 400
-            Layout.preferredHeight: 130
+            //Layout.preferredHeight: 130
 
             Label{
                 Layout.columnSpan: 3
@@ -38,13 +38,16 @@ Item {
 
             ComboBox {
                 id: type_combo
-                Layout.preferredWidth : 135
+                Layout.preferredWidth : 120
                 currentIndex: 1
-                //Layout.maximumWidth: 135
                 model: type_list
                 onCurrentIndexChanged: {
-                    if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
-                    scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
+                    try{
+                        if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
+                        scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
+                    }catch(e){
+                        // tableview migth not exits (just avoid error messages
+                    }
                 }
             }
 
@@ -53,8 +56,7 @@ Item {
             RSlider{
                 id: severity;
                 Layout.columnSpan: 2;
-//                Layout.fillWidth: true;
-                Layout.minimumWidth : 180
+                Layout.preferredWidth: 210
                 maximumValue: 4;
                 value: 0;
                 onValueChanged: {
@@ -62,6 +64,8 @@ Item {
                     scenelistmodel.set(tableview.currentRow, {"severity": value + 1 } )
                 }
             }
+
+        // Discrimination labels
             RCheckBox { id: race; text: qsTr("Raza"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Race", checked ) }
             RCheckBox { id: nati; text: qsTr("Nacionalidad"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Nationality", checked ) }
             RCheckBox { id: sexdisc;  text: qsTr("Machismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Machismo", checked ) }
@@ -69,8 +73,7 @@ Item {
             RCheckBox { id: rel; text: qsTr("Religión"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Religion", checked ) }
             RCheckBox { id: ideo; text: qsTr("Ideología"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Ideology", checked ) }
 
-            //RLabel { Layout.columnSpan: 1; text: qsTr("Violencia") }
-            //RSlider{ id: s_vio; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
+        // Violence labels
             CheckBox { id: phy; text: qsTr("Física"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Physical", checked ) }
             CheckBox { id: psico; text: qsTr("Psicológica"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Psicological", checked ) }
             CheckBox { id: animal;  text: qsTr("Animal"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Animal", checked ) }
@@ -78,59 +81,39 @@ Item {
             CheckBox { id: blo;  text: qsTr("Sangre"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Blood", checked ) }
             CheckBox { id: suf;  text: qsTr("Tortura"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Torture", checked ) }
 
-            //RLabel{ Layout.columnSpan: 1; text: qsTr("Sexo") }
-            /* https://orbitadiversa.wordpress.com/2013/01/28/cosificacion-sexual/
-                    reducción (
-                        1. parte
-                        5. disponibilidad
-                        7. lienzo
-                        2. soporte
-                    intercambio
-                        3. intercambiable
-                    humillación
-                        4. vejación
-                    mercancía
-                        6. mercancia
-            */
-            //RSlider{ id: s_sex; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
+        // Sex labels
+            /* https://orbitadiversa.wordpress.com/2013/01/28/cosificacion-sexual/ */
             CheckBox { id: nud; text: qsTr("Desnudo"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Nudity", checked ) }
             CheckBox { id: sen; text: qsTr("Sensualidad"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Sensuality", checked ) }
-            CheckBox { id: por; text: qsTr("Pornografía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Porn", checked ) }
+            //CheckBox { id: por; text: qsTr("Pornografía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Porn", checked ) }
             CheckBox { id: see; text: qsTr("Sexo explicito"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Explicit sex", checked ) }
-            CheckBox { id: obj; text: qsTr("Cosificación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Objetivation", checked ) }
+            //CheckBox { id: obj; text: qsTr("Cosificación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Objetivation", checked ) }
             CheckBox { id: inf; text: qsTr("Intercambiable"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Interchangeable", checked ) }
             CheckBox { id: hum; text: qsTr("Humillación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Humiliation", checked ) }
             CheckBox { id: mer; text: qsTr("Mercancía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Commodity", checked ) }
-            CheckBox { id: red; text: qsTr("Reducción"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Reduction", checked ) }
+            //CheckBox { id: red; text: qsTr("Reducción"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Reduction", checked ) }
 
-            //RLabel{ Layout.columnSpan: 1; text: qsTr("Drogas") }
-            //RSlider  { id: s_drugs; Layout.columnSpan: 2; maximumValue: 4; value: 0; }
+        // Drugs labels
             CheckBox { id: tob;  text: qsTr("Tabaco"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Tobaco", checked ) }
             CheckBox { id: alc;  text: qsTr("Alcohol"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Alcohol", checked ) }
             CheckBox { id: her;  text: qsTr("Heroina"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Heroine", checked ) }
             CheckBox { id: weed; text: qsTr("Porros"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Weed", checked ) }
             CheckBox { id: coc;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Cocaine", checked ) }
             CheckBox { id: oth;  text: qsTr("Otras"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Others", checked ) }
-            //CheckBox { id: con;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Ideology", checked ) }
 
-            //RLabel{ Layout.columnSpan: 3; text: qsTr("Global") }
+        // Generic labels
             CheckBox { id: plot; text: qsTr("Afecta a la trama"); checked: false; onClicked: add_tag("Plot", checked ) }
-//            CheckBox { id: grap; text: qsTr("Gráfica"); checked: true; onClicked: add_tag("Graphic", checked ) }
             CheckBox { id: mut;  text: qsTr("Sólo quitar sonido"); checked: false; onClicked: define_action( checked) }
-            CheckBox { id: cri;  text: qsTr("Crítica"); checked: false; onClicked: add_tag("Critic", checked ) }
-            /*RComboBox {
-                Layout.minimumWidth : 50
-                id: action_combo
-                model: action_list
-                onCurrentIndexChanged: scenelistmodel.set(tableview.currentRow, {"action": action_list.get(currentIndex).text })
-            }*/
+            //CheckBox { id: cri;  text: qsTr("Crítica"); checked: false; onClicked: add_tag("Critic", checked ) }
+
+        // Comments
             TextField {
                 Layout.columnSpan: 3
                 Layout.fillWidth: true
                 id: description_input
                 placeholderText: qsTr("Comentarios")
                 onTextChanged:{
-                    if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
+                    if( tableview.currentRow == -1 ){ add_blank_scene() }
                     scenelistmodel.set(tableview.currentRow, {"description": description_input.text })
                 }
             }
@@ -147,8 +130,6 @@ Item {
             Layout.rowSpan: 5
 
             Label{
-                //Layout.columnSpan: 4
-                //font.family: "Helvetica"
                 color: "Green"
                 font.pointSize: 10
                 font.bold: true
@@ -162,7 +143,6 @@ Item {
                sortIndicatorColumn: 1
                Layout.preferredWidth: 365
                Layout.preferredHeight: 250
-               //Layout.rowSpan: 3
 
                TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
                TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 50 }
@@ -181,8 +161,9 @@ Item {
                    type_combo.currentIndex     = type_combo.find( current_scene.type )
                    mut.checked                 = current_scene.action === "Mute"
                    severity.value              = current_scene.severity - 1
-                   start_input.text            = isNaN(current_scene.start)? "":current_scene.start
-                   stop_input.text             = isNaN(current_scene.stop)? "":current_scene.stop
+                   console.log( current_scene.start, current_scene.stop )
+                   start_input.text            = secToStr( current_scene.start )
+                   stop_input.text             = secToStr( current_scene.stop )//isNaN(current_scene.stop)? "":
                    description_input.text      = current_scene.description
                }else{
                    current_scene = {};
@@ -210,13 +191,13 @@ Item {
 
                nud.checked      = current_scene.tags.match("Nudity")
                sen.checked      = current_scene.tags.match("Sensuality")
-               por.checked      = current_scene.tags.match("Porn")
+               //por.checked      = current_scene.tags.match("Porn")
                see.checked      = current_scene.tags.match("Explicit sex")
-               obj.checked      = current_scene.tags.match("Objetivation")
+               //obj.checked      = current_scene.tags.match("Objetivation")
                inf.checked      = current_scene.tags.match("Interchangeable")
                hum.checked      = current_scene.tags.match("Humiliation")
                mer.checked      = current_scene.tags.match("Commodity")
-               red.checked      = current_scene.tags.match("Reduction")
+               //red.checked      = current_scene.tags.match("Reduction")
 
                tob.checked      = current_scene.tags.match("Tobaco")
                alc.checked      = current_scene.tags.match("Alcohol")
@@ -227,13 +208,13 @@ Item {
 
                plot.checked     = current_scene.tags.match("Plot")
                //grap.checked     = current_scene.tags.match("Graphic")
-               cri.checked      = current_scene.tags.match("Critic")
+               //cri.checked      = current_scene.tags.match("Critic")
            }
 
             }
             RowLayout{
 
-                RButton {
+                Button {
                     text: qsTr("Quitar de la lista")
                     Layout.fillWidth: true
                     onClicked: {
@@ -247,16 +228,16 @@ Item {
                     }
                 }
 
-                RButton {
+                Button {
                     text: qsTr("Compartir online")
                     Layout.fillWidth: true
                     onClicked: requestPass.visible = true
                 }
 
-                RButton {
+                Button {
                     text: qsTr("Guardar")
                     Layout.fillWidth: true
-                    onClicked: save_work()
+                    onClicked: save_work( false )
                 }
 
                 Button {
@@ -269,11 +250,9 @@ Item {
         }
 
         GroupBox {
-            //title: qsTr("Navega e inicio y fin")
             Layout.minimumWidth: 350
             GridLayout {
                 columns: 4
-                //Layout.minimumWidth: 400
 
                 Label{
                     Layout.columnSpan: 4
@@ -286,7 +265,6 @@ Item {
                 }
 
                 RowLayout {
-                    //Layout.minimumWidth: 400
                     Layout.columnSpan: 4
 
                     /*Button {
@@ -333,6 +311,9 @@ Item {
                     }*/
 
                 }
+
+                //Label{ text: "Empieza"; }
+
                 TextField {
                     id: start_input
                     Layout.fillWidth: true;
@@ -340,9 +321,9 @@ Item {
                     placeholderText: qsTr("Empieza")
                     onEditingFinished:{
                         if( tableview.currentRow == -1 ){ add_blank_scene() }
-                        scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                        scenelistmodel.set(tableview.currentRow, {"start": secToStr(start_input.text), "duration": secToStr( hmsToSec( stop_input.text ) - hmsToSec( start_input.text )) })
                     }
-                    onAccepted: start_input.text = get_time()
+                    onAccepted: start_input.text = secToStr( get_time() )
                 }
 
                 Button {
@@ -350,18 +331,20 @@ Item {
                     text: qsTr("Ahora")
                     onClicked: {
                         if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
-                        start_input.text = get_time()
-                        scenelistmodel.set(tableview.currentRow, {"start": parseFloat( start_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                        start_input.text = secToStr( get_time() )
+                        scenelistmodel.set(tableview.currentRow, {"start": secToStr(start_input.text), "duration": secToStr( hmsToSec(stop_input.text) - hmsToSec(start_input.text) ) })
                     }
                 }
 
                 Button {
                     Layout.fillWidth: true
                     text: qsTr("Ir")
-                    onClicked: player.execute.seek( parseFloat( start_input.text ) )
+                    onClicked: set_time( hmsToSec( start_input.text ) )
                 }
 
                 Label{ Layout.minimumWidth: 100}
+
+                //Label{  text: "Termina"; }
                 TextField {
                     id: stop_input
                     Layout.fillWidth: true;
@@ -369,9 +352,9 @@ Item {
                     placeholderText: qsTr("Termina")
                     onEditingFinished: {
                         if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
-                        scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                        scenelistmodel.set(tableview.currentRow, {"stop": secToStr(stop_input.text), "duration": secToStr( hmsToSec(stop_input.text) - hmsToSec(start_input.text) ) })
                     }
-                    onAccepted: stop_input.text = get_time()
+                    onAccepted: stop_input.text = secToStr( get_time() )
                 }
 
                 Button {
@@ -379,15 +362,15 @@ Item {
                     text: qsTr("Ahora")
                     onClicked: {
                         if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
-                        stop_input.text = get_time()
-                        scenelistmodel.set(tableview.currentRow, {"stop": parseFloat( stop_input.text ), "duration": parseFloat( stop_input.text - start_input.text)})
+                        stop_input.text = secToStr( get_time() )
+                        scenelistmodel.set(tableview.currentRow, {"stop": secToStr(stop_input.text), "duration": secToStr( hmsToSec(stop_input.text) - hmsToSec(start_input.text) ) })
                     }
                 }
 
                 Button {
                     Layout.fillWidth: true
                     text: qsTr("Ir")
-                    onClicked: player.execute.seek( parseFloat( stop_input.text ) )
+                    onClicked: set_time( hmsToSec( stop_input.text ) )
                 }
 
 
@@ -418,7 +401,14 @@ Item {
                 CheckBox {
                     Layout.minimumWidth: 75
                     text: qsTr("Previsualizar");
-                    onClicked: checked? preview_scene( parseFloat( start_input.text ), parseFloat( stop_input.text ) ) : preview_timer.stop()
+                    onClicked:{
+                        if(checked){
+                            preview_scene( hmsToSec( start_input.text ), hmsToSec( stop_input.text ) )
+                        }else{
+                            preview_data.watch_active = true
+                            preview_data.preview_active = false
+                        }
+                    }
                 }
 
                 Button {
@@ -475,10 +465,10 @@ Item {
             "type": type_list.get(type_combo.currentIndex).text,
             "tags":"",
             "severity": 0,//severity.value+1,//severity_list.get(severity_combo.currentIndex).text,
-            "start": parseFloat(""),//parseFloat( start_input.text ),
-            "duration": parseFloat(""),//parseFloat( stop_input.text ) - parseFloat( start_input.text ),
+            "start": "",//start_input.text ),
+            "duration": "",//parseFloat( stop_input.text ) - parseFloat( start_input.text ),
             "description": "",//description_input.text,
-            "stop": parseFloat(""),//parseFloat( stop_input.text ),
+            "stop": "",//parseFloat( stop_input.text ),
             "action": "Skip",//mut.checked? "Mute":"Skip",
             "skip": "No",
             "id": Math.random().toString()

@@ -12,9 +12,10 @@ Item {
         anchors.margins: 5
         columns: 3
         Component.onCompleted: {
-            mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425;
-            //mainWindow.minimumWidth = 505;mainWindow.minimumHeight = 355;
-            if(movie.imdbcode){bad_movie.visible = true}
+            //mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425;
+            mainWindow.minimumWidth = 505;mainWindow.minimumHeight = 355;
+            say_to_user("")
+            //if(movie.imdbcode){bad_movie.visible = true}
         }
 
         TextField {
@@ -55,7 +56,7 @@ Item {
             }
         }
 
-        RButton {
+        Button {
             id: search
             text: "Buscar"
             onClicked: search_movie()
@@ -137,26 +138,33 @@ Item {
     {
         var data = JSON.parse( movie.list )
         if ( !data ) return;
-        var imdbid = imdb_input.text? imdb_input.text : data["IDs"][id]
+        var imdbid = data["IDs"][id]? data["IDs"][id] : imdb_input.text
         if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
+        var hash = media.hash
+        var bytesize = media.bytesize
+        if( media.ignore_hash_on_search === true ){
+            hash = 0
+            bytesize = 0
+        }
         if( settings.user && settings.password ){
-            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize + "&username="+settings.user+"&password="+settings.password, show_list )
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize + "&username="+settings.user+"&password="+settings.password, show_list )
         }else{
-            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize, show_list )
         }
     }
 
 // A new input file has being selected, get hash and try to identify
     function parse_input_file()
     {
+        movie.imdbcode = ""
         media.hash     = Utils.get_hash( media.url )
         media.bytesize = Utils.get_size( media.url )
         if( media.hash === 'Error' ){ return }
 
         media.hash = pad(media.hash,16)
-        console.log( media.hash )
-        console.log( media.bytesize )
+        console.log( "New file with hash "+media.hash+" and bytesize "+media.bytesize )
         search_movie()
+        Utils.get_shots( media.url, settings.vlc_path )
     }
 
 // Horrible but cost effective solution to hash formating
@@ -169,101 +177,82 @@ Item {
 // Ask server for movie information
     function search_movie()
     {
-        if( search_cached_index( media.hash ) ){
+        var hash = media.hash
+        var bytesize = media.bytesize
+        if( media.ignore_hash_on_search === true ){
+            hash = 0
+            bytesize = 0
+        }
+        if( search_cached_index( hash ) ){
             loader.source = "Play.qml"
             load_movie()
         }else{
             var imdbid = imdb_input.text
             if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
-            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + media.hash + "&bytesize=" + media.bytesize, show_list )
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize, show_list )
         }
     }
 
 // Great! We have the content of the current movie. Load the data.
     function load_movie()
     {
-    //
-        //save_to_file( imdb_code , movie.data)
+        console.log( "Loading movie..." )
     // Read data
         if( movie.data === "" ) return;
-        console.log( movie.data )
         var data = JSON.parse( movie.data )
 
-    // Update filter status
+    // Update movie data
         movie.filter_status = data["FilterStatus"]? data["FilterStatus"] : 0
         movie.poster_url = data["Poster"]? data["Poster"] : ""
         movie.director = data["Director"]? data["Director"]: ""
         movie.pgcode = data["PGCode"]? "PG-Code: "+data["PGCode"]: ""
         movie.imdbrating = data["ImdbRating"]? "Imdb Rating: " + data["ImdbRating"] : ""
         movie.imdbcode = data["ImdbCode"]? data["ImdbCode"] : ""
+        movie.title = data["Title"]? data["Title"] : ""
+        media.ignore_hash_on_search = false
+        // Sync info
+        sync.applied_offset = 0
+        sync.applied_speed = 1
+        sync.confidence = 0
+        sync.stimated_error = 0
+        sync.play_after_sync = false
+        sync.shot_sync_failed = false
+        sync.sub_sync_failed = false
 
     // Parse scenes
         scenelistmodel.clear()
-        movie.title = data["Title"]? data["Title"] : "Unkown"
         var Scenes = data["Scenes"]
         for ( var i = 0; i < Scenes.length; ++i ) {
+            var start  = hmsToSec(Scenes[i]["Start"])
+            var stop   = hmsToSec(Scenes[i]["End"])
+            var tags   = Scenes[i]["Tags"]? Scenes[i]["Tags"] : Scenes[i]["SubCategory"]
             var item = {
                 "type": Scenes[i]["Category"],
-                "tags": Scenes[i]["Tags"]? Scenes[i]["Tags"] : Scenes[i]["SubCategory"],
+                "tags": tags? tags : "",
                 "severity": Scenes[i]["Severity"],
-                "start": Scenes[i]["Start"],
-                "duration": Scenes[i]["End"] - Scenes[i]["Start"],
+                "start": secToStr(start),
+                "duration":  secToStr( stop - start ),
                 "description": Scenes[i]["AdditionalInfo"],
-                "stop": Scenes[i]["End"],
+                "stop": secToStr(stop),
                 "action": Scenes[i]["Action"],
                 "skip": "Yes",
                 "id": Scenes[i]["id"]
             }
-            if( Scenes[i]["Category"] == "syn" ){
-                //syncscenelistmodel.append( item )
-                scenelistmodel.append( item )
-            } else {
-                scenelistmodel.append( item )
-            }
-        }
-    // Not yet defined if sync scenes go in "Scenes" or in "SyncScenes", lets be compatible with both
-        if ( data["SyncScenes"] )
-        {
-            var SyncScenes = data["SyncScenes"]
-            for ( var i = 0; i < SyncScenes.length; ++i) {
-                var item = {
-                    "type": SyncScenes[i]["Category"],
-                    "tags": SyncScenes[i]["Tags"]? SyncScenes[i]["Tags"] : SyncScenes[i]["SubCategory"],
-                    "severity": SyncScenes[i]["Severity"],
-                    "start": SyncScenes[i]["Start"],
-                    "duration": SyncScenes[i]["End"] - Scenes[i]["Start"],
-                    "description": SyncScenes[i]["AdditionalInfo"],
-                    "stop": SyncScenes[i]["End"],
-                    "action": SyncScenes[i]["Action"],
-                    "skip": "No"
-                }
-                //syncscenelistmodel.append( item )
-                scenelistmodel.append( item )
-            }
+            console.log( item.start, item.stop )
+            scenelistmodel.append( item )
+            console.log( scenelistmodel.get(scenelistmodel.count-1).start )
         }
 
-    // Sync (or at least try to)
-        if( data["SyncInfo"] ){
-            console.log( "Looking for sync info")
-            for( i=0; i<data["SyncInfo"].length; ++i ){
-                console.log( "Checking ", i, data["SyncInfo"][i]["Hash"], media.hash)
-                if( data["SyncInfo"][i]["Hash"] === media.hash ){
-                    apply_sync(data["SyncInfo"][i]["TimeOffset"],data["SyncInfo"][i]["SpeedFactor"],data["SyncInfo"][i]["Confidence"])
-                    break
-                }
-            }
-        }else{
-            if( Scenes.length == 0 ){
-                sync.confidence = 2; // We are the first!
-            }else{
-                sync.confidence = 0; // This should never happen
-                console.log("Empty SyncInfo received, but it was needed...")
-            }
-        }
+    // Sync, or try to
+        var index = sync_info_hash_index(data,media.hash)
+        console.log(index,data["SyncInfo"][index]["Hash"],data["SyncInfo"][index]["Confidence"])
+        apply_sync(data["SyncInfo"][index]["TimeOffset"],data["SyncInfo"][index]["SpeedFactor"],data["SyncInfo"][index]["Confidence"])
 
     // Apply filters
         loader.item.apply_filters()
     }
+
+
 
     function show_list( str )
     {
@@ -273,10 +262,16 @@ Item {
             return
         } else if ( jsonObject['ImdbCode'] && !jsonObject["IDs"] ){
             console.log( str )
-            movie.data = str
             loader.source = "Play.qml"
+            try {   // Check if we already have a cached version of that movie
+                var cached_movie = read_from_file( jsonObject["ImdbCode"] )
+                jsonObject = JSON.parse( cached_movie )
+                movie.data = cached_movie
+            } catch(e){
+                movie.data = str
+                save_to_file( str, jsonObject["ImdbCode"] )
+            }
             load_movie()
-            save_to_file( str, jsonObject["ImdbCode"] )
             add_to_index( jsonObject["ImdbCode"], media.hash )
         }else if ( jsonObject['Season'] ){
             movie.list = str
@@ -299,9 +294,9 @@ Item {
             dir.title = "Director"
             yea.title = "Year"
             dir.width = 165
-            for ( var i = 0; i < jsonObject["Titles"].length; ++i) {
+            for ( i = 0; i < jsonObject["Titles"].length; ++i) {
                 var year_director = jsonObject["Directors"][i].toString().split(",")
-                var item = {
+                item = {
                     "title": jsonObject["Titles"][i],
                     "year": parseFloat(year_director[0]),
                     "director": year_director[1]? year_director[1]: ""

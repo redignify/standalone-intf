@@ -22,7 +22,7 @@ class VLC_HTTP: public QObject
 public:
     explicit VLC_HTTP(QObject *parent = 0);
     Q_INVOKABLE bool connect_to_player( bool );
-    Q_INVOKABLE bool launch(QString );
+    Q_INVOKABLE bool launch(QString , bool preview);
     Q_INVOKABLE bool set_path(QString);
     Q_INVOKABLE void kill( );
     Q_INVOKABLE void seek( float );
@@ -62,6 +62,11 @@ public slots:
     void ask_time();
     void ready(QNetworkReply *reply);
     void provideAuthenication(QNetworkReply *reply, QAuthenticator *ator );
+
+
+signals:
+    void timeChanged( float time );
+    void playerLost();
 
 };
 

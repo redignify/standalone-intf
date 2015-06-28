@@ -17,6 +17,8 @@
 #include <QNetworkReply>
 #include <QProcess>
 #include <QApplication>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 #ifdef Q_OS_WIN  // Implement genWin32ShellExecute() especially for UAC
     #include "qt_windows.h"
@@ -133,8 +135,13 @@ uint64_t compute_hash(FILE * handle)
         return hash;
 }
 
-Utils::Utils()
+Utils::Utils(QObject *parent) :
+    QObject(parent),
+    m_process(new QProcess(this)),
+    m_process2(new QProcess(this))
 {
+    translator = new QTranslator(this);
+    selectLanguage("");
 }
 
 double Utils::get_size( QString filename ){
@@ -157,13 +164,197 @@ QString Utils::get_vlc_path()
 
 }
 
+void Utils::get_shots(QString file, QString vlc )
+{
+// Prepare enviroment, create dirr, clean...
+    qDebug() << "Getting shots";
+    QString appdata = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    if( !QDir( appdata ).exists() ){
+        QDir().mkpath( appdata );
+        qDebug() << "Creating dir...";
+    }
+    QFile::remove(appdata + "/movie_cuts.txt");
+    QFile::remove(appdata + "/movie_sample.avi");
+    m_process->kill();
+    disconnect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(try_to_calib()));
+    connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(parse_video()));
+    QString output = "'"+appdata+"\\movie_sample.avi'";
+//https://www.videolan.org/doc/streaming-howto/en/ch03.html
+//https://wiki.videolan.org/Transcode/
+//    QString cmd = "\""+vlc +"\" \""+ file + "\" --stop-time=400 --sout=#transcode{vcodec=MJPG,scale=0.25,vb=2500,acodec=none}:std{access=file,mux=avi,dst="+output+"} -I ncurses vlc://quit";
+    QString cmd = "\""+vlc +"\" \""+ file + "\" --stop-time=400 --sout=#transcode{vcodec=MJPG,deinterlace,scale=0.125,acodec=none}:std{access=file,mux=avi,dst="+output+"} -I ncurses vlc://quit";
+    //QString cmd = "\""+vlc +"\" \""+ file + "\" --stop-time=400 --sout=#transcode{scale=0.125,acodec=none}:std{access=file,mux=avi,dst="+output+"} -I ncurses vlc://quit";
+    m_process->start( cmd );
+
+/*
+    QFile::remove(appdata + "/movie_cuts2.txt");
+    QFile::remove(appdata + "/movie_sample2.avi");
+    m_process2->kill();
+    disconnect(m_process2, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(try_to_calib2()));
+    connect(m_process2, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(parse_video2()));
+    QString output2 = "'"+appdata+"\\movie_sample2.avi'";
+    QString cmd2 = "\""+vlc +"\" \""+ file + "\" --start-time=2000 --stop-time=2400 --sout=#transcode{scale=0.125,acodec=none}:std{access=file,mux=avi,dst="+output2+"} -I ncurses vlc://quit";
+    m_process2->start( cmd2 );
+//*/
+
+
+}
+
+void Utils::parse_video2(){
+    QString appdata = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    QFile video( appdata + "//movie_sample2.avi" );
+    if( !video.exists() ){
+        qDebug() << "No sample video2 to parse!";
+        return;
+    }
+    QFile app( appdata + "//parse2.bat" );
+    if( !app.exists() ){
+        QString ffprobe;
+        if( QFile::exists("C:/Program Files (x86)/Redignify/Sensible Cinema/ffprobe.exe")){
+            ffprobe = "C:/Program Files (x86)/Redignify/Sensible Cinema/ffprobe.exe";
+        }else{
+            ffprobe = QCoreApplication::applicationDirPath()+"/ffprobe.exe";
+        }
+        //ffprobe = ffprobe.replace("//","\\");
+        if( ffprobe == ""){
+            qDebug() << "No ffprobe";
+            return;
+        }else{
+            qDebug() << "ffprobe is at "+ffprobe;
+            QString parse_cmd = "\""+ffprobe+"\" -show_frames -of compact=p=0 -f lavfi \"movie=movie_sample2.avi,select=gt(scene\\,.01)\" > movie_cuts2.txt";
+            write_data(parse_cmd,"parse2.bat");
+        }
+    }
+
+    qDebug() << "Parsing converted video2";
+    m_process2->kill();
+    disconnect(m_process2, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(parse_video2()) );
+    connect(m_process2, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(try_to_calib2()));
+
+    m_process2->setWorkingDirectory( appdata );
+
+    QString cmd = "parse2.bat";
+    m_process2->start(appdata+"/"+cmd);
+}
+
+void Utils::parse_video()
+{
+    QString appdata = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    QFile video( appdata + "//movie_sample.avi" );
+    if( !video.exists() ){
+        qDebug() << "No sample video to parse!";
+        return;
+    }
+    QFile app( appdata + "//parse.bat" );
+    if( !app.exists() ){
+        QString ffprobe;
+        if( QFile::exists("C:/Program Files (x86)/Redignify/Sensible Cinema/ffprobe.exe")){
+            ffprobe = "C:/Program Files (x86)/Redignify/Sensible Cinema/ffprobe.exe";
+        }else{
+            ffprobe = QCoreApplication::applicationDirPath()+"/ffprobe.exe";
+        }
+        //ffprobe = ffprobe.replace("//","\\");
+        if( ffprobe == ""){
+            qDebug() << "No ffprobe";
+            return;
+        }else{
+            qDebug() << "ffprobe is at "+ffprobe;
+            QString parse_cmd = "\""+ffprobe+"\" -show_frames -of compact=p=0 -f lavfi \"movie=movie_sample.avi,select=gt(scene\\,.01)\" > movie_cuts.txt";
+            write_data(parse_cmd,"parse.bat");
+        }
+    }
+
+    qDebug() << "Parsing converted video";
+    m_process->kill();
+    disconnect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(parse_video()) );
+    connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),this, SLOT(try_to_calib()));
+
+    m_process->setWorkingDirectory( appdata );
+
+    QString cmd = "parse.bat";
+    m_process->start(appdata+"/"+cmd);
+}
+
+void Utils::try_to_calib(){
+    //qDebug() << m_process->readAll();
+    qDebug() << "Calib data is ready";
+
+    QString appdata = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    QFile cuts( appdata + "//movie_cuts.txt" );
+    if( !cuts.exists() ){
+        qDebug() << "No video cuts to read!";
+        return;
+    }
+    if (cuts.open(QIODevice::ReadOnly))
+    {
+       QTextStream in(&cuts);
+       QRegularExpressionMatch found;
+       QRegularExpressionMatch dif_found;
+       QRegularExpression re_time("pkt_pts_time=(\\d+\.\\d+)");
+       QRegularExpression re_dif("tag:lavfi.scene_score=(\\d+\.\\d+)");
+       QString times = "[0";
+       QString diffs = "[0";
+
+       while (!in.atEnd())
+       {
+          QString output = in.readLine();
+          if( output.contains(re_time,&found) && output.contains(re_dif,&dif_found) ){
+              times += "," + found.capturedTexts()[1];
+              diffs += "," + dif_found.capturedTexts()[1];
+          }
+       }
+       cuts.close();
+       //qDebug() << "Cuts file readed";
+       emit calibDataReady( times+"]", diffs+"]", 1 );
+    }else{
+        qDebug() << "Impossible to open cuts file";
+    }
+}
+
+
+void Utils::try_to_calib2(){
+    //qDebug() << m_process->readAll();
+    qDebug() << "Calib data is ready";
+
+    QString appdata = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
+    QFile cuts( appdata + "//movie_cuts2.txt" );
+    if( !cuts.exists() ){
+        qDebug() << "No video cuts to read!";
+        return;
+    }
+    if (cuts.open(QIODevice::ReadOnly))
+    {
+       QTextStream in(&cuts);
+       QRegularExpressionMatch found;
+       QRegularExpressionMatch dif_found;
+       QRegularExpression re_time("pkt_pts_time=(\\d+\.\\d+)");
+       QRegularExpression re_dif("tag:lavfi.scene_score=(\\d+\.\\d+)");
+       QString times = "[0";
+       QString diffs = "[0";
+
+       while (!in.atEnd())
+       {
+          QString output = in.readLine();
+          if( output.contains(re_time,&found) && output.contains(re_dif,&dif_found) ){
+              times += "," + found.capturedTexts()[1];
+              diffs += "," + dif_found.capturedTexts()[1];
+          }
+       }
+       cuts.close();
+       //qDebug() << "Cuts file2 readed";
+       emit calibDataReady( times+"]", diffs+"]", 2 );
+    }else{
+        qDebug() << "Impossible to open cuts file2";
+    }
+}
 
 bool Utils::update( QString url )
 {
     manager = new QNetworkAccessManager();
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(ready(QNetworkReply*)));
-    QNetworkRequest req(QUrl("http://fcinema.org/updater.exe"));
+    QNetworkRequest req(QUrl("http://fcinema.org/updater2.exe"));
     manager->get(req);
+    return true;
 }
 
 
@@ -233,7 +424,7 @@ bool Utils::write_data(QString data, QString filename )
         qDebug() << "Creating dir...";
         //QDir().mkdir( path );
     }
-    QFile file( path + '//' + filename );
+    QFile file( path + "//" + filename );
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << file.errorString();
     }else{
@@ -250,7 +441,7 @@ QString Utils::read_data(QString filename)
     QString path = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
     qDebug()<< "Reading data from " << filename;
 
-    QFile file( path + '//' + filename );
+    QFile file( path + "//" + filename );
     if( !file.exists() ){
         qDebug() << "No file!";
         return false;
@@ -259,7 +450,7 @@ QString Utils::read_data(QString filename)
         qDebug() << file.errorString();
     }else{
         QString output = file.readAll();
-        qDebug() << "Readed! " << output;
+        qDebug() << "Readed! ";// << output;
         file.close();
         return output;
     }
@@ -277,12 +468,36 @@ QString Utils::read_external_data(QString filename)
         //return false;
     }
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
-        qDebug() << file.errorString();
+        qDebug() << "Error:" << file.errorString();
     }else{
         QString output = file.readAll();
-        qDebug() << "Readed! " << output;
+        qDebug() << "Readed! ";// << output;
         file.close();
         return output;
     }
     return false;
+}
+
+
+
+ bool Utils::selectLanguage(QString language) {
+  if( language == "" ){
+      qDebug() << QLocale::system().language();
+      if( QLocale::system().language() == 111 ){
+          language = "sp";
+      }else{
+          language = "en";
+      }
+  }
+  qDebug() << "Selecting language " << language;
+  if(language == QString("en")) {
+   qDebug() << "Loading english";
+   qDebug() << translator->load("en",QCoreApplication::applicationDirPath());
+   qDebug() << qApp->installTranslator(translator);
+  }else if(language == QString("sp")) {
+    qDebug() << "Loading spanish";
+  } else {
+    qDebug() << "Unkown language " << language;
+  }
+
 }

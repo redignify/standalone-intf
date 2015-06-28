@@ -23,6 +23,7 @@ VLC_HTTP::VLC_HTTP(QObject *parent) :
     rate = 1;
     time = -1;
     title = "Title ;)";
+    autoskip_pressed = false;
 
     // Special thanks to http://www.tizenexperts.com/2011/09/add-http-authentication-support-qt-applications-nokia-developer-wiki/
     manager = new QNetworkAccessManager();
@@ -55,8 +56,8 @@ bool VLC_HTTP::connect_to_player( bool fast )
     return false;
 }
 
-void VLC_HTTP::ask_time(){
-
+void VLC_HTTP::ask_time()
+{
     QNetworkRequest req(QUrl("http://localhost:8080/requests/status.xml"));
     manager->get(req);
 }
@@ -74,7 +75,7 @@ bool VLC_HTTP::set_path(QString program_path)
     return true;
 }
 
-bool VLC_HTTP::launch( QString file )
+bool VLC_HTTP::launch( QString file, bool preview )
 {
     if(lock) return false;
     lock = true;
@@ -86,6 +87,9 @@ bool VLC_HTTP::launch( QString file )
         qDebug() << "Starting VLC with " << file;
         QString program = path;
         QStringList arguments;
+        if( preview ){
+            arguments <<"--no-autoscale"<<"--width"<<"300"<<"--height"<<"250";//--canvas-width=250";
+        }
         arguments << "--intf"<<"qt"<<"--extraintf"<<"http"<<"--http-host"<<"localhost:8080"<<"--http-password"<<"pass" << file;
         //arguments << "--intf=qt"<<"--extraintf=http"<<"--http-host=localhost:8080"<<"--http-password=pass" << file;
         qDebug() << arguments;
@@ -120,7 +124,7 @@ QString VLC_HTTP::get_title()
 void VLC_HTTP::ready( QNetworkReply* reply )
 {
     if (reply->error() == QNetworkReply::NoError) {
-        qDebug() << "New data! " << QTime::currentTime();
+        //qDebug() << "New data! " << QTime::currentTime();
         QString output = reply->readAll();
         QRegularExpressionMatch found;
 
@@ -132,17 +136,23 @@ void VLC_HTTP::ready( QNetworkReply* reply )
         if( output.contains(re_vol,&found) ){
             int vol = found.capturedTexts()[1].toFloat();
             volume = vol == 0? volume : vol; // Avoid capturing volume when muted
-            qDebug() << "Volume is: " << volume;
+            //qDebug() << "Volume is: " << volume;
         }
         if( output.contains(re_len,&found) ){
-            length = found.capturedTexts()[1].toFloat(); qDebug() << "Length is: " << length;
+            length = found.capturedTexts()[1].toFloat();
+            //qDebug() << "Length is: " << length;
         }
         if( output.contains(re_pos,&found) ){
             position = found.capturedTexts()[1].toFloat();
-            time = length*position;     qDebug() << "Time is: " << time;
+            if( time != length*position ){
+                time = length*position;
+                emit timeChanged(time);
+            }
+            //qDebug() << "Time is: " << time;
         }
         if( output.contains(re_rate,&found) ){
-            rate = found.capturedTexts()[1].toFloat(); qDebug() << "Rate is: " << rate;
+            rate = found.capturedTexts()[1].toFloat();
+            //qDebug() << "Rate is: " << rate;
             autoskip_pressed = rate > 1.1;
         }
         is_connected = true;
@@ -151,7 +161,10 @@ void VLC_HTTP::ready( QNetworkReply* reply )
     else {
         //failure
         qDebug() << "Failure" <<reply->errorString();
-        is_connected = false;
+        if( is_connected ){
+            is_connected = false;
+            emit playerLost();
+        }
         time = -1;
         delete reply;
     }
@@ -163,6 +176,10 @@ void VLC_HTTP::kill()
   // Elegant solution
     QNetworkRequest req(QUrl( "http://localhost:8080/requests/status.xml?command=shutdown" ));
     manager->get(req);
+
+  // Stop timer
+    timer->stop();
+    qDebug() << "killing timer";
 
   // Hardcore solution
     m_process->close();
@@ -201,6 +218,7 @@ void VLC_HTTP::seek( float sec )
 */
 void VLC_HTTP::toggle_fullscreen( void )
 {
+    qDebug() << "Going to fullscreen";
     QNetworkRequest req(QUrl( "http://localhost:8080/requests/status.xml?command=fullscreen" ));
     manager->get(req);
 }
