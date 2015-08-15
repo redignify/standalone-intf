@@ -70,7 +70,7 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                l_sensibiltiy.text = (l_sensibiltiy.text=="Llena las barras para un filtrado severo")? "" : "Llena las barras para un filtrado severo"
+                                l_sensibiltiy.text = (l_sensibiltiy.text=="Vacia las barras para un filtrado severo")? "" : "Vacia las barras para un filtrado severo"
                                 l_sensibiltiy.color = "blue"
                             }
                         }

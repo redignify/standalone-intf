@@ -44,6 +44,7 @@ bool VLC_HTTP::connect_to_player( bool fast )
     for (int i=1;i<max;i++) {
         if( get_time() != -1 ){
             qDebug() << "Connected";
+            if( !fast ) delay(500); // Wait a few ms, otherwise is to early for sending commands (eg. fullscreen...)
             lock = false;
             return true;
         }

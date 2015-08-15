@@ -141,31 +141,41 @@ Utils::Utils(QObject *parent) :
     m_process2(new QProcess(this))
 {
     translator = new QTranslator(this);
-    selectLanguage("");
+    selectLanguage(111); // 111 always spanish, -1 system default language
 }
 
+// Get the size of a file
 double Utils::get_size( QString filename ){
     filename = QQmlFile::urlToLocalFileOrQrc(filename);
     std::ifstream in(filename.toStdString().c_str(), std::ifstream::ate | std::ifstream::binary);
     return in.tellg();
 }
 
+// Search for vlc executable
 QString Utils::get_vlc_path()
 {
-    qDebug() << "Computing path";
+    qDebug() << "Searching vlc executable";
     QString x86 = "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe";
     QFile file( x86 ); if( file.exists() ) return x86;
 
     QString x64 = "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
     QFile file64( x64 ); if( file64.exists() ) return x64;
 
-    return "vlc";
+    QString MacOS = "/Applications/VLC.app/Contents/MacOS/VLC";
+    QFile fileMacOS( MacOS ); if( fileMacOS.exists() ) return MacOS;
 
+    return "vlc";
 
 }
 
+
+// Get the times where a new shot start
 void Utils::get_shots(QString file, QString vlc )
 {
+#ifdef Q_OS_WIN
+#else
+    return;
+#endif
 // Prepare enviroment, create dirr, clean...
     qDebug() << "Getting shots";
     QString appdata = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
@@ -348,19 +358,26 @@ void Utils::try_to_calib2(){
     }
 }
 
+// Download the updater
 bool Utils::update( QString url )
 {
-    manager = new QNetworkAccessManager();
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(ready(QNetworkReply*)));
-    QNetworkRequest req(QUrl("http://fcinema.org/updater2.exe"));
-    manager->get(req);
-    return true;
+    #ifdef Q_OS_WIN
+        manager = new QNetworkAccessManager();
+        connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updater_ready(QNetworkReply*)));
+        QNetworkRequest req(QUrl("http://fcinema.org/updater2.exe"));
+        manager->get(req);
+        return true;
+    #else
+        return false
+    #endif
+
 }
 
-
-void Utils::ready( QNetworkReply* reply )
+// Run the updater
+void Utils::updater_ready( QNetworkReply* reply )
 {
     if (reply->error() == QNetworkReply::NoError) {
+    // Save updater data to disk
         QString tempPath =  QStandardPaths::writableLocation( QStandardPaths::TempLocation );
         QString updater = tempPath + "\\updater.exe";
         qDebug() << "Updater path: " << updater;
@@ -369,23 +386,16 @@ void Utils::ready( QNetworkReply* reply )
         if( file.exists() ) file.remove();
         if(!file.open(QIODevice::WriteOnly )) {
             qDebug() << file.errorString();
-        }else{
-            qDebug() << file.write( data );
-            file.close();
-            QString AppToExec = updater;
-            // Put any required parameters of App2.exe to AppParams string
-            QString AppParams = "";
-            if (0 != genWin32ShellExecute(AppToExec,
-                                          "",    // default verb: "open" or "exec"
-                                          AppParams,
-                                          false, // run hidden
-                                          false)) // wait to finish
-            {
-                qDebug() << "Error";
-            }
-            QApplication::quit();
-
+            delete reply;
+            return;
         }
+        qDebug() << file.write( data );
+        file.close();
+    // Run updater
+        #ifdef Q_OS_WIN
+            if (0 != genWin32ShellExecute( updater, "", "", false, false) ) qDebug() << "Error";
+        #endif
+        QApplication::quit();
         delete reply;
     }
     else {
@@ -394,6 +404,8 @@ void Utils::ready( QNetworkReply* reply )
     }
 
 }
+
+// Compute the hash of a media file
 QString Utils::get_hash( QString filename)
 {
     FILE * handle;
@@ -404,7 +416,7 @@ QString Utils::get_hash( QString filename)
     if (!handle) { return "Error"; }
     myhash = compute_hash(handle);
     char temp[32]; // its 16, but just in case
-    #ifdef WIN32
+    #ifdef Q_OS_WIN
         sprintf(temp, "%I64x", myhash);
     #else
         sprintf(temp, "%" PRIx64, myhash);
@@ -415,6 +427,8 @@ QString Utils::get_hash( QString filename)
     return hash;
 }
 
+
+// Write string "data" to a file with filename "filename" inside the system default folder for fcinema
 bool Utils::write_data(QString data, QString filename )
 {
     QString path = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
@@ -436,6 +450,7 @@ bool Utils::write_data(QString data, QString filename )
     return false;
 }
 
+// Read a string of data from the file with filename "filename" inside the fcinema's default OS folder
 QString Utils::read_data(QString filename)
 {
     QString path = QStandardPaths::writableLocation( QStandardPaths::AppDataLocation );
@@ -444,7 +459,7 @@ QString Utils::read_data(QString filename)
     QFile file( path + "//" + filename );
     if( !file.exists() ){
         qDebug() << "No file!";
-        return false;
+        return QString();
     }
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
         qDebug() << file.errorString();
@@ -454,50 +469,46 @@ QString Utils::read_data(QString filename)
         file.close();
         return output;
     }
-    return false;
+    return QString();
 }
+
 
 QString Utils::read_external_data(QString filename)
 {
     filename = QQmlFile::urlToLocalFileOrQrc(filename);
-    qDebug()<< "Reading data from " << filename;
-
     QFile file( filename );
+    qDebug() << "Reading data from " << filename;
+
     if( !file.exists() ){
         qDebug() << "No file!";
-        //return false;
+        return QString();
     }
+
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
         qDebug() << "Error:" << file.errorString();
-    }else{
-        QString output = file.readAll();
-        qDebug() << "Readed! ";// << output;
-        file.close();
-        return output;
+        return QString();
     }
-    return false;
+
+    QString output = file.readAll();
+    qDebug() << "Readed! ";
+    file.close();
+    return output;
 }
 
 
+// Set fcinema language to...
+bool Utils::selectLanguage(int language) {
+// If no language specified, use system language
+    if( language == -1 ){
+        language = QLocale::system().language();
+    }
 
- bool Utils::selectLanguage(QString language) {
-  if( language == "" ){
-      qDebug() << QLocale::system().language();
-      if( QLocale::system().language() == 111 ){
-          language = "sp";
-      }else{
-          language = "en";
-      }
-  }
-  qDebug() << "Selecting language " << language;
-  if(language == QString("en")) {
-   qDebug() << "Loading english";
-   qDebug() << translator->load("en",QCoreApplication::applicationDirPath());
-   qDebug() << qApp->installTranslator(translator);
-  }else if(language == QString("sp")) {
-    qDebug() << "Loading spanish";
-  } else {
-    qDebug() << "Unkown language " << language;
-  }
-
+// Load language
+    if( language == 111 ){
+        qDebug() << "Loading spanish";
+    }else{
+        qDebug() << "Loading english: ";
+        qDebug() << translator->load("en",QCoreApplication::applicationDirPath());
+        qDebug() << qApp->installTranslator(translator);
+    }
 }

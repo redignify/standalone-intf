@@ -83,10 +83,10 @@ ApplicationWindow {
         property string password
         property double time_margin: 0.3
         property bool start_fullscreen: true
-        property int sn: 2
-        property int v: 2
-        property int d: 2
-        property int pro: 2
+        property int sn: 6
+        property int v: 6
+        property int d: 6
+        property int pro: 6
         property bool ask: true
         property bool autoshare: true
         property string default_player: "VLC"
@@ -269,7 +269,7 @@ ApplicationWindow {
 // Ask user what to do before closing
     Dialog {
         id: before_closing
-        width: 275
+        width: 290
         //height: 100
         standardButtons: StandardButton.NoButton
         title: "Wait!"
@@ -567,7 +567,7 @@ ApplicationWindow {
                 placeholderText: "Optional"
             }
 
-            RLabel{ text: qsTr("Violencia etiquetada") }
+            /*Label{ text: qsTr("Violencia etiquetada") }
             RComboBox {
                 Layout.fillWidth: true
                 id: status_combo_violence
@@ -591,13 +591,13 @@ ApplicationWindow {
                 currentIndex: settings.pro
             }
 
-            RLabel{ text: qsTr("Drogas etiquetada") }
+            Label{ text: qsTr("Drogas etiquetada") }
             RComboBox {
                 Layout.fillWidth: true
                 id: status_combo_dro
                 model: status_list_pro
                 currentIndex: settings.d
-            }
+            }*/
             CheckBox {
                 id: c_new_user
                 text: qsTr("New user");
@@ -938,7 +938,7 @@ ApplicationWindow {
         }
         var str = pack_data()
         post( "action=modify&data="+str+"&username="+user+"&password="+pass, thanks_for_sharing )
-        //save_to_file( str, jsonObject["ImdbCode"] ) autosave to disk when sharing
+        save_to_file( str, jsonObject["ImdbCode"] ) // autosave to disk when sharing
     }
 
     function thanks_for_sharing( str ){
@@ -1149,7 +1149,7 @@ ApplicationWindow {
         http.open("POST", url, true);
 
     // Send the proper header information along with the request
-        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
         http.setRequestHeader("Content-length", params.length);
         http.setRequestHeader("Connection", "close");
 
@@ -1192,7 +1192,7 @@ ApplicationWindow {
     function edl_check( time )
     {
     // Get current time and prepare
-        if( !skiplist.get(0) ) return
+        //if( !skiplist.get(0) ) return
         console.log( "Checking ", time)
         var start, stop
     // Check current time against all unwanted scenes
@@ -1254,7 +1254,7 @@ ApplicationWindow {
         //if( fillSkipList() === -1 ) return
 
     // Make sure we are on sync
-        if( sync.confidence < 1 ){
+        if( sync.confidence < 1 && scenelistmodel.count > 0 ){
             if( sync.shot_sync_failed ){
                 say_to_user("La pelicula no esta sincronizada")
             }else{
@@ -1308,7 +1308,6 @@ ApplicationWindow {
 
         // Autoskip is presed
         if ( preview_data.preview_active && !preview_data.watch_active ) return
-
         var autoskip = player.execute.is_autoskiping();
         if ( autoskip & !player.autoskip_pressed ){
             console.log("Autoskip start")

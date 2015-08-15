@@ -25,7 +25,7 @@ public:
     Q_INVOKABLE QString read_external_data(QString );
     Q_INVOKABLE QString get_vlc_path( );
     Q_INVOKABLE void get_shots(QString , QString vlc);
-    Q_INVOKABLE bool selectLanguage(QString language);
+    Q_INVOKABLE bool selectLanguage( int language );
 
 
 private:
@@ -36,7 +36,7 @@ private:
     QTimer *timer;
 
 public slots:
-    void ready(QNetworkReply *reply);
+    void updater_ready(QNetworkReply *reply);
     void parse_video();
     void parse_video2();
     void try_to_calib();

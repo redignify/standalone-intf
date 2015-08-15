@@ -37,6 +37,7 @@ Item {
                     text: "Actualizar"
                     onClicked: {
                         Utils.update("")
+                        say_to_user("Descargando actualización, puede llevar unos segundos")
                     }
                 }
 
@@ -174,6 +175,16 @@ Item {
                     onEditingFinished: apply_sync( parseFloat(offset.text), parseFloat(speed.text), 1 )
                 }
             }
+        }
+
+        Label{
+            id: l_msg
+            color: "red"
+            text: movie.msg_to_user
+            textFormat: Text.PlainText
+            verticalAlignment: Text.AlignVCenter
+            Layout.fillWidth: true
+            font.bold : true
         }
 
     }

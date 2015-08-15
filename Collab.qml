@@ -1,7 +1,7 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.1
+import QtQuick.Controls 1.3
 
 
 Item {
@@ -34,7 +34,7 @@ Item {
                     Layout.columnSpan: 2
                     text: qsTr("Muchas gracias por tu opinión")
                 }
-                TextField {
+                /*TextField {
                     id: feedback
                     Layout.minimumWidth: 200
                     Layout.fillWidth: true
@@ -44,10 +44,18 @@ Item {
                             say_to_user("Gracias por tu opinión")
                         } )
                     }
+                }*/
+
+                TextArea {
+                    id: feedback
+                    Layout.minimumWidth: 200
+                    Layout.maximumHeight: 65
+                    Layout.fillWidth: true
                 }
+
                 Button {
                     text: "Enviar feedback"
-                    onClicked: post( "action=feedback&idea="+feedback.text, function(){
+                    onClicked: post( "action=feedback&idea= Hola! soy "+settings.user+" quería decirte que "+feedback.text, function(){
                         feedback.text = qsTr("Recibido, gracias!")
                         say_to_user("Gracias por tu opinión")
                     } )

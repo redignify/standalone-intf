@@ -6,18 +6,18 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="29"/>
         <source>Feedback</source>
-        <translation type="unfinished"></translation>
+        <translation>Feedback</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="35"/>
         <source>Muchas gracias por tu opinión</source>
-        <translation type="unfinished"></translation>
+        <translation>Thanks for you help</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="43"/>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="51"/>
         <source>Recibido, gracias!</source>
-        <translation type="unfinished"></translation>
+        <translation>Thanks!</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="72"/>
@@ -27,17 +27,17 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="78"/>
         <source>Fcinema es gratuito, los gastos se cubren con donativos...</source>
-        <translation type="unfinished"></translation>
+        <translation>Fcinema is free...</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="100"/>
         <source>Añadir contenido</source>
-        <translation type="unfinished"></translation>
+        <translation>Add content</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="106"/>
         <source>Fcinema no sería posible sin la base de datos. Si crees que falta contenido...</source>
-        <translation type="unfinished"></translation>
+        <translation>Fcinema needs a db...</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="124"/>
@@ -47,17 +47,17 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="130"/>
         <source>Si sabes de programación o ...</source>
-        <translation type="unfinished"></translation>
+        <translation>If you know somthing about coding...</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="148"/>
         <source>Difundir</source>
-        <translation type="unfinished"></translation>
+        <translation>Spread</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Collab.qml" line="154"/>
         <source>¿Te gusta fcinema? Ayuda a otros a descubrirlo...</source>
-        <translation type="unfinished"></translation>
+        <translation>Do you like fcinema? Share the spirit...</translation>
     </message>
 </context>
 <context>
@@ -65,17 +65,17 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="31"/>
         <source>Básico</source>
-        <translation type="unfinished">Basic</translation>
+        <translation>Basic</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="35"/>
         <source>Actualizar manualmente</source>
-        <translation type="unfinished"></translation>
+        <translation>Update manually</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="51"/>
         <source>Empezar en pantalla completa</source>
-        <translation type="unfinished"></translation>
+        <translation>Start player on fullscreen</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="53"/>
@@ -85,12 +85,12 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="59"/>
         <source>Compartir información automáticamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatically share sync info</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="66"/>
         <source>Reproductor favorito</source>
-        <translation type="unfinished"></translation>
+        <translation>Favourite player</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="91"/>
@@ -100,7 +100,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="95"/>
         <source>Calibración guiada</source>
-        <translation type="unfinished"></translation>
+        <translation>Guided sync</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="97"/>
@@ -110,7 +110,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="103"/>
         <source>Saltar antes de las escenas</source>
-        <translation type="unfinished"></translation>
+        <translation>Secs to jump before scenes</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="109"/>
@@ -130,12 +130,12 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="160"/>
         <source>Diferencia tiempo entre versiones</source>
-        <translation type="unfinished"></translation>
+        <translation>Time difference</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Config.qml" line="169"/>
         <source>Diferencia velocidad entre versiones</source>
-        <translation type="unfinished"></translation>
+        <translation>Speed difference between versions</translation>
     </message>
 </context>
 <context>
@@ -143,77 +143,77 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="69"/>
         <source>Raza</source>
-        <translation type="unfinished"></translation>
+        <translation>Race</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="70"/>
         <source>Nacionalidad</source>
-        <translation type="unfinished"></translation>
+        <translation>Nationality</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="71"/>
         <source>Machismo</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="72"/>
         <source>Homofobia</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="73"/>
         <source>Religión</source>
-        <translation type="unfinished"></translation>
+        <translation>Religion</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="74"/>
         <source>Ideología</source>
-        <translation type="unfinished"></translation>
+        <translation>Ideology</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="77"/>
         <source>Física</source>
-        <translation type="unfinished"></translation>
+        <translation>Physical</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="78"/>
         <source>Psicológica</source>
-        <translation type="unfinished"></translation>
+        <translation>Psicological</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="79"/>
         <source>Animal</source>
-        <translation type="unfinished"></translation>
+        <translation>Animal</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="80"/>
         <source>Sadismo</source>
-        <translation type="unfinished"></translation>
+        <translation>Sadism</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="81"/>
         <source>Sangre</source>
-        <translation type="unfinished"></translation>
+        <translation>Blood</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="82"/>
         <source>Tortura</source>
-        <translation type="unfinished"></translation>
+        <translation>Torture</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="86"/>
         <source>Desnudo</source>
-        <translation type="unfinished"></translation>
+        <translation>Nudity</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="87"/>
         <source>Sensualidad</source>
-        <translation type="unfinished"></translation>
+        <translation>Sensuality</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="89"/>
         <source>Sexo explicito</source>
-        <translation type="unfinished"></translation>
+        <translation>Explicit sex</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Editor.qml" line="91"/>
@@ -411,17 +411,17 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Play.qml" line="37"/>
         <source>Título desconocido</source>
-        <translation type="unfinished"></translation>
+        <translation>Unkown title</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Play.qml" line="88"/>
         <source>Discriminación</source>
-        <translation type="unfinished"></translation>
+        <translation>Discrimination</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Play.qml" line="96"/>
         <source>Violencia</source>
-        <translation type="unfinished"></translation>
+        <translation>Violence</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Play.qml" line="103"/>
@@ -431,7 +431,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/Play.qml" line="111"/>
         <source>Drogas</source>
-        <translation type="unfinished"></translation>
+        <translation>Drugs</translation>
     </message>
 </context>
 <context>
@@ -444,7 +444,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="280"/>
         <source>Has hecho algunos cambios... ¿que quieres hacer?</source>
-        <translation type="unfinished"></translation>
+        <translation>You have made some changes... what do you want to do?</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="283"/>
@@ -464,12 +464,12 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="309"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="333"/>
         <source>¿No es esta la película que estas viendo?</source>
-        <translation type="unfinished"></translation>
+        <translation>Not this movie?</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="339"/>
@@ -479,7 +479,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="352"/>
         <source>Sí, sí es</source>
-        <translation type="unfinished"></translation>
+        <translation>Yes, it is</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="360"/>
@@ -489,38 +489,38 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="386"/>
         <source>Seleccione el fichero a importar</source>
-        <translation type="unfinished"></translation>
+        <translation>Select file to import</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="391"/>
         <source>Filter file</source>
-        <translation type="unfinished"></translation>
+        <translation>Filter file</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="419"/>
         <source>¿tú que opinas?</source>
-        <translation type="unfinished"></translation>
+        <translation>what do you think?</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="423"/>
         <source>¿hemos filtrado bien?</source>
-        <translation type="unfinished"></translation>
+        <translation>good filtering?</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="475"/>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="492"/>
         <source>¿En que podemos mejorar?</source>
-        <translation type="unfinished"></translation>
+        <translation>what can we improve?</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="528"/>
         <source>Usuario</source>
-        <translation type="unfinished"></translation>
+        <translation>User</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="536"/>
         <source>Contraseña</source>
-        <translation type="unfinished"></translation>
+        <translation>Password</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="547"/>
@@ -530,7 +530,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="560"/>
         <source>Email</source>
-        <translation type="unfinished"></translation>
+        <translation>Email</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="570"/>
@@ -555,7 +555,7 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="603"/>
         <source>New user</source>
-        <translation type="unfinished"></translation>
+        <translation>New user</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="633"/>
@@ -586,12 +586,12 @@
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="955"/>
         <source>En nombre de todos los usuarios, ¡gracias por ayudar!</source>
-        <translation type="unfinished"></translation>
+        <translation>Thanks for sharing!</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="957"/>
         <source>Imposible compartir. Ha ocurrido un error</source>
-        <translation type="unfinished"></translation>
+        <translation>Some error just occur</translation>
     </message>
     <message>
         <location filename="../../../../Users/miguel/Documents/GitHub/standalone-intf/main.qml" line="1164"/>

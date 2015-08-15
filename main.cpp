@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
     Utils o_utils;
     context->setContextProperty("Utils", &o_utils);
 
-    app.setOrganizationName("redignify");
-    app.setOrganizationDomain("redignify.org");
-    app.setApplicationName("Redignify");
+    app.setOrganizationName("Redignify");
+    app.setOrganizationDomain("fcinema.org");
+    app.setApplicationName("Fcinema");
 
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 
