@@ -28,16 +28,16 @@ Item {
             onAccepted: parse_input_file()
         }
 
-        RButton {
+        Button {
             id: open
-            text: "Archivo"
+            text: qsTr( "Archivo" )
             onClicked: fileDialog.open()
         }
 
         TextField {
             id: title
             Layout.preferredWidth: 360
-            placeholderText: "Título de la película"
+            placeholderText: qsTr( "Título de la película" )
             Layout.columnSpan : 1
             text: movie.title
             onAccepted: {
@@ -58,7 +58,7 @@ Item {
 
         Button {
             id: search
-            text: "Buscar"
+            text: qsTr( "Buscar" )
             onClicked: search_movie()
         }
 
@@ -88,7 +88,7 @@ Item {
             Layout.columnSpan: 3
             Button {
                 id: select
-                text: "Ir"
+                text: qsTr( "Ir" )
                 onClicked: get_movie_data( movielist.currentRow )
             }
 
@@ -96,14 +96,13 @@ Item {
                 id: b_not_this_movie
                 Layout.minimumWidth: 150
                 visible: movie.imdbcode? true : false
-                tooltip: "Advanced filters"
                 text: qsTr("Película erronea")
                 onClicked: {
                     bad_movie.visible = true
                 }
             }
 
-            RLabel{
+            Label{
                 Layout.columnSpan : 1
                 color: "red"
                 text: movie.msg_to_user
@@ -114,8 +113,8 @@ Item {
 
     FileDialog {
         id: fileDialog
-        title: "Choose a media"
-        selectExisting: true //fileDialogSelectExisting.checked
+        title: qsTr( "Elige el fichero a reproducir" )
+        selectExisting: true
         //selectFolder: true
         //nameFilters: [ "Image files (*.png *.jpg)", "All files (*)" ]
         //selectedNameFilter: "All files (*)"
@@ -133,12 +132,12 @@ Item {
 
 //------------------------- FUNCTIONS -----------------------------//
 
-// Ask server for content of a specific movie
-    function get_movie_data( id )
+// Ask server for content of a specific movie (selected from the list)
+    function get_movie_data( index )
     {
         var data = JSON.parse( movie.list )
         if ( !data ) return;
-        var imdbid = data["IDs"][id]? data["IDs"][id] : imdb_input.text
+        var imdbid = data["IDs"][index]? data["IDs"][index] : imdb_input.text
         if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
         var hash = media.hash
         var bytesize = media.bytesize

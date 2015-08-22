@@ -8,7 +8,6 @@ import QtQuick.Window 2.2
 import QtQuick.Dialogs 1.2
 import Qt.labs.settings 1.0
 
-//import "js/OpenSubtitlesHash.js" as OpenSubtitlesHash
 
 ApplicationWindow {
     id: mainWindow
@@ -19,8 +18,9 @@ ApplicationWindow {
 
 
 
-//------------------------------------ VARIABLES ---------------------------------//
+//-------------------------------- GLOBAL VARIABLES ---------------------------------//
 
+// Variables about the current media file
     Item {
         id: media
         property string url
@@ -29,6 +29,7 @@ ApplicationWindow {
         property bool ignore_hash_on_search : false
     }
 
+// Variables about the scene preview
     Item {
         id: preview_data
         property double start
@@ -39,6 +40,7 @@ ApplicationWindow {
         property bool watch_active : false
     }
 
+// Variables about the media player
     Item {
         id: player
         property variant execute: VLC_TCP
@@ -46,6 +48,7 @@ ApplicationWindow {
         property double autoskip_start : 0
     }
 
+// Variables about the current movie
     Item {
         id: movie
         property string title
@@ -77,6 +80,7 @@ ApplicationWindow {
         property int subtitles_tried: 0
     }
 
+// Settings variables (this variables are stored between sessions!)
     Settings {
         id: settings
         property string user
@@ -162,7 +166,7 @@ ApplicationWindow {
 
 //------------------------------------ DIALOGS ---------------------------------//
 
-// This loads the dialogs! Set loader.source to "Play.qml" to launch that dialog
+// This loads the dialogs! Set loader.source: "Play.qml" to launch the GUI described at Play.qml
     Loader {
         id:loader
         source: "Open.qml"
@@ -189,8 +193,6 @@ ApplicationWindow {
             ToolButton {
                 iconSource: "images/play.png"
                 onClicked: {
-                    //mainWindow.minimumWidth = 800
-                    //mainWindow.minimumHeight = 510
                     loader.source = "Play.qml"
                 }
                 Accessible.name: "Play"
@@ -230,7 +232,7 @@ ApplicationWindow {
     onClosing: {
         console.log("Closing")
         if( app.ask_before_close ){
-            before_closing.visible = true
+            d_before_closing.visible = true
             close.accepted = false
         }
     }
@@ -252,7 +254,7 @@ ApplicationWindow {
     }
 
 
-// Timer for forced EDL
+// Timers for forced EDL
     Timer {
         id: timer
         interval: 250; running: false; repeat: true
@@ -268,47 +270,47 @@ ApplicationWindow {
 
 // Ask user what to do before closing
     Dialog {
-        id: before_closing
+        id: d_before_closing
         width: 290
         //height: 100
         standardButtons: StandardButton.NoButton
-        title: "Wait!"
+        title: qsTr( "¡Espera!" )
         GridLayout {
             columns: 4
-            RLabel{
+            Label{
                 Layout.columnSpan: 4
                 text: qsTr( "Has hecho algunos cambios... ¿que quieres hacer?" )
             }
-            RButton {
+            Button {
                 text: qsTr( "Guardar" )
                 onClicked: {
                     save_work( false )
                     app.ask_before_close = false
-                    before_closing.visible = false
+                    d_before_closing.visible = false
                     close()
                 }
             }
-            RButton {
+            Button {
                 text: qsTr( "Compartir" )
                 onClicked: {
-                    before_closing.visible = false
-                    requestPass.visible = true
+                    d_before_closing.visible = false
+                    d_requestPass.visible = true
                     app.ask_before_close = false
                     close()
                 }
             }
-            RButton {
+            Button {
                 text: qsTr( "Cerrar" )
                 onClicked: {
                     app.ask_before_close = false
-                    before_closing.visible = false
+                    d_before_closing.visible = false
                     close()
                 }
             }
-            RButton {
+            Button {
                 text: qsTr( "Cancelar" )
                 onClicked: {
-                    before_closing.visible = false
+                    d_before_closing.visible = false
                 }
             }
 
@@ -381,7 +383,7 @@ ApplicationWindow {
         //title: "Identification required"
         GridLayout {
             columns: 2
-            RLabel{
+            Label{
                 Layout.columnSpan: 2
                 text: qsTr("Seleccione el fichero a importar")
             }
@@ -425,7 +427,7 @@ ApplicationWindow {
                     font.pointSize: 16
                     font.bold: true
                 }
-//                RLabel{ text: qsTr("Violencia") }
+//                Label{ text: qsTr("Violencia") }
                 GroupBox {
                     title: "Violence"
                     Layout.fillWidth: true
@@ -517,14 +519,14 @@ ApplicationWindow {
 
 // Request user password before sharing
     Dialog {
-        id: requestPass
-        width: 250
+        id: d_requestPass
+        width: 150
         //height: 200
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         title: "Identification required"
         GridLayout {
             columns: 2
-            RLabel{
+            Label{
                 text: qsTr("Usuario")
             }
             TextField {
@@ -532,7 +534,7 @@ ApplicationWindow {
                 text: settings.user
                 width: 100
             }
-            RLabel{
+            Label{
                 text: qsTr("Contraseña")
             }
             TextField {
@@ -543,7 +545,7 @@ ApplicationWindow {
                 //placeholderText: "Password"
             }
 
-            RLabel{
+            Label{
                 text: qsTr("Confirmar")
                 visible: c_new_user.checked
             }
@@ -556,7 +558,7 @@ ApplicationWindow {
                 //placeholderText: "Password"
             }
 
-            RLabel{
+            Label{
                 text: qsTr("Email")
                 visible: c_new_user.checked
             }
@@ -564,7 +566,7 @@ ApplicationWindow {
                 width: 100
                 id: email
                 visible: c_new_user.checked
-                placeholderText: "Optional"
+                placeholderText: qsTr("Opcional")
             }
 
             /*Label{ text: qsTr("Violencia etiquetada") }
@@ -601,11 +603,11 @@ ApplicationWindow {
             CheckBox {
                 id: c_new_user
                 text: qsTr("New user");
-                onClicked: checked? requestPass.height = 250 : requestPass.height = 200
+                onClicked: checked? d_requestPass.height = 150 : d_requestPass.height = 100
             }
         }
         onAccepted: {
-            requestPass.visible = true
+            d_requestPass.visible = true
             if( c_new_user.checked ){
                 if( pass.text !== pass2.text ){
                     say_to_user("Las contraseñas deben coincidir");
@@ -621,7 +623,7 @@ ApplicationWindow {
             }
         }
         onRejected: {
-            requestPass.visible = false
+            d_requestPass.visible = false
         }
     }
 
@@ -634,23 +636,23 @@ ApplicationWindow {
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         GridLayout {
             columns: 1
-            RLabel{
+            Label{
                 id: user_instructions
                 text: qsTr( "Haz click cuando oigas" ) // + scenelistmodel.get(get_sync_scene_index).description + " ends"
             }
-            RButton {
+            Button {
                 text: qsTr("Velocidad x3")
                 tooltip: "Play at 3x speed"
                 id: b_rate
                 onClicked: player.execute.set_rate( 3 )
             }
-            RButton {
+            Button {
                 text: "Normal rate"
                 tooltip: "Play at 1x speed"
                 id: b_rate_normal
                 onClicked: player.execute.set_rate( 1 )
             }
-            RButton {
+            Button {
                 text: "Now it ends"
                 id: b_nowends
                 onClicked: {
@@ -665,7 +667,7 @@ ApplicationWindow {
                     apply_sync( current_time - original_start, sync.applied_speed, 0 )
                 }
             }
-            RButton {
+            Button {
                 id: b_beg
                 visible: false
                 text: "Begining"
@@ -675,7 +677,7 @@ ApplicationWindow {
                     preview_scene( scenelistmodel.get(i).start, scenelistmodel.get(i).stop )
                 }
             }
-            RButton {
+            Button {
                 id: b_end
                 visible: false
                 text: "Ending visible"
@@ -929,7 +931,7 @@ ApplicationWindow {
 // Share movie scene with other users
     function share( user, pass)
     {
-        requestPass.visible = true
+        d_requestPass.visible = true
         try{
             var jsonObject = JSON.parse( movie.data );
         }catch(e){
@@ -951,7 +953,7 @@ ApplicationWindow {
 
         if( jo && jo["Status"] && jo["Status"] === "Ok" ){
             app.ask_before_close = false
-            requestPass.visible = false
+            d_requestPass.visible = false
             say_to_user( qsTr( "En nombre de todos los usuarios, ¡gracias por ayudar!") )
         }else{
             say_to_user( qsTr( "Imposible compartir. Ha ocurrido un error") )

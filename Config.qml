@@ -14,8 +14,10 @@ Item {
         //Component.onCompleted: { mainWindow.minimumWidth = 800; mainWindow.minimumHeight = 350 }
         Component.onCompleted: { mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425; say_to_user("")}
 
-        GroupBox {
 
+
+    // Panel: Basic config
+        GroupBox {
             Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
@@ -41,7 +43,7 @@ Item {
                     }
                 }
 
-                /*RLabel{ text: qsTr("Preguntar al añadir escena") }
+                /*Label{ text: qsTr("Preguntar al añadir escena") }
                 CheckBox {
                     text: qsTr("")
                     checked: settings.ask
@@ -65,7 +67,7 @@ Item {
                 }
 
                 Label{ text: qsTr("Reproductor favorito") }
-                RComboBox {
+                ComboBox {
                     id: player_combo
                     Layout.minimumWidth : 100
                     model: players_list
@@ -75,8 +77,9 @@ Item {
             }
         }
 
-        GroupBox {
 
+    // Panel: Advanced config!
+        GroupBox {
             Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
@@ -93,21 +96,21 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                RLabel{ text: qsTr("Calibración guiada") }
-                RButton {
+                Label{ text: qsTr("Calibración guiada") }
+                Button {
                     text: qsTr("Calibrar")
                     Layout.preferredWidth: 100
                     onClicked: manual_calibration()
                 }
 
 
-                RLabel{ text: qsTr("Saltar antes de las escenas") }
+                Label{ text: qsTr("Saltar antes de las escenas") }
                 TextField {
                     text: settings.time_margin
                     onEditingFinished: settings.time_margin = parseFloat(text)
                 }
 
-                RLabel{ text: qsTr("Ejecutable VLC") }
+                Label{ text: qsTr("Ejecutable VLC") }
                 TextField {
                     text: settings.vlc_path
                     Layout.minimumWidth: 250
@@ -122,9 +125,8 @@ Item {
         }
 
 
-
+    // Panel: Ninja config!
         GroupBox {
-
             Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
@@ -141,8 +143,8 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                RLabel{ text: qsTr("Beta testers") }
-                RButton {
+                Label{ text: qsTr("Beta testers") }
+                Button {
                     id: testing
                     text: "No pulsar jamás"
                     Layout.fillWidth: true
@@ -158,7 +160,7 @@ Item {
                         //console.log( seconds_to_time(65) )
                     }
                 }
-                RLabel{ text: qsTr("Diferencia tiempo entre versiones") }
+                Label{ text: qsTr("Diferencia tiempo entre versiones") }
                 TextField {
                     Layout.fillWidth: true
                     id:offset
@@ -167,7 +169,7 @@ Item {
                 }
 
 
-                RLabel{ text: qsTr("Diferencia velocidad entre versiones") }
+                Label{ text: qsTr("Diferencia velocidad entre versiones") }
                 TextField {
                     Layout.fillWidth: true
                     id:speed

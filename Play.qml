@@ -229,8 +229,8 @@ Item {
 
                     Button {
                         id: watch
-                        tooltip: "Click to redignify and watch film"
-                        text: "Ver película personalizada"
+                        tooltip: qsTr( "Haz click para ver la película con las escenas inconvenientes eliminadas" )
+                        text: qsTr( "Ver película personalizada" )
                         onClicked: {
                             watch_movie( false )
                             if( settings.start_fullscreen ) player.execute.toggle_fullscreen()
@@ -240,7 +240,7 @@ Item {
                     Button {
                         id: classic_watch
                         visible: sync.shot_sync_failed
-                        text: "Ver película SIN personalizar"
+                        text: qsTr( "Ver película SIN personalizar" )
                         onClicked: {
                             var confidence = sync.confidence
                             sync.confidence = 2
@@ -262,12 +262,6 @@ Item {
 
 
 /******************************* FUNCTIONS ***********************************/
-
-    function random_poster()
-    {
-        var array = ["UnknownMovie1.png","UnknownMovie2.jpg","UnknownMovie3.jpg","UnknownMovie4.jpg","UnknownMovie5.png","UnknownMovie6.jpg"];
-        return array[Math.floor(Math.random() * array.length)];
-    }
 
     function sort( column, order )
     {

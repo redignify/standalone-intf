@@ -13,8 +13,8 @@ Item {
         Component.onCompleted: { mainWindow.minimumWidth = 750; mainWindow.minimumHeight = 425; say_to_user("")}
 
 
+    // Panel: Feedback
         GroupBox {
-
             Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
@@ -34,17 +34,6 @@ Item {
                     Layout.columnSpan: 2
                     text: qsTr("Muchas gracias por tu opinión")
                 }
-                /*TextField {
-                    id: feedback
-                    Layout.minimumWidth: 200
-                    Layout.fillWidth: true
-                    onAccepted: {
-                        post( "action=feedback&idea="+feedback.text, function(){
-                            feedback.text = qsTr("Recibido, gracias!")
-                            say_to_user("Gracias por tu opinión")
-                        } )
-                    }
-                }*/
 
                 TextArea {
                     id: feedback
@@ -54,18 +43,18 @@ Item {
                 }
 
                 Button {
-                    text: "Enviar feedback"
+                    text: qsTr( "Enviar feedback" )
                     onClicked: post( "action=feedback&idea= Hola! soy "+settings.user+" quería decirte que "+feedback.text, function(){
                         feedback.text = qsTr("Recibido, gracias!")
-                        say_to_user("Gracias por tu opinión")
+                        say_to_user( qsTr( "Gracias por tu opinión") )
                     } )
                 }
             }
         }
 
 
+    // Panel: Donate (please ^_^)
         GroupBox {
-
             Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
@@ -86,14 +75,15 @@ Item {
                     text: qsTr("Fcinema es gratuito, los gastos se cubren con donativos...")
                 }
                 Button {
-                    text: "Donar"
+                    text: qsTr( "Donar" )
                     onClicked: Qt.openUrlExternally("http://fcinema.org/collaborate.html#donate")
                 }
             }
         }
 
-        GroupBox {
 
+    // Panel: Add content to db!
+        GroupBox {
             Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
@@ -116,6 +106,8 @@ Item {
             }
         }
 
+
+    // Panel: Help coding!
         GroupBox {
 
             Layout.fillWidth: true
@@ -140,6 +132,8 @@ Item {
             }
         }
 
+
+    // Panel: Like fcinema? share it!
         GroupBox {
 
             Layout.fillWidth: true

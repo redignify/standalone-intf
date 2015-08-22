@@ -52,7 +52,7 @@ Item {
             }
 
 
-            //RLabel{ Layout.columnSpan: 1; text: qsTr("Discriminación") }
+            //Label{ Layout.columnSpan: 1; text: qsTr("Discriminación") }
             RSlider{
                 id: severity;
                 Layout.columnSpan: 2;
@@ -83,6 +83,7 @@ Item {
 
         // Sex labels
             /* https://orbitadiversa.wordpress.com/2013/01/28/cosificacion-sexual/ */
+            // animalismo, sadomasoquismo,
             CheckBox { id: nud; text: qsTr("Desnudo"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Nudity", checked ) }
             CheckBox { id: sen; text: qsTr("Sensualidad"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Sensuality", checked ) }
             //CheckBox { id: por; text: qsTr("Pornografía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Porn", checked ) }
@@ -174,7 +175,7 @@ Item {
                    stop_input.text = ""
                }
 
-               // Tags
+            // Update tags (check/uncheck according to current text)
                race.checked     = current_scene.tags.match("Race")
                nati.checked     = current_scene.tags.match("Nationality")
                sexdisc.checked  = current_scene.tags.match("Porn")
@@ -214,6 +215,7 @@ Item {
             }
             RowLayout{
 
+            // Remove scene from the list
                 Button {
                     text: qsTr("Quitar de la lista")
                     Layout.fillWidth: true
@@ -228,20 +230,23 @@ Item {
                     }
                 }
 
+            // Share scenes online
                 Button {
                     text: qsTr("Compartir online")
                     Layout.fillWidth: true
-                    onClicked: requestPass.visible = true
+                    onClicked: d_requestPass.visible = true
                 }
 
+            // Locally save work
                 Button {
                     text: qsTr("Guardar")
                     Layout.fillWidth: true
                     onClicked: save_work( false )
                 }
 
+            // Import or export data from other EDL formats
                 Button {
-                    text: "Import/Export"
+                    text: qsTr( "Importar/Exportar" )
                     Layout.fillWidth: true
                     onClicked: dialog_import.visible = true
                 }
@@ -276,7 +281,7 @@ Item {
                     Button {
                         Layout.fillWidth: true
                         text: qsTr("<<")
-                        onClicked: set_time( get_time() - 5 )
+                        onClicked: set_time( get_time() - 3 )
                     }
 
                     Button {
@@ -301,7 +306,7 @@ Item {
                     Button {
                         Layout.fillWidth: true
                         text: qsTr(">>")
-                        onClicked: set_time( get_time() + 5 )
+                        onClicked: set_time( get_time() + 3 )
                     }
 
                    /* Button {
@@ -423,7 +428,7 @@ Item {
         }
 
         RowLayout{
-            RLabel{
+            Label{
                 id: l_msg
                 color: "red"
                 text: movie.msg_to_user
