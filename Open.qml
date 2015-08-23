@@ -119,7 +119,7 @@ Item {
         //nameFilters: [ "Image files (*.png *.jpg)", "All files (*)" ]
         //selectedNameFilter: "All files (*)"
         onAccepted: {
-            console.log(fileUrl)
+            console.log("User selected input file: "+fileUrl)
             media.url = fileUrl;
             title.text =  clean_title( fileUrl )
             parse_input_file()
@@ -147,7 +147,7 @@ Item {
             bytesize = 0
         }
 
-    // Ask the server for the content "show_list" when the server responds
+    // Ask the server for the content, "show_list" when the server responds
         if( settings.user && settings.password ){
             post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize + "&username="+settings.user+"&password="+settings.password, show_list )
         }else{
@@ -168,7 +168,7 @@ Item {
         // Perform some checks...
         if( media.hash === 'Error' ){ return }
         media.hash = pad(media.hash,16)
-        console.log( "New file with hash "+media.hash+" and bytesize "+media.bytesize )
+        console.log( "Computed hash is "+media.hash+" and bytesize is "+media.bytesize )
 
     // Ask the server about the movie
         search_movie()
@@ -177,12 +177,16 @@ Item {
         Utils.get_shots( media.url, settings.vlc_path )
     }
 
+
+
 // Horrible but cost effective solution for hash formating
     function pad(n, width, z) {
       z = z || '0';
       n = n + '';
       return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
     }
+
+
 
 // Ask server for movie information
     function search_movie()
@@ -252,18 +256,18 @@ Item {
                 "skip": "Yes",
                 "id": Scenes[i]["id"]
             }
-            console.log( item.start, item.stop )
+            //console.log( item.start, item.stop )
             scenelistmodel.append( item )
-            console.log( scenelistmodel.get(scenelistmodel.count-1).start )
+            //console.log( scenelistmodel.get(scenelistmodel.count-1).start )
         }
 
     // Sync, or at least try to
-        var index = sync_info_hash_index(data,media.hash)
-        console.log(index,data["SyncInfo"][index]["Hash"],data["SyncInfo"][index]["Confidence"])
+        var index = sync_info_hash_index(data,media.hash)        
         apply_sync(data["SyncInfo"][index]["TimeOffset"],data["SyncInfo"][index]["SpeedFactor"],data["SyncInfo"][index]["Confidence"])
+        start_guessing_sync_from_subs()
 
     // Apply filters
-        loader.item.apply_filters()
+        loader.item.apply_all_filters()
     }
 
 
@@ -283,9 +287,12 @@ Item {
 
             console.log( str )
             loader.source = "Play.qml"
+            //DBG
             try {   // Check if we already have a cached version of that movie
                 var cached_movie = read_from_file( jsonObject["ImdbCode"] )
+                var subtitles = jsonObject["Subtitles"]? jsonObject["Subtitles"] : ''
                 jsonObject = JSON.parse( cached_movie )
+                if(subtitles) jsonObject['Subtitles'] = subtitles;
                 movie.data = cached_movie
             } catch(e){
                 movie.data = str
