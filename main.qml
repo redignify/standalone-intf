@@ -380,7 +380,7 @@ ApplicationWindow {
         width: 310
         //height: 100
         standardButtons: StandardButton.NoButton
-        //title: "Identification required"
+        //title: qsTr("Importar o exportar")
         GridLayout {
             columns: 2
             Label{
@@ -393,7 +393,7 @@ ApplicationWindow {
                 placeholderText: qsTr("Filter file")
             }
             Button {
-                text: "Archivo"
+                text: qsTr( "Archivo" )
                 onClicked: filterDialog.visible = true
             }
         }
@@ -402,7 +402,7 @@ ApplicationWindow {
 
     FileDialog {
         id: filterDialog
-        title: "Choose a filer"
+        title: qsTr( "Choose a filer" )
         selectExisting: true //fileDialogSelectExisting.checked
         onAccepted: {
             console.log(fileUrl)
@@ -523,14 +523,14 @@ ApplicationWindow {
         width: 150
         //height: 200
         standardButtons: StandardButton.Ok | StandardButton.Cancel
-        title: "Identification required"
+        title: qsTr( "Identificación requerida" )
         GridLayout {
             columns: 2
             Label{
                 text: qsTr("Usuario")
             }
             TextField {
-                id:name
+                id: name
                 text: settings.user
                 width: 100
             }
@@ -551,7 +551,7 @@ ApplicationWindow {
             }
             TextField {
                 width: 100
-                id:pass2
+                id: pass2
                 visible: c_new_user.checked
                 text: settings.password
                 echoMode: TextInput.Password
@@ -602,7 +602,7 @@ ApplicationWindow {
             }*/
             CheckBox {
                 id: c_new_user
-                text: qsTr("New user");
+                text: qsTr("Nuevo usuario");
                 onClicked: checked? d_requestPass.height = 150 : d_requestPass.height = 100
             }
         }
@@ -610,7 +610,7 @@ ApplicationWindow {
             d_requestPass.visible = true
             if( c_new_user.checked ){
                 if( pass.text !== pass2.text ){
-                    say_to_user("Las contraseñas deben coincidir");
+                    say_to_user( qsTr("Las contraseñas deben coincidir") );
                     pass.text = ""
                     pass2.text = ""
                     return
@@ -928,7 +928,9 @@ ApplicationWindow {
         }
     }
 
-// Share movie scene with other users
+
+
+// Share movie scenes with other users
     function share( user, pass)
     {
         d_requestPass.visible = true
@@ -982,7 +984,9 @@ ApplicationWindow {
     }
 
 
-    //function import
+
+
+// Pack all available data about the current movie in a sharable json format
     function pack_data(){
     // Recover original file
         try{
@@ -1041,6 +1045,8 @@ ApplicationWindow {
     }
 
 
+
+
 // Get title from file name
     function clean_title( str )
     {
@@ -1051,6 +1057,8 @@ ApplicationWindow {
         console.log("Result: " + tit )
         return tit
     }
+
+
 
 // Get the index of the sync scene
     function get_sync_scene_index() {

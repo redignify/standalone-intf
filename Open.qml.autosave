@@ -263,7 +263,7 @@ Item {
         apply_sync(data["SyncInfo"][index]["TimeOffset"],data["SyncInfo"][index]["SpeedFactor"],data["SyncInfo"][index]["Confidence"])
 
     // Apply filters
-        loader.item.apply_filters()
+        loader.item.apply_all_filters()
     }
 
 
