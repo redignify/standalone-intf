@@ -733,13 +733,18 @@ ApplicationWindow {
                 var data = JSON.parse( movie.data )
             } catch(e){
                 // probably calib was faster than movie selection
-                say_to_user( qsTr( "Esto no debería haber pasado") )
+                if( sync.play_after_sync ) say_to_user( qsTr( "Error analizando película") )
+                sync.shot_sync_failed = true
+                sync.play_after_sync = false
                 return
             }
             var c_times = JSON.parse(times)
             var c_diffs = JSON.parse(diffs)
             if( c_times.length < 10 ){
                 console.log("Shot info "+num+" is incomplete")
+                if( sync.play_after_sync ) say_to_user( qsTr( "Error analizando película") )
+                sync.shot_sync_failed = true
+                sync.play_after_sync = false
                 return
             }
 
