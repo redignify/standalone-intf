@@ -1,3 +1,4 @@
+
 #include "utils.h"
 
 #include <stdio.h>
@@ -368,7 +369,7 @@ bool Utils::update( QString url )
         manager->get(req);
         return true;
     #else
-        return false
+        return false;
     #endif
 
 }
