@@ -459,14 +459,13 @@ QString Utils::read_data(QString filename)
 
     QFile file( path + "//" + filename );
     if( !file.exists() ){
-        qDebug() << "No file!";
+        qDebug() << "No file "<< filename << "!";
         return QString();
     }
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text )) {
-        qDebug() << file.errorString();
+        qDebug() << "Reading file error " << file.errorString();
     }else{
         QString output = file.readAll();
-        qDebug() << "Readed! ";// << output;
         file.close();
         return output;
     }
@@ -491,7 +490,6 @@ QString Utils::read_external_data(QString filename)
     }
 
     QString output = file.readAll();
-    qDebug() << "Readed! ";
     file.close();
     return output;
 }

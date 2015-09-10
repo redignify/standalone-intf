@@ -119,7 +119,7 @@ Item {
         //nameFilters: [ "Image files (*.png *.jpg)", "All files (*)" ]
         //selectedNameFilter: "All files (*)"
         onAccepted: {
-            console.log(fileUrl)
+            console.log("User selected input file: "+fileUrl)
             media.url = fileUrl;
             title.text =  clean_title( fileUrl )
             parse_input_file()
@@ -135,6 +135,7 @@ Item {
 // Ask server for content of a specific movie (selected from the list)
     function get_movie_data( index )
     {
+    // Get what we already know about the movie (hash, bytesize, imdbid...)
         var data = JSON.parse( movie.list )
         if ( !data ) return;
         var imdbid = data["IDs"][index]? data["IDs"][index] : imdb_input.text
@@ -145,6 +146,8 @@ Item {
             hash = 0
             bytesize = 0
         }
+
+    // Ask the server for the content, "show_list" when the server responds
         if( settings.user && settings.password ){
             post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize + "&username="+settings.user+"&password="+settings.password, show_list )
         }else{
@@ -152,47 +155,63 @@ Item {
         }
     }
 
+
+
+
 // A new input file has being selected, get hash and try to identify
     function parse_input_file()
     {
+    // Get movie hash and bytesize
         movie.imdbcode = ""
         media.hash     = Utils.get_hash( media.url )
         media.bytesize = Utils.get_size( media.url )
+        // Perform some checks...
         if( media.hash === 'Error' ){ return }
-
         media.hash = pad(media.hash,16)
-        console.log( "New file with hash "+media.hash+" and bytesize "+media.bytesize )
+        console.log( "Computed hash is "+media.hash+" and bytesize is "+media.bytesize )
+
+    // Ask the server about the movie
         search_movie()
+
+    // Start computing sync information about the movie
         Utils.get_shots( media.url, settings.vlc_path )
     }
 
-// Horrible but cost effective solution to hash formating
+
+
+// Horrible but cost effective solution for hash formating
     function pad(n, width, z) {
       z = z || '0';
       n = n + '';
       return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
     }
 
+
+
 // Ask server for movie information
     function search_movie()
     {
+    // Get what we already know
         var hash = media.hash
         var bytesize = media.bytesize
-        if( media.ignore_hash_on_search === true ){
-            hash = 0
-            bytesize = 0
-        }
+        var imdbid = imdb_input.text
+        if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
+
+    // Ask local cache and server about the movie
         if( search_cached_index( hash ) ){
             loader.source = "Play.qml"
             load_movie()
-        }else{
-            var imdbid = imdb_input.text
-            if( !isNaN(parseFloat(imdbid)) && isFinite(imdbid) ) imdbid = 'tt'+imdbid
+        } else if( media.ignore_hash_on_search === true ){
+            post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid, show_list )
+        } else{
             post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize, show_list )
         }
     }
 
-// Great! We have the content of the current movie. Load the data.
+
+
+
+// Great! We have the content of the current movie. Now load the data.
     function load_movie()
     {
         console.log( "Loading movie..." )
@@ -237,34 +256,43 @@ Item {
                 "skip": "Yes",
                 "id": Scenes[i]["id"]
             }
-            console.log( item.start, item.stop )
+            //console.log( item.start, item.stop )
             scenelistmodel.append( item )
-            console.log( scenelistmodel.get(scenelistmodel.count-1).start )
+            //console.log( scenelistmodel.get(scenelistmodel.count-1).start )
         }
 
-    // Sync, or try to
-        var index = sync_info_hash_index(data,media.hash)
-        console.log(index,data["SyncInfo"][index]["Hash"],data["SyncInfo"][index]["Confidence"])
+    // Sync, or at least try to
+        var index = sync_info_hash_index(data,media.hash)        
         apply_sync(data["SyncInfo"][index]["TimeOffset"],data["SyncInfo"][index]["SpeedFactor"],data["SyncInfo"][index]["Confidence"])
+        start_guessing_sync_from_subs()
 
     // Apply filters
-        loader.item.apply_filters()
+        loader.item.apply_all_filters()
     }
 
 
 
+
+// Fill the list of movies matching last search or load movie if only one result
     function show_list( str )
     {
-    // Fill list of movies matching search or load movie if only one result
         var jsonObject = JSON.parse( str );
+
+    // There was and error, 'str' input is fake ;)
         if ( !jsonObject ) {
             return
+
+    // Only one search result, load that movie
         } else if ( jsonObject['ImdbCode'] && !jsonObject["IDs"] ){
+
             console.log( str )
             loader.source = "Play.qml"
+            //DBG
             try {   // Check if we already have a cached version of that movie
                 var cached_movie = read_from_file( jsonObject["ImdbCode"] )
+                var subtitles = jsonObject["Subtitles"]? jsonObject["Subtitles"] : ''
                 jsonObject = JSON.parse( cached_movie )
+                if(subtitles) jsonObject['Subtitles'] = subtitles;
                 movie.data = cached_movie
             } catch(e){
                 movie.data = str
@@ -272,11 +300,13 @@ Item {
             }
             load_movie()
             add_to_index( jsonObject["ImdbCode"], media.hash )
+
+    // We are dealing with a TV series
         }else if ( jsonObject['Season'] ){
             movie.list = str
             movielistmodel.clear()
-            dir.title = "Episode"
-            yea.title = "Season"
+            dir.title = qsTr( "Capítulo" )
+            yea.title = qsTr( "Temporada" )
             dir.width = 90
             for ( var i = 0; i < jsonObject["Titles"].length; ++i) {
                 if( jsonObject["Episode"][i] === null ) continue
@@ -287,11 +317,13 @@ Item {
                 }
                 movielistmodel.append( item )
             }
+
+    // We are dealing with a list of movies
         } else if ( jsonObject['IDs'] ){
             movie.list = str
             movielistmodel.clear()
-            dir.title = "Director"
-            yea.title = "Year"
+            dir.title = qsTr( "Director" )
+            yea.title = qsTr( "Año" )
             dir.width = 165
             for ( i = 0; i < jsonObject["Titles"].length; ++i) {
                 var year_director = jsonObject["Directors"][i].toString().split(",")
@@ -302,6 +334,8 @@ Item {
                 }
                 movielistmodel.append( item )
             }
+        } else{
+            console.log( "Unable to show list of movies" )
         }
     }
 

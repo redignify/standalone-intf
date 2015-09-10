@@ -263,6 +263,8 @@ Item {
 
 /******************************* FUNCTIONS ***********************************/
 
+
+// Sort list by column
     function sort( column, order )
     {
         var columnname = playtableview.getColumn(column)[0]
@@ -276,40 +278,47 @@ Item {
     }
 
 
+
+// Modify skip "Yes/No" toogling the previous value
     function toogle_selection()
     {
-        if (scenelistmodel.get( playtableview.currentRow ).skip == "No" )
-        {
+        if (scenelistmodel.get( playtableview.currentRow ).skip === "No" ) {
             scenelistmodel.get( playtableview.currentRow ).skip = "Yes"
-            if( l_detail.text !== "" ) l_detail.text = "La escena será cortada"
+            if( l_detail.text !== "" ) l_detail.text = qsTr( "La escena será cortada" )
         }else{
             scenelistmodel.get( playtableview.currentRow ).skip = "No"
-            if( l_detail.text !== "" ) l_detail.text = "La escena se verá normalmente"
+            if( l_detail.text !== "" ) l_detail.text = qsTr( "La escena se verá normalmente" )
         }
 
     }
 
+
+
+// Modify skip "Yes/No" to match one of the severity sliders
     function apply_filter( typ, val )
     {
+    // Apply filter to each scene
         for( var i = 0; i < scenelistmodel.count; ++i){
-            if( typ === scenelistmodel.get(i).type )
-            {
-                if( scenelistmodel.get(i).severity > val  ){  // severity > 5 - val
-                    scenelistmodel.get(i).skip = "Yes"
-                }else{
-                    scenelistmodel.get(i).skip = "No"
-                }
+            if( typ !== scenelistmodel.get(i).type ) continue;
+            if( scenelistmodel.get(i).severity > val  ){  // severity > 5 - val
+                scenelistmodel.get(i).skip = "Yes"
+            }else{
+                scenelistmodel.get(i).skip = "No"
             }
         }
-        if( typ == "Sex"){
+
+    // Update settings (to remember values next time)
+        if( typ === "Sex"){
             settings.sn = slider_sn.value
-        }else if( typ == "Violence"){
+        }else if( typ === "Violence"){
             settings.v = slider_v.value
-        }else if( typ == "Drugs"){
+        }else if( typ === "Drugs"){
             settings.d = slider_d.value
-        }else if( typ == "Discrimination"){
+        }else if( typ === "Discrimination"){
             settings.pro = slider_pro.value
         }
+
+    // Give a warning if the user wants to skip scenes we have not listed (movie information might be incomplete)
         /*if( slider_sn.value > 4 || slider_v.value > 3 || slider_d.value > 3 || slider_pro.value > 2 ){
             l_sensibiltiy.text = "Puede que alguna escena no sea filtrada"
             l_sensibiltiy.color = "red"
@@ -318,32 +327,16 @@ Item {
         }*/
 
     }
-    function apply_filters( )
-    {
-        if( !scenelistmodel.get(0) ) return
-        var type, severity, selected_severity
-        for( var i = 0; i < scenelistmodel.count; ++i){
-            type = scenelistmodel.get(i).type;
-            severity = scenelistmodel.get(i).severity;
-            if( type == "Sex"){
-                selected_severity = slider_sn.value
-            }else if( type == "Violence"){
-                selected_severity = slider_v.value
-            }else if( type == "Drugs"){
-                selected_severity = slider_d.value
-            }else if( type == "Discrimination"){
-                selected_severity = slider_pro.value
-            }else if( type == "Sync"){
-                scenelistmodel.get(i).skip = "No"
-                continue
-            } else { continue; }
 
-            if( severity > selected_severity  ){
-                scenelistmodel.get(i).skip = "Yes"
-            }else{
-                scenelistmodel.get(i).skip = "No"
-            }
-            //console.log( type, severity, selected_severity)
-        }
+
+
+
+// Apply all filters
+    function apply_all_filters( )
+    {
+        apply_filter( "Sex", slider_sn.value )
+        apply_filter( "Violence", slider_v.value )
+        apply_filter( "Drugs", slider_d.value )
+        apply_filter( "Discrimination", slider_pro.value )
     }
 }

@@ -61,8 +61,8 @@ ApplicationWindow {
         property string list
         property var    subtitles
         property var    subref
-        property string subtitles_srt
-        property string subref_srt
+        property string our_srt
+        property string ref_srt
         property int    filter_status : 0
         property string msg_to_user
         property string poster_url
@@ -77,7 +77,8 @@ ApplicationWindow {
         property bool play_after_sync: false
         property bool shot_sync_failed: false
         property bool sub_sync_failed: false
-        property int subtitles_tried: 0
+        property int current_version : 0
+        property int current_lang : 0
     }
 
 // Settings variables (this variables are stored between sessions!)
@@ -380,7 +381,7 @@ ApplicationWindow {
         width: 310
         //height: 100
         standardButtons: StandardButton.NoButton
-        //title: "Identification required"
+        //title: qsTr("Importar o exportar")
         GridLayout {
             columns: 2
             Label{
@@ -393,7 +394,7 @@ ApplicationWindow {
                 placeholderText: qsTr("Filter file")
             }
             Button {
-                text: "Archivo"
+                text: qsTr( "Archivo" )
                 onClicked: filterDialog.visible = true
             }
         }
@@ -402,7 +403,7 @@ ApplicationWindow {
 
     FileDialog {
         id: filterDialog
-        title: "Choose a filer"
+        title: qsTr( "Choose a filer" )
         selectExisting: true //fileDialogSelectExisting.checked
         onAccepted: {
             console.log(fileUrl)
@@ -497,7 +498,8 @@ ApplicationWindow {
             }
             onAccepted: {
                 /*requestPass.visible = true
-                if( c_new_user.checked ){
+                if( c_
+.checked ){
                     if( pass.text !== pass2.text ){
                         say_to_user("Las contraseñas deben coincidir");
                         pass.text = ""
@@ -523,14 +525,14 @@ ApplicationWindow {
         width: 150
         //height: 200
         standardButtons: StandardButton.Ok | StandardButton.Cancel
-        title: "Identification required"
+        title: qsTr( "Identificación requerida" )
         GridLayout {
             columns: 2
             Label{
                 text: qsTr("Usuario")
             }
             TextField {
-                id:name
+                id: name
                 text: settings.user
                 width: 100
             }
@@ -551,7 +553,7 @@ ApplicationWindow {
             }
             TextField {
                 width: 100
-                id:pass2
+                id: pass2
                 visible: c_new_user.checked
                 text: settings.password
                 echoMode: TextInput.Password
@@ -602,7 +604,7 @@ ApplicationWindow {
             }*/
             CheckBox {
                 id: c_new_user
-                text: qsTr("New user");
+                text: qsTr("Nuevo usuario");
                 onClicked: checked? d_requestPass.height = 150 : d_requestPass.height = 100
             }
         }
@@ -610,7 +612,7 @@ ApplicationWindow {
             d_requestPass.visible = true
             if( c_new_user.checked ){
                 if( pass.text !== pass2.text ){
-                    say_to_user("Las contraseñas deben coincidir");
+                    say_to_user( qsTr("Las contraseñas deben coincidir") );
                     pass.text = ""
                     pass2.text = ""
                     return
@@ -731,13 +733,18 @@ ApplicationWindow {
                 var data = JSON.parse( movie.data )
             } catch(e){
                 // probably calib was faster than movie selection
-                say_to_user( qsTr( "Esto no debería haber pasado") )
+                if( sync.play_after_sync ) say_to_user( qsTr( "Error analizando película") )
+                sync.shot_sync_failed = true
+                sync.play_after_sync = false
                 return
             }
             var c_times = JSON.parse(times)
             var c_diffs = JSON.parse(diffs)
             if( c_times.length < 10 ){
                 console.log("Shot info "+num+" is incomplete")
+                if( sync.play_after_sync ) say_to_user( qsTr( "Error analizando película") )
+                sync.shot_sync_failed = true
+                sync.play_after_sync = false
                 return
             }
 
@@ -788,8 +795,8 @@ ApplicationWindow {
     {
         console.log("Calibrating form subs")
 
-        for( var step=0.1; step<3; step+=0.1 ){
-            for( var min = 0; min < 0.5; min+=0.025){
+        for( var step=0.1; step<3; step+=0.2 ){
+            for( var min = 0; min < 0.5; min+=0.05){
                 //for( var speed = 0.990; speed<1.010; speed+=0.005){
                 //for( var max = 5; max<15; max+=1){
                     if( correlation(c_times,c_diffs,r_times,r_diffs, step, min, 10, t_off, s_off ) ) return true
@@ -924,11 +931,13 @@ ApplicationWindow {
             settings.user = name.text
             share( name.text, pass.text )
         }else{
-            say_to_user("Some extrange error just happen")
+            say_to_user( qsTr("Ha ocurrido un error al crear el usuario") )
         }
     }
 
-// Share movie scene with other users
+
+
+// Share movie scenes with other users
     function share( user, pass)
     {
         d_requestPass.visible = true
@@ -982,7 +991,9 @@ ApplicationWindow {
     }
 
 
-    //function import
+
+
+// Pack all available data about the current movie in a sharable json format
     function pack_data(){
     // Recover original file
         try{
@@ -1041,16 +1052,20 @@ ApplicationWindow {
     }
 
 
+
+
 // Get title from file name
     function clean_title( str )
     {
-        console.log("Cleaning: " + str )
+        //console.log("Cleaning: " + str )
         var tit = str.toString().replace(/\\/g,'/').split("/").pop();
         tit = tit.replace(/mp4|avi|\[.*\]|\(.*\).*|1080p.*|xvid.*|mkv.*|720p.*|web-dl.*|dvdscr.*|dvdrip.*|brrip.*|bdrip.*|hdrip.*|x264.*|bluray.*|hdtv.*|yify.*|eztv.*|480p.*/gi,'');
         tit = tit.replace(/\.|_/g,' ').replace(/ +/g,' ');
-        console.log("Result: " + tit )
+        console.log("Auto cleaned title: " + tit )
         return tit
     }
+
+
 
 // Get the index of the sync scene
     function get_sync_scene_index() {
@@ -1096,11 +1111,15 @@ ApplicationWindow {
         say_to_user("Imported!");
     }
 
+
+
+
 // Read content of local file
     function read_from_file( name )
     {
         return Utils.read_data( name + ".json")
     }
+
 
 
 // Write data to local file
@@ -1109,7 +1128,9 @@ ApplicationWindow {
         Utils.write_data( data, name + ".json")
     }
 
-//
+
+
+// Look if hash is in local cache
     function search_cached_index( hash )
     {
         console.log( "Looking for movie on local index..." )
@@ -1128,6 +1149,10 @@ ApplicationWindow {
         return
     }
 
+
+
+
+// Add hash-imdbcode pair to local cache
     function add_to_index( code, hash )
     {
         if( hash === "Error" || hash === "" ) return
@@ -1137,12 +1162,15 @@ ApplicationWindow {
         if( !index ) { console.log("Adding to index, corrupted file"); return;}
         index[hash] = code
         var str = JSON.stringify( index, "", 2 );
-        console.log( str )
+        //console.log( str )
         save_to_file( str, "index" );
     }
 
+
+
+
 // Post params to fcinema.org/api. Call callback when data is ready
-    function post(  params, callback, url )
+    function post(  params, callback, url, callbackparams )
     {
     // Preapare everything
         var http = new XMLHttpRequest()
@@ -1159,9 +1187,13 @@ ApplicationWindow {
         http.onreadystatechange = function() {
                     if (http.readyState == 4) {
                         if (http.status == 200) {
-                            console.log("Ok");
-                            console.log( http.responseText )
-                            callback( http.responseText )
+                            console.log("Server response: " + http.responseText )
+                            if( callbackparams){
+                                callback( http.responseText, callbackparams )
+                            }else{
+                                callback( http.responseText )
+                            }
+
                         } else {
                             say_to_user( qsTr("Comprueba tu conexión a internet") )
                             console.log("Network error: " + http.status)
@@ -1172,6 +1204,9 @@ ApplicationWindow {
         http.send(params);
     }
 
+
+
+// Create a list of unwanted scenes
     function fillSkipList(){
         skiplist.clear()
         if( !scenelistmodel.get(0) ) return -1
@@ -1208,7 +1243,7 @@ ApplicationWindow {
             // In some formats like mkv, VLC jumps before the selected time
                 if( preview_data.last_skipped == i){
                     preview_data.times_failed = preview_data.times_failed + 1
-                    console.log("Times failed", preview_data.times_failed )
+                    console.log("Times failed ", preview_data.times_failed )
                 }else{
                     preview_data.times_failed = 0;
                     preview_data.last_skipped = i
@@ -1231,7 +1266,7 @@ ApplicationWindow {
             set_time( stop + 0.1 + 5*preview_data.times_failed )
             preview_data.times_failed = preview_data.times_failed + 1
             preview_data.preview_active = false
-            console.log("Times failed", preview_data.times_failed )
+            console.log("Times failed ", preview_data.times_failed )
         }
     }
 
@@ -1283,6 +1318,7 @@ ApplicationWindow {
     }
 
 
+
 // Start procces of manual calibration
     function manual_calibration(){
         calibrate.visible = true
@@ -1294,18 +1330,22 @@ ApplicationWindow {
     }
 
 
+
 // Ask player for the current time
     function get_time()
     {
         var time = player.execute.get_time()
         if ( time == -1) {// @disable-check M126
-            say_to_user("Imposible leer tiempos")
+            say_to_user( qsTr( "Imposible leer tiempos") )
             return -1
         }
         time = Math.round( parseFloat(time)*1000 ) / 1000
         return time
     }
 
+
+
+//
     function check_autoskip( time ){
 
         // Autoskip is presed
@@ -1363,6 +1403,7 @@ ApplicationWindow {
     }
 
 
+
 // Modify scenes start and end times to match the current movie.
     function apply_sync( offset, speed, confidence, stimated_error )
     {
@@ -1398,6 +1439,7 @@ ApplicationWindow {
     }
 
 
+
 // Set the default player
     function set_player( pl )
     {
@@ -1418,6 +1460,8 @@ ApplicationWindow {
 
     }
 
+
+// Convert seconds to formated time string eg: 95 => "1:35"
     function secToStr( time ) {
     //http://stackoverflow.com/a/11486026/3766869
         // Minutes and seconds
@@ -1443,6 +1487,8 @@ ApplicationWindow {
         return ret;
     }
 
+
+// Convert formated time to seconds eg: "1:35" => 95
     function hmsToSec( str ){
     //http://stackoverflow.com/a/9640417/3766869
         if( !str ) return -1
@@ -1459,9 +1505,13 @@ ApplicationWindow {
         return s;
     }
 
+// Is this value a number?
     function isNumber(n) {
       return !isNaN(parseFloat(n)) && isFinite(n);
     }
+
+
+// Extract seconds from subtitle file format
     function srtTimeToSeconds(time) {
       var match = time.match(/(\d\d):(\d\d):(\d\d),(\d\d\d)/);
       var hours        = +match[1],
@@ -1472,8 +1522,19 @@ ApplicationWindow {
       return (hours * 60 * 60) + (minutes * 60) + (seconds) + (milliseconds / 1000);
     }
 
+
+// Parse one line (extracting start, end and text) from a subtitle file format
     function parseSrtLine(line) {
-      var match = line.match(/(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)\n(.*)/m);
+      var match = line.match(/(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)\n+(.*)/m);
+
+      if( !match ){
+          console.log( "Error parsing subtitle line: "+line );
+          return {
+            start: -1,
+            end:   -1,
+            text:  ''
+          };
+      }
 
       return {
         start: srtTimeToSeconds(match[1]),
@@ -1482,49 +1543,22 @@ ApplicationWindow {
       };
     }
 
+
+// Parse a subtitle file
     function parseSrt(srt) {
-      /*srt = "1
-00:00:54,999 --> 00:01:01,017
-<b>EL HOBBIT</b>
-
-2
-00:01:13,725 --> 00:01:14,816
-<i>Les advertí.</i>
-
-3
-00:01:14,851 --> 00:01:17,909
-<i>¿No les advertí lo que pasaría al tratar con enanos?</i>
-
-4
-00:01:18,103 --> 00:01:19,278
-<i>Fuimos obligados.</i>
-
-5
-00:01:19,313 --> 00:01:20,320
-<i>Despertaron al dragón.</i>
-
-        ";//*/
-      //console.log(srt)
       srt = srt.replace(/\r\n/g,'\n')
-      var lines = srt.split(/(?:^|\n\n)\d+\n|\n+$/g).slice(1, -2);
-
+      var lines = srt.split(/(?:^|\n+)\d+\n+|\n+$/g ).slice(1, -2);
       var a = lines.map(parseSrtLine)
-      /*  console.log(lines,a)
-        console.log(JSON.stringify(lines))
-        console.log(JSON.stringify(a))*/
       return a
     }
 
-    function calibrate_from_subtitles( )
-    {
-        //console.log( str )
-        if( movie.subref_srt.length < 50 || movie.subtitles_srt.length < 50 ){
-            console.log("Waiting subs")
-            return
-        }
 
-        var ref = parseSrt( movie.subref_srt )
-        var subs = parseSrt( movie.subtitles_srt )
+//
+    function get_subtitles_correlation( )
+    {
+        console.log( "Computing correlation between subtitles")
+        var ref = parseSrt( movie.ref_srt )
+        var subs = parseSrt( movie.our_srt )
         var offset = []
         var rmax = Math.min(900,ref.length);
         var dist = 0, sum = 0, num = 1, off, max = -50000, min = 50000;
@@ -1532,7 +1566,7 @@ ApplicationWindow {
             var str_ref = clean( ref[j].text )
             for( var i = Math.max(0,j-dist-25), m = Math.min(subs.length,j-dist+25); i < m; ++i){
                 var str_subs = clean(subs[i].text)
-                if( str_ref === str_subs ) {
+                if( str_ref === str_subs && str_ref.length > 3 ) {
                     off = subs[i].start-ref[j].start;
                     if( num < 8 || Math.abs( sum/num - off ) < 5 ){ // Skip those having crazy time offset
                         offset.push( off )
@@ -1555,11 +1589,14 @@ ApplicationWindow {
         if( margin < 4 && num > 50 ){
             apply_sync(avg,1,2);
         }else{
+            try_to_sync_from_next_sub_reference()
             apply_sync(avg,1,1);
             say_to_user("Calibration migth be wrong")
         }
         settings.time_margin = margin
         console.log( offset.length, avg, max-avg, min-avg )
+        movie.our_srt = '';
+        movie.ref_srt = '';
 
     }
 
@@ -1568,63 +1605,107 @@ ApplicationWindow {
     }
 
     function clean(str){
-        return str.replace(/<i>|<\/i>|<b>|<\/b>|\.|,|;|/g,'').toLowerCase();
+        return str.replace(/<i>|<\/i>|<b>|<\/b>|\.|,|;|¡|¿/g,'').toLowerCase();
     }
 
-    function sub_ready( str ){
+    function fuzzy_compare( str1, str2 ){
+        str1 = clean( str1 )
+        if( str1.length < 2 ) return false;
+        str2 = clean( str2 )
+        if( str2 === str1 ) return true;
+    }
+
+    function subtitles_ready( str, id ){
         if( !str || str.length < 100 ){
             console.log("bad sub")
-            //get_subs()
+            try_to_sync_from_next_sub_reference();
         }else{
-            movie.subtitles_srt = str
-            calibrate_from_subtitles()
+            console.log( str, str.length )
+            if( id.match(/cl_(\d+)cv/)[1] != sync.current_lang ){
+                console.log( id.match(/cl_(\d+)cv/) + " from "+id+" doesn't match "+sync.current_lang )
+                return;
+            }
+
+            if( id.match("ours") ){
+                movie.our_srt = str
+            }else{
+                if( id.match(/cv_(\d+)/)[1] != sync.current_version ){
+                    console.log( id.match(/cv_(\d+)/) + " from "+id+" doesn't match "+sync.current_version )
+                    return;
+                }
+                movie.ref_srt = str
+            }
+
+            if( movie.ref_srt.length > 100 && movie.our_srt.length ){
+                get_subtitles_correlation()
+            }else{
+                console.log( "Waiting subs...")
+            }
         }
-    }
-    function ref_ready( str ){
-        if( !str || str.length < 100 ){
-            console.log("bad sub ref")
-            //get_ref()
-        }else{
-            movie.subref_srt = str
-            calibrate_from_subtitles()
-        }
-    }
-    function get_subs( ) {
-        post("",sub_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subtitles ); //+".gz"
-    }
-    function get_ref(){
-        post("",ref_ready,"http://dl.opensubtitles.org/en/download/filead/"+movie.subref ); //+".gz"
     }
 
-    function try_to_sync_from_sub(){
-        say_to_user("Imposible asegurar la sincronización")
-        /*try {
+
+    function get_current_movie_subtitles()
+    {
+    // Get movie data
+        try {
             var data = JSON.parse( movie.data )
+            if( !data["Subtitles"] ) return;
+            for( var i=0; i < data["Subtitles"].length; ++i ){
+                if( data["Subtitles"][i]["Hash"] === media.hash ){
+                    return i
+                }
+            }
         } catch(e){
             say_to_user( qsTr( "Esto no debería haber pasado") )
             return
         }
-        if( data["SubLink"] ){
-            console.log("We have sublink")
-            for( var i=0; i < data["SubLink"].length; ++i ){
-                console.log("We have sublink "+i)
-                if( data["SubLink"][i]["Hash"] === media.hash ){
-                    console.log("We have sublink hash")
-                    movie.subtitles_eng = data["SubLink"][i]["Link"]["eng"]
-                    movie.subtitles_spa = data["SubLink"][i]["Link"]["spa"]
-                    movie.subtitles_por = data["SubLink"][i]["Link"]["por"]
-                    //movie.subtitles_eng = data["SubLink"][i]["Link"]["eng"]
-                }else{
-                    console.log("We have sublink no hash")
-                    movie.subref_eng += ","+data["SubLink"][i]["Link"]["eng"]
-                    movie.subref_spa += ","+data["SubLink"][i]["Link"]["spa"]
-                    movie.subref_por += ","+data["SubLink"][i]["Link"]["por"]
-                }
-            }
-        }
-        get_subs()
-        get_ref()*/
     }
 
-// Thats all folks
+    function start_guessing_sync_from_subs(){
+        if( sync.confidence >= 3 ) return;
+        console.log( "Start guessing sync form subs")
+        movie.our_srt = '';
+        movie.ref_srt = '';
+        sync.current_lang = 0;
+        sync.current_version = 0;
+        try_to_sync_from_next_sub_reference()
+    }
+
+    function try_to_sync_from_next_sub_reference(){
+    // Get movie data
+        try {
+            var data = JSON.parse( movie.data )
+            var our_subtitles = get_current_movie_subtitles();
+            if( !our_subtitles || !data || sync.sub_sync_failed ) return;
+        } catch(e){
+            say_to_user( qsTr( "Esto no debería haber pasado") )
+            return
+        }
+
+        var all_langs = ['eng','spa','por','pol'];
+    // Loop over items
+        for( var cv = sync.current_version; cv < data["Subtitles"].length; ++cv ){
+            if( data["Subtitles"][cv]["Hash"] === media.hash ) continue;
+            for( var cl = sync.current_lang; cl < all_langs.length; ++cl ){
+                console.log( "Current version: "+cv +". Current language: "+all_langs[cl])
+                var ref = data["Subtitles"][cv]["Link"][all_langs[cl]];
+                var ours = data["Subtitles"][our_subtitles]["Link"][all_langs[cl]];
+                if( !ref || !ours ) continue
+                cl+=1;
+                sync.current_lang    = cl;
+                sync.current_version = cv;
+                post("",subtitles_ready,"http://dl.opensubtitles.org/en/download/filead/"+ref,  'cl_'+cl+'cv_'+cv );
+                post("",subtitles_ready,"http://dl.opensubtitles.org/en/download/filead/"+ours, 'cl_'+cl+'cv_ours');
+                return;
+            }
+            sync.current_lang = 0;
+            sync.current_version+=1;
+        }
+        console.log("Unable to sync from subs :/")
+        sync.sub_sync_failed = true;
+    }
+
+
+// That's all folks
 }
