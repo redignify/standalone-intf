@@ -72,8 +72,7 @@ bool VLC_TCP::launch( QString file )
         qDebug() << "Starting VLC with " << file;
         QString program = path;
         QStringList arguments;
-        //vlc file
-        //arguments << file;
+        //This should be the correct way of calling VLC: vlc --intf qt --extraintf cli --lua-config "cli={host='localhost:4212'}" file
         arguments << file;
         m_process->start(program, arguments);
         for (int i=1;i<10;i++){

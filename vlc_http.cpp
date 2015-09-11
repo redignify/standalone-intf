@@ -88,22 +88,26 @@ bool VLC_HTTP::launch( QString file, bool preview )
         qDebug() << "Starting VLC with " << file;
         QString program = path;
         QStringList arguments;
-        if( preview ){
-            arguments <<"--no-autoscale"<<"--width"<<"300"<<"--height"<<"250";//--canvas-width=250";
-        }
 
         #ifdef Q_OS_WIN
             // Code for Windows command line
-            program += "--intf=qt"<<"--extraintf=http"<<"--http-host=localhost:8080"<<"--http-password=pass " + file;
+            if( preview ){
+                arguments <<"--no-autoscale"<<"--width"<<"300"<<"--height"<<"250";//--canvas-width=250";
+            }
+            arguments << "--intf=qt"<<"--extraintf=http"<<"--http-host=localhost:8080"<<"--http-password=pass" << file;
+            qDebug() << arguments;
+            qDebug() << program;
+            m_process->start(program, arguments);
         #else
             // Code for OSX and Linux command line
+            if( preview ){
+                program += " --no-autoscale --width 300 --height 250";//--canvas-width=250";
+            }
             program += " --extraintf http --http-host localhost --http-port 8080 --http-password pass " + file;
+            qDebug() << program;
+            m_process->start(program);
         #endif
 
-        qDebug() << arguments;
-        qDebug() << program;
-        //m_process->start(program, arguments);
-        m_process->start(program);
         for (int i=1;i<10;i++){
             qDebug() << "Waiting for VLC to start" << m_process->state();
             if( m_process->state() != 0 ) break;
