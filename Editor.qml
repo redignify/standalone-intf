@@ -64,30 +64,28 @@ Item {
             }
 
         // Violence labels
-            CheckBox { id: phy;     text: qsTr("Física"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Physical", checked ) }
-            CheckBox { id: psico;   text: qsTr("Psicológica"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Psicological", checked ) }
-            CheckBox { id: disc;    text: qsTr("Discriminación"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Discrimination", checked ) }
-            CheckBox { id: sad;     text: qsTr("Sadismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Sadism", checked ) }
-            CheckBox { id: bel;     text: qsTr("Bélico");  visible: type_combo.currentIndex == 0; onClicked: add_tag("War", checked ) }
-            CheckBox { id: tor;     text: qsTr("Tortura"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Torture", checked ) }
+            CheckBox { id: phy;  text: qsTr("Física"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Physical", checked ) }
+            CheckBox { id: psi;  text: qsTr("Psicológica"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Psicological", checked ) }
+            CheckBox { id: disc; text: qsTr("Discriminación"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Discrimination", checked ) }
+            CheckBox { id: sad;  text: qsTr("Sadismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Sadism", checked, 4 ) }
+            CheckBox { id: bel;  text: qsTr("Bélico");  visible: type_combo.currentIndex == 0; onClicked: add_tag("War", checked ) }
+            CheckBox { id: tor;  text: qsTr("Tortura"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Torture", checked ) }
 
         // Sex labels
-            /* https://orbitadiversa.wordpress.com/2013/01/28/cosificacion-sexual/ */
-            // animalismo, sadomasoquismo, porn, reduction, cosificación
-            CheckBox { id: nud; text: qsTr("Desnudo");      visible: type_combo.currentIndex == 1;  onClicked: add_tag("Nudity", checked ) }
-            CheckBox { id: sen; text: qsTr("Sensualidad");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("Sensuality", checked ) }
-            CheckBox { id: see; text: qsTr("Sexo explicito"); visible: type_combo.currentIndex == 1;onClicked: add_tag("Explicit sex", checked ) }
-            CheckBox { id: sei; text: qsTr("Se intuye sexo");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("Implicit sex", checked ) }
-            CheckBox { id: inf; text: qsTr("Sin amor");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("No love", checked ) }
-            CheckBox { id: vio; text: qsTr("Violación");    visible: type_combo.currentIndex == 1;  onClicked: add_tag("Rape", checked ) }
+            CheckBox { id: nud;  text: qsTr("Desnudo");      visible: type_combo.currentIndex == 1;  onClicked: add_tag("Nudity", checked ) }
+            CheckBox { id: sen;  text: qsTr("Sensualidad");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("Sensuality", checked ) }
+            CheckBox { id: see;  text: qsTr("Sexo explicito"); visible: type_combo.currentIndex == 1;onClicked: add_tag("Explicit sex", checked, 5 ) }
+            CheckBox { id: sei;  text: qsTr("Se intuye sexo");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("Implicit sex", checked ) }
+            CheckBox { id: inf;  text: qsTr("Sin amor");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("No love", checked ) }
+            CheckBox { id: vio;  text: qsTr("Violación");    visible: type_combo.currentIndex == 1;  onClicked: add_tag("Rape", checked, 5 ) }
 
         // Drugs labels
-            CheckBox { id: tob;  text: qsTr("Tabaco/Alcohol"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Tobaco", checked ) }
+            CheckBox { id: tob;  text: qsTr("Tabaco/Alcohol"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Tobaco/Alcohol", checked ) }
             CheckBox { id: weed; text: qsTr("Porros"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Weed", checked ) }
-            CheckBox { id: coc;  text: qsTr("Cocaína/Heroina"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Cocaine", checked ) }
-            CheckBox { id: alc;  text: qsTr("Abuso medicamentos"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Alcohol", checked ) }
-            CheckBox { id: her;  text: qsTr("Sobredosis"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Heroine", checked ) }
-            CheckBox { id: oth;  text: qsTr("Tráfico"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Others", checked ) }
+            CheckBox { id: coc;  text: qsTr("Cocaína/Heroina"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Cocaine/Heroine", checked ) }
+            CheckBox { id: med;  text: qsTr("Abuso medicamentos"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Medicine misuse", checked ) }
+            CheckBox { id: ove;  text: qsTr("Sobredosis"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Overdose", checked, 3 ) }
+            CheckBox { id: tra;  text: qsTr("Tráfico"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Trade", checked ) }
 
         // Generic labels
             CheckBox { id: plot; text: qsTr("Afecta a la trama"); checked: false; onClicked: add_tag("Plot", checked ) }
@@ -132,13 +130,13 @@ Item {
                Layout.preferredWidth: 365
                Layout.preferredHeight: 250
 
-               TableViewColumn{ role: "type"  ; title: qsTr("Type") ; width: 90 }
-               TableViewColumn{ role: "severity"; title: qsTr("Level"); width: 50 }
-               TableViewColumn{ role: "start" ; title: qsTr("Start") ; width: 70 }
-               TableViewColumn{ role: "stop" ; title: qsTr("Stop") ; width: 70 }
-               TableViewColumn{ role: "tags" ; title: qsTr("Tags") ; width: 120 }
-               TableViewColumn{ role: "action"; title: qsTr("Action"); width: 60 }
-               TableViewColumn{ role: "description" ; title: qsTr("Comments") ; width: 190 }
+               TableViewColumn{ role: "type"  ; title: qsTr("Tipo") ; width: 90 }
+               TableViewColumn{ role: "severity"; title: qsTr("Nivel"); width: 50 }
+               TableViewColumn{ role: "start" ; title: qsTr("Empieza") ; width: 70 }
+               TableViewColumn{ role: "stop" ; title: qsTr("Termina") ; width: 70 }
+               TableViewColumn{ role: "tags" ; title: qsTr("Etiquetas") ; width: 120 }
+               TableViewColumn{ role: "action"; title: qsTr("Acción"); width: 60 }
+               TableViewColumn{ role: "description" ; title: qsTr("Comentarios") ; width: 190 }
                model: scenelistmodel
                selectionMode: SelectionMode.SingleSelection
                sortIndicatorVisible: true
@@ -162,37 +160,28 @@ Item {
                    stop_input.text = ""
                }
 
-            // Update tags (check/uncheck according to current text)
-               /*race.checked     = current_scene.tags.match("Race")
-               nati.checked     = current_scene.tags.match("Nationality")
-               sexdisc.checked  = current_scene.tags.match("Porn")
-               homo.checked     = current_scene.tags.match("Homofobic")
-               rel.checked      = current_scene.tags.match("Religion")
-               ideo.checked     = current_scene.tags.match("Ideology")*/
 
+            // Update tags (check/uncheck according to current text)
                phy.checked      = current_scene.tags.match("Physical")
-               psico.checked    = current_scene.tags.match("Psicological")
-               animal.checked   = current_scene.tags.match("Animal")
+               psi.checked    = current_scene.tags.match("Psicological")
+               disc.checked     = current_scene.tags.match("Discrimination")
                sad.checked      = current_scene.tags.match("Sadism")
-               blo.checked      = current_scene.tags.match("Blood")
-               suf.checked      = current_scene.tags.match("Torture")
+               bel.checked      = current_scene.tags.match("War")
+               tor.checked      = current_scene.tags.match("Torture")
 
                nud.checked      = current_scene.tags.match("Nudity")
                sen.checked      = current_scene.tags.match("Sensuality")
                see.checked      = current_scene.tags.match("Explicit sex")
-               inf.checked      = current_scene.tags.match("Infidelity")
                sei.checked      = current_scene.tags.match("Implicit sex")
-               sea.checked      = current_scene.tags.match("Sexual abuse")
-               //red.checked      = current_scene.tags.match("Reduction")
-               //por.checked      = current_scene.tags.match("Porn")
-               //obj.checked      = current_scene.tags.match("Objetivation")
+               inf.checked      = current_scene.tags.match("No love")
+               vio.checked      = current_scene.tags.match("Rape")
 
-               tob.checked      = current_scene.tags.match("Tobaco")
-               alc.checked      = current_scene.tags.match("Alcohol")
-               her.checked      = current_scene.tags.match("Heroine")
+               tob.checked      = current_scene.tags.match("Tobaco/Alcohol")
                weed.checked     = current_scene.tags.match("Weed")
-               coc.checked      = current_scene.tags.match("Cocaine")
-               oth.checked      = current_scene.tags.match("Others")
+               coc.checked      = current_scene.tags.match("Cocaine/Heroine")
+               med.checked      = current_scene.tags.match("Medicines misuse")
+               ove.checked         = current_scene.tags.match("Overdose")
+               tra.checked      = current_scene.tags.match("Trade")
 
                plot.checked     = current_scene.tags.match("Plot")
                //grap.checked     = current_scene.tags.match("Graphic")
@@ -431,7 +420,7 @@ Item {
 
 
 /*------------------- FUNCTIONS -------------------------*/
-    function add_tag( tag, add ){
+    function add_tag( tag, add, min ){
         if( tableview.currentRow == -1 ){ add_blank_scene() }
         var ctag = scenelistmodel.get(tableview.currentRow).tags
         if( add ) {
@@ -439,6 +428,7 @@ Item {
         }else{
             scenelistmodel.set(tableview.currentRow, {"tags": ctag.replace("#"+tag,'').replace(/ +/g,' ') } )
         }
+        if( min && severity.value < min ) severity.value = min
         tableview.currentRow = tableview.currentRow-1
         tableview.currentRow = tableview.currentRow+1
     }
