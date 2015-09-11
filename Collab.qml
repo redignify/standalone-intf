@@ -32,7 +32,7 @@ Item {
 
                 Label{
                     Layout.columnSpan: 2
-                    text: qsTr("Muchas gracias por tu opinión")
+                    text: qsTr("Queremos ofrecerte lo mejor, ¿en qué podemos mejorar?")
                 }
 
                 TextArea {
@@ -44,8 +44,8 @@ Item {
 
                 Button {
                     text: qsTr( "Enviar feedback" )
-                    onClicked: post( "action=feedback&idea= Hola! soy "+settings.user+" quería decirte que "+feedback.text, function(){
-                        feedback.text = qsTr("Recibido, gracias!")
+                    onClicked: post( "action=feedback&idea="+feedback.text+"&user="+settings.user , function(){
+                        feedback.text = qsTr("Recibido, ¡gracias!")
                         say_to_user( qsTr( "Gracias por tu opinión") )
                     } )
                 }
@@ -70,9 +70,12 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                Label{
+                Text{
                     Layout.columnSpan: 2
-                    text: qsTr("Fcinema es gratuito, los gastos se cubren con donativos...")
+                    Layout.maximumWidth: 330
+                    horizontalAlignment: Text.AlignJustify
+                    wrapMode: "WordWrap"
+                    text: qsTr("Fcinema es gratuito, y queremos que siga siendolo para que todo el mundo pueda disfrutar de una buena película en familia. Si te gusta fcinema y puedes permitirtelo ayuda a mantener fcinema en marcha!")
                 }
                 Button {
                     text: qsTr( "Donar" )
@@ -101,7 +104,11 @@ Item {
 
                 Label{
                     Layout.columnSpan: 2
-                    text: qsTr("Fcinema no sería posible sin la base de datos. Si crees que falta contenido...")
+                    Layout.maximumWidth: 350
+                    wrapMode: "WordWrap"
+                    textFormat: Text.RichText
+                    horizontalAlignment: Text.AlignJustify
+                    text: qsTr("Fcinema no sería posible sin la base de datos. Una de las mejores y más divertidas formas de colaborar es y coger un buen montón de palomitas y elegir una buena película. Si al mientras disfrutas la película con fcinema aparece una escena que consideras inconviente, pulsa '+' para marcar la escena. Para más detalle, puedes consultar la ayuda desde la barra superior.")
                 }
             }
         }
@@ -127,7 +134,11 @@ Item {
 
                 Label{
                     Layout.columnSpan: 2
-                    text: qsTr("Si sabes de programación o ...")
+                    Layout.maximumWidth: 330
+                    wrapMode: "WordWrap"
+                    textFormat: Text.RichText
+                    horizontalAlignment: Text.AlignJustify
+                    text: qsTr("Si sabes de programación o te gusta el diseño este es tú sitio. Entre todos podemos hacer de fcinema un producto aún mejor. Puedes descargar el código desde <a href=\"https://github.com/fcinema\">github.com/fcinema</a>. ¡Ah!, y no dudes en ponerte en contacto con nosotros si tienes cualquier duda!")
                 }
             }
         }
@@ -153,7 +164,10 @@ Item {
 
                 Label{
                     Layout.columnSpan: 2
-                    text: qsTr("¿Te gusta fcinema? Ayuda a otros a descubrirlo...")
+                    Layout.maximumWidth: 350
+                    wrapMode: "WordWrap"
+                    horizontalAlignment: Text.AlignJustify
+                    text: qsTr("¿Te gusta fcinema? ¡Ayuda a otros a descubrirlo!")
                 }
             }
         }

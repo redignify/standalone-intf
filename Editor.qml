@@ -46,13 +46,11 @@ Item {
                         if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
                         scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
                     }catch(e){
-                        // tableview migth not exits (just avoid error messages
+                        // tableview migth not exits (just avoid error messages)
                     }
                 }
             }
 
-
-            //Label{ Layout.columnSpan: 1; text: qsTr("Discriminación") }
             RSlider{
                 id: severity;
                 Layout.columnSpan: 2;
@@ -65,42 +63,31 @@ Item {
                 }
             }
 
-        // Discrimination labels
-            RCheckBox { id: race; text: qsTr("Raza"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Race", checked ) }
-            RCheckBox { id: nati; text: qsTr("Nacionalidad"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Nationality", checked ) }
-            RCheckBox { id: sexdisc;  text: qsTr("Machismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Machismo", checked ) }
-            RCheckBox { id: homo;  text: qsTr("Homofobia"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Homofobic", checked ) }
-            RCheckBox { id: rel; text: qsTr("Religión"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Religion", checked ) }
-            RCheckBox { id: ideo; text: qsTr("Ideología"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Ideology", checked ) }
-
         // Violence labels
-            CheckBox { id: phy; text: qsTr("Física"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Physical", checked ) }
-            CheckBox { id: psico; text: qsTr("Psicológica"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Psicological", checked ) }
-            CheckBox { id: animal;  text: qsTr("Animal"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Animal", checked ) }
-            CheckBox { id: sad;  text: qsTr("Sadismo"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Sadism", checked ) }
-            CheckBox { id: blo;  text: qsTr("Sangre"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Blood", checked ) }
-            CheckBox { id: suf;  text: qsTr("Tortura"); visible: type_combo.currentIndex == 1; onClicked: add_tag("Torture", checked ) }
+            CheckBox { id: phy;     text: qsTr("Física"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Physical", checked ) }
+            CheckBox { id: psico;   text: qsTr("Psicológica"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Psicological", checked ) }
+            CheckBox { id: disc;    text: qsTr("Discriminación"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Discrimination", checked ) }
+            CheckBox { id: sad;     text: qsTr("Sadismo"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Sadism", checked ) }
+            CheckBox { id: bel;     text: qsTr("Bélico");  visible: type_combo.currentIndex == 0; onClicked: add_tag("War", checked ) }
+            CheckBox { id: tor;     text: qsTr("Tortura"); visible: type_combo.currentIndex == 0; onClicked: add_tag("Torture", checked ) }
 
         // Sex labels
             /* https://orbitadiversa.wordpress.com/2013/01/28/cosificacion-sexual/ */
-            // animalismo, sadomasoquismo,
-            CheckBox { id: nud; text: qsTr("Desnudo"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Nudity", checked ) }
-            CheckBox { id: sen; text: qsTr("Sensualidad"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Sensuality", checked ) }
-            //CheckBox { id: por; text: qsTr("Pornografía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Porn", checked ) }
-            CheckBox { id: see; text: qsTr("Sexo explicito"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Explicit sex", checked ) }
-            //CheckBox { id: obj; text: qsTr("Cosificación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Objetivation", checked ) }
-            CheckBox { id: inf; text: qsTr("Intercambiable"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Interchangeable", checked ) }
-            CheckBox { id: hum; text: qsTr("Humillación"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Humiliation", checked ) }
-            CheckBox { id: mer; text: qsTr("Mercancía"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Commodity", checked ) }
-            //CheckBox { id: red; text: qsTr("Reducción"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Reduction", checked ) }
+            // animalismo, sadomasoquismo, porn, reduction, cosificación
+            CheckBox { id: nud; text: qsTr("Desnudo");      visible: type_combo.currentIndex == 1;  onClicked: add_tag("Nudity", checked ) }
+            CheckBox { id: sen; text: qsTr("Sensualidad");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("Sensuality", checked ) }
+            CheckBox { id: see; text: qsTr("Sexo explicito"); visible: type_combo.currentIndex == 1;onClicked: add_tag("Explicit sex", checked ) }
+            CheckBox { id: sei; text: qsTr("Se intuye sexo");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("Implicit sex", checked ) }
+            CheckBox { id: inf; text: qsTr("Sin amor");  visible: type_combo.currentIndex == 1;  onClicked: add_tag("No love", checked ) }
+            CheckBox { id: vio; text: qsTr("Violación");    visible: type_combo.currentIndex == 1;  onClicked: add_tag("Rape", checked ) }
 
         // Drugs labels
-            CheckBox { id: tob;  text: qsTr("Tabaco"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Tobaco", checked ) }
-            CheckBox { id: alc;  text: qsTr("Alcohol"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Alcohol", checked ) }
-            CheckBox { id: her;  text: qsTr("Heroina"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Heroine", checked ) }
-            CheckBox { id: weed; text: qsTr("Porros"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Weed", checked ) }
-            CheckBox { id: coc;  text: qsTr("Cocaína"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Cocaine", checked ) }
-            CheckBox { id: oth;  text: qsTr("Otras"); visible: type_combo.currentIndex == 3; onClicked: add_tag("Others", checked ) }
+            CheckBox { id: tob;  text: qsTr("Tabaco/Alcohol"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Tobaco", checked ) }
+            CheckBox { id: weed; text: qsTr("Porros"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Weed", checked ) }
+            CheckBox { id: coc;  text: qsTr("Cocaína/Heroina"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Cocaine", checked ) }
+            CheckBox { id: alc;  text: qsTr("Abuso medicamentos"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Alcohol", checked ) }
+            CheckBox { id: her;  text: qsTr("Sobredosis"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Heroine", checked ) }
+            CheckBox { id: oth;  text: qsTr("Tráfico"); visible: type_combo.currentIndex == 2; onClicked: add_tag("Others", checked ) }
 
         // Generic labels
             CheckBox { id: plot; text: qsTr("Afecta a la trama"); checked: false; onClicked: add_tag("Plot", checked ) }
@@ -176,12 +163,12 @@ Item {
                }
 
             // Update tags (check/uncheck according to current text)
-               race.checked     = current_scene.tags.match("Race")
+               /*race.checked     = current_scene.tags.match("Race")
                nati.checked     = current_scene.tags.match("Nationality")
                sexdisc.checked  = current_scene.tags.match("Porn")
                homo.checked     = current_scene.tags.match("Homofobic")
                rel.checked      = current_scene.tags.match("Religion")
-               ideo.checked     = current_scene.tags.match("Ideology")
+               ideo.checked     = current_scene.tags.match("Ideology")*/
 
                phy.checked      = current_scene.tags.match("Physical")
                psico.checked    = current_scene.tags.match("Psicological")
@@ -192,13 +179,13 @@ Item {
 
                nud.checked      = current_scene.tags.match("Nudity")
                sen.checked      = current_scene.tags.match("Sensuality")
-               //por.checked      = current_scene.tags.match("Porn")
                see.checked      = current_scene.tags.match("Explicit sex")
-               //obj.checked      = current_scene.tags.match("Objetivation")
-               inf.checked      = current_scene.tags.match("Interchangeable")
-               hum.checked      = current_scene.tags.match("Humiliation")
-               mer.checked      = current_scene.tags.match("Commodity")
+               inf.checked      = current_scene.tags.match("Infidelity")
+               sei.checked      = current_scene.tags.match("Implicit sex")
+               sea.checked      = current_scene.tags.match("Sexual abuse")
                //red.checked      = current_scene.tags.match("Reduction")
+               //por.checked      = current_scene.tags.match("Porn")
+               //obj.checked      = current_scene.tags.match("Objetivation")
 
                tob.checked      = current_scene.tags.match("Tobaco")
                alc.checked      = current_scene.tags.match("Alcohol")

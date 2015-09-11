@@ -37,6 +37,7 @@ Item {
                 Label{ text: qsTr("Actualizar manualmente") }
                 Button{
                     text: "Actualizar"
+                    tooltip: "Presiona para actualziar"
                     onClicked: {
                         Utils.update("")
                         say_to_user("Descargando actualización, puede llevar unos segundos")

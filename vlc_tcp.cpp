@@ -95,7 +95,7 @@ bool VLC_TCP::is_playing()
 
 QString VLC_TCP::name( )
 {
-    return "VLC_TCP";
+    return "VLC"; // It should be VLC_TCP, but we are not using any other interface
 }
 
 QString VLC_TCP::get_title()

@@ -85,14 +85,6 @@ Item {
                     }
                 }
 
-                Label{ text: qsTr("Discriminación") }
-                RSlider {
-                    id: slider_pro
-                    value: settings.pro
-                    onValueChanged: apply_filter( "Discrimination", value )
-                }
-
-
                 Label{ text: qsTr("Violencia") }
                 RSlider {
                     id: slider_v
@@ -107,6 +99,12 @@ Item {
                     onValueChanged: apply_filter( "Sex", value )
                 }
 
+                Label{ text: qsTr("Vocabulario") }
+                RSlider {
+                    id: slider_pro
+                    value: settings.pro
+                    //onValueChanged: apply_filter( "Discrimination", value )
+                }
 
                 Label{ text: qsTr("Drogas") }
                 RSlider {
@@ -253,7 +251,7 @@ Item {
 
                     ProgressBar {
                         visible: sync.play_after_sync
-                        indeterminate: true
+                        indeterminate: false
                     }
                 }
             }
@@ -267,6 +265,7 @@ Item {
 // Sort list by column
     function sort( column, order )
     {
+        console.log('Sorting')
         var columnname = playtableview.getColumn(column)[0]
         for( var i = 0; i < scenelistmodel.count; ++i){
             var value = scenelistmodel.get(i).start
@@ -282,6 +281,7 @@ Item {
 // Modify skip "Yes/No" toogling the previous value
     function toogle_selection()
     {
+        console.log('Toogling selection')
         if (scenelistmodel.get( playtableview.currentRow ).skip === "No" ) {
             scenelistmodel.get( playtableview.currentRow ).skip = "Yes"
             if( l_detail.text !== "" ) l_detail.text = qsTr( "La escena será cortada" )
@@ -297,6 +297,7 @@ Item {
 // Modify skip "Yes/No" to match one of the severity sliders
     function apply_filter( typ, val )
     {
+        console.log('Applying filter '+typ)
     // Apply filter to each scene
         for( var i = 0; i < scenelistmodel.count; ++i){
             if( typ !== scenelistmodel.get(i).type ) continue;

@@ -21,5 +21,6 @@
         <file>Collab.qml</file>
         <file>images/preferences-system.png</file>
         <file>images/collaborate.png</file>
+        <file>MyTooltipArea.qml</file>
     </qresource>
 </RCC>

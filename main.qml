@@ -94,6 +94,7 @@ ApplicationWindow {
         property int pro: 6
         property bool ask: true
         property bool autoshare: true
+        property bool ask_to_update: true
         property string default_player: "VLC"
         property string vlc_path : ""
     }
@@ -101,6 +102,7 @@ ApplicationWindow {
     Item {
         id: app
         property bool ask_before_close: false
+        property bool new_version_available: false
     }
 
     ListModel {
@@ -137,10 +139,13 @@ ApplicationWindow {
 
     ListModel {
         id: type_list
-        ListElement {  text: "Discrimination" }
+//        ListElement {  text: "Discrimination" }
         ListElement {  text: "Violence" }
         ListElement {  text: "Sex" }
         ListElement {  text: "Drugs" }
+        /*ListElement {  text: qsTr("Violencia") }
+        ListElement {  text: qsTr("Sexo") }
+        ListElement {  text: qsTr("Drogas") }*/
         //ListElement {  text: "Sync" }
     }
 
@@ -236,6 +241,10 @@ ApplicationWindow {
             d_before_closing.visible = true
             close.accepted = false
         }
+        if( app.new_version_available && settings.ask_to_update){
+            d_update.visible = true
+            close.accepted = false
+        }
     }
 
 
@@ -267,6 +276,46 @@ ApplicationWindow {
         interval: 250; running: false; repeat: true
         onTriggered: console.log("timer?")//preview_check( get_time() )
     }
+
+
+    // New version available, ask user wath to do
+        Dialog {
+            id: d_update
+            width: 240
+            standardButtons: StandardButton.NoButton
+            title: qsTr( "¡Nueva vesión!" )
+            GridLayout {
+                columns: 4
+                Label{
+                    Layout.columnSpan: 4
+                    text: qsTr( "Hemos mejorado fcinema ¿que quieres hacer?" )
+                }
+                Button {
+                    text: qsTr( "Actualizar" )
+                    onClicked: {
+                        Utils.update("")
+                        say_to_user("Descargando actualización, puede llevar unos segundos")
+                    }
+                }
+                Button {
+                    text: qsTr( "Nunca preguntar" )
+                    onClicked: {
+                        d_update.visible = false
+                        settings.ask_to_update = false
+                        close()
+                    }
+                }
+                Button {
+                    text: qsTr( "Cerrar" )
+                    onClicked: {
+                        app.new_version_available = false // This is not exactly true, but avoid repromting
+                        d_update.visible = false
+                        close()
+                    }
+                }
+            }
+
+        }
 
 
 // Ask user what to do before closing
@@ -570,6 +619,14 @@ ApplicationWindow {
                 visible: c_new_user.checked
                 placeholderText: qsTr("Opcional")
             }
+
+            /*Button {
+                text: qsTr( "Actualizar" )
+                onClicked: {
+                    Utils.update("")
+                    say_to_user("Descargando actualización, puede llevar unos segundos")
+                }
+            }*/
 
             /*Label{ text: qsTr("Violencia etiquetada") }
             RComboBox {
@@ -960,10 +1017,16 @@ ApplicationWindow {
             return
         }
 
-        if( jo && jo["Status"] && jo["Status"] === "Ok" ){
-            app.ask_before_close = false
-            d_requestPass.visible = false
-            say_to_user( qsTr( "En nombre de todos los usuarios, ¡gracias por ayudar!") )
+        if( jo && jo["Status"] ){
+            if( jo["Status"] === "Ok"  ){
+                app.ask_before_close = false
+                d_requestPass.visible = false
+                say_to_user( qsTr( "En nombre de todos los usuarios, ¡gracias por ayudar!") )
+            }else if(jo["Status"] === "Bad password"){
+                say_to_user( qsTr( "Nombre de usuario o contraseña invalidos" ) )
+            }else{
+                say_to_user( qsTr( "Imposible compartir. Ha ocurrido un error") )
+            }
         }else{
             say_to_user( qsTr( "Imposible compartir. Ha ocurrido un error") )
         }
@@ -1174,7 +1237,10 @@ ApplicationWindow {
     {
     // Preapare everything
         var http = new XMLHttpRequest()
-        url = url || "http://www.fcinema.org/api";
+        if( !url ){
+            url = "http://www.fcinema.org/api";
+            params += "&version=0.8";
+        }
         console.log( params, callback, url )
         http.open("POST", url, true);
 
@@ -1192,6 +1258,7 @@ ApplicationWindow {
                                 callback( http.responseText, callbackparams )
                             }else{
                                 callback( http.responseText )
+                                console.log( http.responseText )
                             }
 
                         } else {
@@ -1583,7 +1650,7 @@ ApplicationWindow {
             }
         }
 
-        for( var i = 0, sum = 0; i < offset.length; i++ ) sum += offset[i];
+        //for( var i = 0, sum = 0; i < offset.length; i++ ) sum += offset[i];
         var avg = round( sum/offset.length, 1000 )
         var margin = round( (max - min)/2, 1000 )
         if( margin < 4 && num > 50 ){

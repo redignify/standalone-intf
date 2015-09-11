@@ -147,7 +147,7 @@ Item {
             bytesize = 0
         }
 
-    // Ask the server for the content, "show_list" when the server responds
+    // Ask the server for the content, "show_list" of movies when the server responds
         if( settings.user && settings.password ){
             post( "action=search&filename="+ title.text + "&imdb_code=" + imdbid + "&hash=" + hash + "&bytesize=" + bytesize + "&username="+settings.user+"&password="+settings.password, show_list )
         }else{
@@ -276,16 +276,24 @@ Item {
 // Fill the list of movies matching last search or load movie if only one result
     function show_list( str )
     {
-        var jsonObject = JSON.parse( str );
-
-    // There was and error, 'str' input is fake ;)
-        if ( !jsonObject ) {
+    // Check if 'str' input is valid json
+        try {
+            if( str === '' ) return;
+            var jsonObject = JSON.parse( str );
+            if ( !jsonObject ) return;
+        }catch(e){
+            console.log(e)
             return
+        }
+
+    // Check if there is a new version
+        if( jsonObject["Message"] && jsonObject["Message"] === "New version" ){
+            delete jsonObject["Message"];
+            app.new_version_available = true;
+        }
 
     // Only one search result, load that movie
-        } else if ( jsonObject['ImdbCode'] && !jsonObject["IDs"] ){
-
-            console.log( str )
+        if ( jsonObject['ImdbCode'] && !jsonObject["IDs"] ){
             loader.source = "Play.qml"
             //DBG
             try {   // Check if we already have a cached version of that movie
