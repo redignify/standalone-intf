@@ -22,5 +22,12 @@
         <file>images/preferences-system.png</file>
         <file>images/collaborate.png</file>
         <file>MyTooltipArea.qml</file>
+        <file>discover/images/image00.png</file>
+        <file>discover/images/image01.png</file>
+        <file>discover/images/image02.png</file>
+        <file>discover/images/image03.png</file>
+        <file>discover/images/image04.png</file>
+        <file>discover/images/image05.png</file>
+        <file>discover/fcinema.html</file>
     </qresource>
 </RCC>

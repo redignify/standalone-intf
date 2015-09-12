@@ -37,6 +37,5 @@ HEADERS += \
 
 OTHER_FILES +=
 
-DISTFILES += \
-    help/fcinema.html
+DISTFILES +=
 

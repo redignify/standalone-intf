@@ -60,6 +60,14 @@ Item {
                 }
 
 
+                Label{ text: qsTr("Preguntar si hay actualizaciones") }
+                CheckBox {
+                    text: qsTr("")
+                    checked: settings.ask_to_update
+                    onClicked: settings.ask_to_update = checked
+                }
+
+
                 Label{ text: qsTr("Compartir información automáticamente") }
                 CheckBox {
                     text: qsTr("")
@@ -150,8 +158,9 @@ Item {
                     text: "No pulsar jamás"
                     Layout.fillWidth: true
                     onClicked: {
-                        Utils.get_shots("")
-                        survey.visible = true
+                        //manual_calibration()
+                        //Utils.get_shots("")
+                        //survey.visible = true
                         //Utils.update("")
                         //get_subs()
                         //media.url = fileurl.text.toString()
@@ -182,7 +191,7 @@ Item {
 
         Label{
             id: l_msg
-            color: "red"
+            color: movie.msg_color
             text: movie.msg_to_user
             textFormat: Text.PlainText
             verticalAlignment: Text.AlignVCenter

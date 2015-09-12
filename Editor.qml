@@ -406,7 +406,7 @@ Item {
         RowLayout{
             Label{
                 id: l_msg
-                color: "red"
+                color: movie.msg_color
                 text: movie.msg_to_user
                 textFormat: Text.PlainText
                 verticalAlignment: Text.AlignVCenter

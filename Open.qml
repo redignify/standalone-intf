@@ -104,7 +104,7 @@ Item {
 
             Label{
                 Layout.columnSpan : 1
-                color: "red"
+                color: movie.msg_color
                 text: movie.msg_to_user
                 font.bold : true
             }
@@ -220,13 +220,17 @@ Item {
         var data = JSON.parse( movie.data )
 
     // Update movie data
-        movie.filter_status = data["FilterStatus"]? data["FilterStatus"] : 0
+        if(!data["FilterStatus"]) data["FilterStatus"] = {};
+        movie.violence_filter_status = data["FilterStatus"]["Violence"] || 7
+        movie.sex_filter_status = data["FilterStatus"]["Sex"] || 7
+        movie.drugs_filter_status = data["FilterStatus"]["Drugs"] || 7
+
         movie.poster_url = data["Poster"]? data["Poster"] : ""
         movie.director = data["Director"]? data["Director"]: ""
         movie.pgcode = data["PGCode"]? "PG-Code: "+data["PGCode"]: ""
         movie.imdbrating = data["ImdbRating"]? "Imdb Rating: " + data["ImdbRating"] : ""
         movie.imdbcode = data["ImdbCode"]? data["ImdbCode"] : ""
-        movie.title = data["Title"]? data["Title"] : ""
+        movie.title = data["Title"] || ""
         media.ignore_hash_on_search = false
         // Sync info
         sync.applied_offset = 0
@@ -249,7 +253,7 @@ Item {
                 "tags": tags? tags : "",
                 "severity": Scenes[i]["Severity"],
                 "start": secToStr(start),
-                "duration":  secToStr( stop - start ),
+                "duration":  secToSimpleStr( stop - start ),
                 "description": Scenes[i]["AdditionalInfo"],
                 "stop": secToStr(stop),
                 "action": Scenes[i]["Action"],

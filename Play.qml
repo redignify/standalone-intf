@@ -158,12 +158,12 @@ Item {
                    Layout.preferredHeight: 125
                    //Layout.columnSpan : 4
                    //TableViewColumn{ role: "skip"; title: "Skip"; width: 40; delegate: checkBoxDelegate}
-                   TableViewColumn{ role: "skip"; title: "Skip"; width: 40; horizontalAlignment: Text.AlignLeft }
-                   TableViewColumn{ role: "type"  ; title: "Type" ; width: 90; horizontalAlignment: Text.AlignLeft }
-                   TableViewColumn{ role: "severity"; title: "Level"; width: 45; horizontalAlignment: Text.AlignLeft }
-                   TableViewColumn{ role: "duration" ; title: "Length" ; width: 60; horizontalAlignment: Text.AlignLeft }
-                   TableViewColumn{ role: "tags" ; title: "Tags" ; width: 100; horizontalAlignment: Text.AlignLeft }
-                   TableViewColumn{ role: "description" ; title: "Comments" ; width: 215; horizontalAlignment: Text.AlignLeft }
+                   TableViewColumn{ role: "skip"; title: qsTr("Saltar"); width: 50; horizontalAlignment: Text.AlignLeft }
+                   TableViewColumn{ role: "type"  ; title: qsTr("Tipo") ; width: 70; horizontalAlignment: Text.AlignLeft }
+                   TableViewColumn{ role: "severity"; title: qsTr("Nivel"); width: 45; horizontalAlignment: Text.AlignLeft }
+                   TableViewColumn{ role: "duration" ; title: qsTr("Duración") ; width: 60; horizontalAlignment: Text.AlignLeft }
+                   TableViewColumn{ role: "tags" ; title: qsTr("Etiquetas") ; width: 100; horizontalAlignment: Text.AlignLeft }
+                   TableViewColumn{ role: "description" ; title: qsTr("Comentarios") ; width: 215; horizontalAlignment: Text.AlignLeft }
                    model: scenelistmodel
                    sortIndicatorVisible: true
                    //onSortIndicatorColumnChanged: sort(sortIndicatorColumn, sortIndicatorOrder)
@@ -215,7 +215,7 @@ Item {
                     Label{
                         //Layout.columnSpan : 2
                         id: l_msg
-                        color: "red"
+                        color: movie.msg_color
                         text: movie.msg_to_user
                         font.bold : true
                         onTextChanged: l_help_play.text = ""
@@ -290,6 +290,9 @@ Item {
             if( l_detail.text !== "" ) l_detail.text = qsTr( "La escena se verá normalmente" )
         }
 
+    // This allow the user to change settings while playing the movie
+        fillSkipList()
+
     }
 
 
@@ -315,17 +318,28 @@ Item {
             settings.v = slider_v.value
         }else if( typ === "Drugs"){
             settings.d = slider_d.value
-        }else if( typ === "Discrimination"){
-            settings.pro = slider_pro.value
         }
 
     // Give a warning if the user wants to skip scenes we have not listed (movie information might be incomplete)
-        /*if( slider_sn.value > 4 || slider_v.value > 3 || slider_d.value > 3 || slider_pro.value > 2 ){
-            l_sensibiltiy.text = "Puede que alguna escena no sea filtrada"
+        if( movie.sex_filter_status === 7 ){
+            l_sensibiltiy.text = "Pueden aparecer escenas inconvenientes"
+            l_sensibiltiy.color = "red"
+        }else if( movie.sex_filter_status > slider_sn.value ){
+            l_sensibiltiy.text = "Alguna escena sexual no puede filtrarse"
+            l_sensibiltiy.color = "red"
+        }else if( movie.violence_filter_status > slider_v.value ){
+            l_sensibiltiy.text = "Alguna escena violenta no puede filtrarse"
+            l_sensibiltiy.color = "red"
+        }else if( movie.drugs_filter_status > slider_d.value ){
+            l_sensibiltiy.text = "Alguna escena con drogas no puede filtrarse"
             l_sensibiltiy.color = "red"
         }else{
-            l_sensibiltiy.text = ""
-        }*/
+            l_sensibiltiy.text = "Podemos limpiar la película"
+            l_sensibiltiy.color = "blue"
+        }
+
+    // This allow the user to change settings while playing the movie
+        fillSkipList()
 
     }
 
@@ -338,6 +352,5 @@ Item {
         apply_filter( "Sex", slider_sn.value )
         apply_filter( "Violence", slider_v.value )
         apply_filter( "Drugs", slider_d.value )
-        apply_filter( "Discrimination", slider_pro.value )
     }
 }

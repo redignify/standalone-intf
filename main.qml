@@ -63,8 +63,11 @@ ApplicationWindow {
         property var    subref
         property string our_srt
         property string ref_srt
-        property int    filter_status : 0
+        property int    violence_filter_status : 0
+        property int    sex_filter_status : 0
+        property int    drugs_filter_status : 0
         property string msg_to_user
+        property string msg_color : "red"
         property string poster_url
     }
 
@@ -129,12 +132,12 @@ ApplicationWindow {
 
     ListModel {
         id: status_list_pro
-        ListElement {  text: "None" }
-        ListElement {  text: "All level 5" }
-        ListElement {  text: "All level 4+" }
-        ListElement {  text: "All level 3+" }
-        ListElement {  text: "All level 2+" }
-        ListElement {  text: "All scenes" }
+        ListElement {  text: qsTr("5 (muy impactante)") }
+        ListElement {  text: qsTr("4") }
+        ListElement {  text: qsTr("3") }
+        ListElement {  text: qsTr("2") }
+        ListElement {  text: qsTr("1") }
+        ListElement {  text: qsTr("0 (nada impactante)") }
     }
 
     ListModel {
@@ -294,7 +297,7 @@ ApplicationWindow {
                     text: qsTr( "Actualizar" )
                     onClicked: {
                         Utils.update("")
-                        say_to_user("Descargando actualización, puede llevar unos segundos")
+                        say_to_user("Descargando actualización, puede llevar unos segundos", "blue")
                     }
                 }
                 Button {
@@ -571,23 +574,63 @@ ApplicationWindow {
 // Request user password before sharing
     Dialog {
         id: d_requestPass
-        width: 150
-        //height: 200
-        standardButtons: StandardButton.Ok | StandardButton.Cancel
-        title: qsTr( "Identificación requerida" )
+        standardButtons: StandardButton.NoButton
+        title: qsTr( "Gracias!" )
         GridLayout {
             columns: 2
-            Label{
-                text: qsTr("Usuario")
+            Layout.minimumWidth: 180
+            Text{
+                Layout.columnSpan: 2
+                Layout.maximumWidth: 190
+//                horizontalAlignment: Text.AlignHCenter
+                color: "Green"
+                wrapMode: "WordWrap"
+                text: qsTr("De 0 a 5, ¿cúal es la escena más impactante que queda por etiquetar?")
             }
+
+            Label{
+                Layout.minimumWidth: 80
+                text: qsTr("Violencia") }
+            RComboBox {
+                Layout.fillWidth: true
+                id: status_combo_violence
+                model: status_list_pro
+                currentIndex: 5-settings.v
+            }
+
+            Label{ text: qsTr("Sexo") }
+            ComboBox {
+                Layout.fillWidth: true
+                id: status_combo_sex
+                model: status_list_pro
+                currentIndex: 5-settings.sn
+            }
+
+            Label{ text: qsTr("Drogas") }
+            RComboBox {
+                Layout.fillWidth: true
+                id: status_combo_drugs
+                model: status_list_pro
+                currentIndex: 5-settings.d
+            }
+
+            Text{
+                Layout.columnSpan: 2
+                Layout.maximumWidth: 190
+                horizontalAlignment: Text.AlignHCenter
+                color: "Green"
+                wrapMode: "WordWrap"
+                text: qsTr("Tus datos")
+            }
+
+            Label{ text: qsTr("Usuario") }
             TextField {
                 id: name
                 text: settings.user
                 width: 100
             }
-            Label{
-                text: qsTr("Contraseña")
-            }
+
+            Label{ text: qsTr("Contraseña") }
             TextField {
                 width: 100
                 id:pass
@@ -620,69 +663,43 @@ ApplicationWindow {
                 placeholderText: qsTr("Opcional")
             }
 
-            /*Button {
-                text: qsTr( "Actualizar" )
-                onClicked: {
-                    Utils.update("")
-                    say_to_user("Descargando actualización, puede llevar unos segundos")
-                }
-            }*/
-
-            /*Label{ text: qsTr("Violencia etiquetada") }
-            RComboBox {
-                Layout.fillWidth: true
-                id: status_combo_violence
-                model: status_list_pro
-                currentIndex: settings.v
-            }
-
-            Label{ text: qsTr("Sexo etiquetada") }
-            ComboBox {
-                Layout.fillWidth: true
-                id: status_combo_sn
-                model: status_list_pro
-                currentIndex: settings.sn
-            }
-
-            Label{ text: qsTr("Discrimi. etiquetada") }
-            RComboBox {
-                Layout.fillWidth: true
-                id: status_combo_pro
-                model: status_list_pro
-                currentIndex: settings.pro
-            }
-
-            Label{ text: qsTr("Drogas etiquetada") }
-            RComboBox {
-                Layout.fillWidth: true
-                id: status_combo_dro
-                model: status_list_pro
-                currentIndex: settings.d
-            }*/
             CheckBox {
+                Layout.columnSpan: 2
                 id: c_new_user
                 text: qsTr("Nuevo usuario");
-                onClicked: checked? d_requestPass.height = 150 : d_requestPass.height = 100
+                //onClicked: checked? d_requestPass.height = 200 : d_requestPass.height = 150
             }
-        }
-        onAccepted: {
-            d_requestPass.visible = true
-            if( c_new_user.checked ){
-                if( pass.text !== pass2.text ){
-                    say_to_user( qsTr("Las contraseñas deben coincidir") );
-                    pass.text = ""
-                    pass2.text = ""
-                    return
+
+            Button {
+                Layout.fillWidth: true
+                text: qsTr( "Compartir" )
+                onClicked: {
+                    movie.violence_filter_status = status_combo_violence.currentIndex
+                    movie.sex_filter_status = status_combo_sex.currentIndex
+                    movie.drugs_filter_status = status_combo_drugs.currentIndex
+                    if( c_new_user.checked ){
+                        if( pass.text !== pass2.text ){
+                            say_to_user( qsTr("Las contraseñas deben coincidir") );
+                            pass.text = ""
+                            pass2.text = ""
+                            return
+                        }
+                        post( "action=newuser&username="+name.text+"&password="+pass.text+"&email="+email.text, new_user )
+                    }else{
+                        settings.password = pass.text
+                        settings.user = name.text
+                        share( name.text, pass.text )
+                    }
                 }
-                post( "action=newuser&username="+name.text+"&password="+pass.text+"&email="+email.text, new_user )
-            }else{
-                settings.password = pass.text
-                settings.user = name.text
-                share( name.text, pass.text )
             }
-        }
-        onRejected: {
-            d_requestPass.visible = false
+
+            Button {
+                Layout.fillWidth: true
+                text: qsTr( "Cancelar" )
+                onClicked: {
+                    d_requestPass.visible = false
+                }
+            }
         }
     }
 
@@ -888,11 +905,11 @@ ApplicationWindow {
                 var c_t_off = (index-2500)*step - t_off // Here we are ignoring speeds
                 apply_sync(c_t_off,1,2,step);
             }*/
-            //say_to_user("Autocalib is amazing")
+            //say_to_user("Autocalib is amazing", "blue")
             return true
         }else if (cor === 1){
             //if( sync.confidence < 1 ) apply_sync((index-2500)*step,1,1,step);
-            say_to_user("Autocalib is cool")
+            say_to_user("Autocalib is cool", "blue")
         }
      }
 
@@ -931,7 +948,7 @@ ApplicationWindow {
         if( (mratio > 2 && dist < 1) || (mratio > 2.5 && dist < 2)  || (mratio > 3) ){
             console.log( max +" with ratio: "+Math.floor(max/max2*10)/10+" step: "+Math.floor(step*10)/10+" min: "+Math.floor(1000*min)/1000+" at "+Math.floor((index-2500)*step*10)/10+" speed "+speed +" distance "+dist )
             //var c_t_off = (index-2500)*step - t_off // Here we are ignoring speeds
-            say_to_user("Autocalib is amazing")
+            say_to_user("Autocalib is amazing", "blue")
             if( sync.confidence <= 2 ) apply_sync((index-2500)*step,1,2,step);
             return 2
         }
@@ -1001,7 +1018,7 @@ ApplicationWindow {
         try{
             var jsonObject = JSON.parse( movie.data );
         }catch(e){
-            say_to_user( "No movie ID")
+            say_to_user( qsTr( "No hay ninguna película seleccionada") )
             return
         }
         var str = pack_data()
@@ -1021,7 +1038,7 @@ ApplicationWindow {
             if( jo["Status"] === "Ok"  ){
                 app.ask_before_close = false
                 d_requestPass.visible = false
-                say_to_user( qsTr( "En nombre de todos los usuarios, ¡gracias por ayudar!") )
+                say_to_user( qsTr( "En nombre de todos los usuarios, ¡gracias por ayudar!" , "blue") )
             }else if(jo["Status"] === "Bad password"){
                 say_to_user( qsTr( "Nombre de usuario o contraseña invalidos" ) )
             }else{
@@ -1049,7 +1066,7 @@ ApplicationWindow {
         }
         var str = pack_data()
         save_to_file( str, jsonObject["ImdbCode"] )
-        if( !silent ) say_to_user("Guardado!")
+        if( !silent ) say_to_user("Guardado!", "blue" )
         app.ask_before_close = false
     }
 
@@ -1067,7 +1084,10 @@ ApplicationWindow {
         }
 
     // Update filter status
-        jsonObject["FilterStatus"] = movie.filter_status
+        jsonObject["FilterStatus"] = {}
+        jsonObject["FilterStatus"]["Violence"] = movie.violence_filter_status
+        jsonObject["FilterStatus"]["Sex"] = movie.sex_filter_status
+        jsonObject["FilterStatus"]["Drugs"] = movie.drugs_filter_status
 
     // Update scenes data
         jsonObject['Scenes'] = [];
@@ -1239,7 +1259,7 @@ ApplicationWindow {
         var http = new XMLHttpRequest()
         if( !url ){
             url = "http://www.fcinema.org/api";
-            params += "&version=0.8";
+            params += "&version=0.9";
         }
         console.log( params, callback, url )
         http.open("POST", url, true);
@@ -1339,10 +1359,11 @@ ApplicationWindow {
 
 
 // Display message to user. Normally important warnings she/he must take care of
-    function say_to_user( msg ){
+    function say_to_user( msg, color ){
         if( msg !=="" ){
             console.log("This is a message to the user: ", msg )
             if( movie.msg_to_user === msg ) msg = msg+"!! Estoy aquí!!"
+            movie.msg_color = color || "red"
         }
         movie.msg_to_user = msg
     }
@@ -1350,16 +1371,15 @@ ApplicationWindow {
 // Launch or connect to the user selected player.
     function watch_movie( preview )
     {
-    // No matter what activate watching mode
+    // No matter what, activate watching mode
         preview_data.watch_active = true
 
     // Fill skip list
         fillSkipList()
-        //if( fillSkipList() === -1 ) return
 
     // Make sure we are on sync
         if( sync.confidence < 1 && scenelistmodel.count > 0 ){
-            if( sync.shot_sync_failed ){
+            if( sync.shot_sync_failed && sync.shot_sync_failed ){
                 say_to_user("La pelicula no esta sincronizada")
             }else{
                 say_to_user("Analizando película... solo unos segundos")
@@ -1372,9 +1392,9 @@ ApplicationWindow {
         if( player.execute.get_time() != -1 ) return;
 
     // Try to launch selected player
-        say_to_user("Conectando con el reproductor")
+        say_to_user("Conectando con el reproductor", "blue" )
         if( player.execute.launch( media.url, preview ) ) {
-            say_to_user("Conectado con " +  player.execute.name( ) )
+            say_to_user("Conectado con " +  player.execute.name(), "blue" )
             return true
         }else if( !media.url ){
             say_to_user("Antes debes seleccionar una película")
@@ -1528,6 +1548,13 @@ ApplicationWindow {
     }
 
 
+    function secToSimpleStr( time ){
+        if( !time || time === -1) return ""
+        if(typeof time == "string" && time.match(":")) return time
+        var secs = "" + ~~time+'"';
+        return secs;
+    }
+
 // Convert seconds to formated time string eg: 95 => "1:35"
     function secToStr( time ) {
     //http://stackoverflow.com/a/11486026/3766869
@@ -1658,7 +1685,7 @@ ApplicationWindow {
         }else{
             try_to_sync_from_next_sub_reference()
             apply_sync(avg,1,1);
-            say_to_user("Calibration migth be wrong")
+            say_to_user("Calibration migth be wrong", "orange")
         }
         settings.time_margin = margin
         console.log( offset.length, avg, max-avg, min-avg )

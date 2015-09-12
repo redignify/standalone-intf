@@ -108,7 +108,7 @@ Item {
                     wrapMode: "WordWrap"
                     textFormat: Text.RichText
                     horizontalAlignment: Text.AlignJustify
-                    text: qsTr("Fcinema no sería posible sin la base de datos. Una de las mejores y más divertidas formas de colaborar es y coger un buen montón de palomitas y elegir una buena película. Si al mientras disfrutas la película con fcinema aparece una escena que consideras inconviente, pulsa '+' para marcar la escena. Para más detalle, puedes consultar la ayuda desde la barra superior.")
+                    text: qsTr("Fcinema no sería posible sin la base de datos. Una de las mejores y más divertidas formas de colaborar es coger un buen montón de palomitas y elegir una buena película. Si mientras disfrutas la película aparece una escena que consideras inconviente, pulsa '+' para marcar la escena, unos click al terminar y todo el mundo podra disfrutar de cine familiar ;). Para más detalle, puedes consultar la ayuda desde la barra superior.")
                 }
             }
         }
