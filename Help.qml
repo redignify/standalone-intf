@@ -33,7 +33,7 @@ ScrollView {
 
 
 <hr style="page-break-before:always;display:none;">
-<h2>Como funciona para un editor</h2>
+<h2>¿Cómo funciona para un editor?</h2>
 <h3>&iquest;Cúal es el papel de los editores?</h3>
 <p>Para que los usuarios puedan disfrutar de la película sin preocuparse es necesario que alguien haya etiquetado el contenido de la película. Una vez un editor autorizado etiqueta el contenido de una película (indicando los tiempos y el tipo y gravedad de escena) todos los usuarios ven en la lista de escenas de esa película las escenas etiquetas por el editor.</p>
 <h3>Conseguir película y reproducir</h3>
