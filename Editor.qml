@@ -180,7 +180,7 @@ Item {
                weed.checked     = current_scene.tags.match("Weed")
                coc.checked      = current_scene.tags.match("Cocaine/Heroine")
                med.checked      = current_scene.tags.match("Medicines misuse")
-               ove.checked         = current_scene.tags.match("Overdose")
+               ove.checked      = current_scene.tags.match("Overdose")
                tra.checked      = current_scene.tags.match("Trade")
 
                plot.checked     = current_scene.tags.match("Plot")

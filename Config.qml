@@ -40,7 +40,7 @@ Item {
                     tooltip: "Presiona para actualziar"
                     onClicked: {
                         Utils.update("")
-                        say_to_user("Descargando actualización, puede llevar unos segundos")
+                        say_to_user( qsTr("Descargando actualización, puede llevar unos segundos"), "blue" )
                     }
                 }
 
