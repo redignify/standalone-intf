@@ -142,14 +142,16 @@ ApplicationWindow {
 
     ListModel {
         id: type_list
-//        ListElement {  text: "Discrimination" }
         ListElement {  text: "Violence" }
         ListElement {  text: "Sex" }
         ListElement {  text: "Drugs" }
-        /*ListElement {  text: qsTr("Violencia") }
+    }
+
+    ListModel {
+        id: native_type_list
+        ListElement {  text: qsTr("Violencia") }
         ListElement {  text: qsTr("Sexo") }
-        ListElement {  text: qsTr("Drogas") }*/
-        //ListElement {  text: "Sync" }
+        ListElement {  text: qsTr("Drogas") }
     }
 
     ListModel {
@@ -1259,7 +1261,7 @@ ApplicationWindow {
         var http = new XMLHttpRequest()
         if( !url ){
             url = "http://www.fcinema.org/api";
-            params += "&version=0.9";
+            params += "&version=0.91";
         }
         console.log( params, callback, url )
         http.open("POST", url, true);

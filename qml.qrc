@@ -29,5 +29,9 @@
         <file>discover/images/image04.png</file>
         <file>discover/images/image05.png</file>
         <file>discover/fcinema.html</file>
+        <file>discover/images/editor.png</file>
+        <file>discover/images/editor_etiquetas.png</file>
+        <file>discover/images/editor_guardar.png</file>
+        <file>discover/images/editor_tiempos.png</file>
     </qresource>
 </RCC>

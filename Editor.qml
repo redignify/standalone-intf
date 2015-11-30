@@ -40,11 +40,11 @@ Item {
                 id: type_combo
                 Layout.preferredWidth : 120
                 currentIndex: 1
-                model: type_list
+                model: native_type_list
                 onCurrentIndexChanged: {
                     try{
                         if( tableview.currentRow == -1 ){ add_blank_scene() }//say_to_user("Please select or add a scene"); return }
-                        scenelistmodel.set(tableview.currentRow, {"type": type_combo.currentText })
+                        scenelistmodel.set(tableview.currentRow, {"type": type_list.get(currentIndex).text })
                     }catch(e){
                         // tableview migth not exits (just avoid error messages)
                     }
@@ -162,30 +162,30 @@ Item {
 
 
             // Update tags (check/uncheck according to current text)
-               phy.checked      = current_scene.tags.match("Physical")
+               phy.checked    = current_scene.tags.match("Physical")
                psi.checked    = current_scene.tags.match("Psicological")
-               disc.checked     = current_scene.tags.match("Discrimination")
-               sad.checked      = current_scene.tags.match("Sadism")
-               bel.checked      = current_scene.tags.match("War")
-               tor.checked      = current_scene.tags.match("Torture")
+               disc.checked   = current_scene.tags.match("Discrimination")
+               sad.checked    = current_scene.tags.match("Sadism")
+               bel.checked    = current_scene.tags.match("War")
+               tor.checked    = current_scene.tags.match("Torture")
 
-               nud.checked      = current_scene.tags.match("Nudity")
-               sen.checked      = current_scene.tags.match("Sensuality")
-               see.checked      = current_scene.tags.match("Explicit sex")
-               sei.checked      = current_scene.tags.match("Implicit sex")
-               inf.checked      = current_scene.tags.match("No love")
-               vio.checked      = current_scene.tags.match("Rape")
+               nud.checked    = current_scene.tags.match("Nudity")
+               sen.checked    = current_scene.tags.match("Sensuality")
+               see.checked    = current_scene.tags.match("Explicit sex")
+               sei.checked    = current_scene.tags.match("Implicit sex")
+               inf.checked    = current_scene.tags.match("No love")
+               vio.checked    = current_scene.tags.match("Rape")
 
-               tob.checked      = current_scene.tags.match("Tobaco/Alcohol")
-               weed.checked     = current_scene.tags.match("Weed")
-               coc.checked      = current_scene.tags.match("Cocaine/Heroine")
-               med.checked      = current_scene.tags.match("Medicines misuse")
-               ove.checked      = current_scene.tags.match("Overdose")
-               tra.checked      = current_scene.tags.match("Trade")
+               tob.checked    = current_scene.tags.match("Tobaco/Alcohol")
+               weed.checked   = current_scene.tags.match("Weed")
+               coc.checked    = current_scene.tags.match("Cocaine/Heroine")
+               med.checked    = current_scene.tags.match("Medicine misuse")
+               ove.checked    = current_scene.tags.match("Overdose")
+               tra.checked    = current_scene.tags.match("Trade")
 
-               plot.checked     = current_scene.tags.match("Plot")
-               //grap.checked     = current_scene.tags.match("Graphic")
-               //cri.checked      = current_scene.tags.match("Critic")
+               plot.checked   = current_scene.tags.match("Plot")
+               //grap.checked = current_scene.tags.match("Graphic")
+               //cri.checked  = current_scene.tags.match("Critic")
            }
 
             }

@@ -99,12 +99,12 @@ Item {
                     onValueChanged: apply_filter( "Sex", value )
                 }
 
-                Label{ text: qsTr("Vocabulario") }
+                /*Label{ text: qsTr("Vocabulario") }
                 RSlider {
                     id: slider_pro
                     value: settings.pro
                     //onValueChanged: apply_filter( "Discrimination", value )
-                }
+                }*/
 
                 Label{ text: qsTr("Drogas") }
                 RSlider {

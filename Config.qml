@@ -152,7 +152,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                Label{ text: qsTr("Beta testers") }
+                /*Label{ text: qsTr("Beta testers") }
                 Button {
                     id: testing
                     text: "No pulsar jamás"
@@ -169,7 +169,7 @@ Item {
                         //console.log(JSON.stringify(a))
                         //console.log( seconds_to_time(65) )
                     }
-                }
+                }*/
                 Label{ text: qsTr("Diferencia tiempo entre versiones") }
                 TextField {
                     Layout.fillWidth: true
