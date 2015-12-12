@@ -103,6 +103,8 @@ bool VLC_HTTP::launch( QString file, bool preview )
             if( preview ){
                 program += " --no-autoscale --width 300 --height 250";//--canvas-width=250";
             }
+            file.append('"');
+            file.prepend('"');
             program += " --extraintf http --http-host localhost --http-port 8080 --http-password pass " + file;
             qDebug() << program;
             m_process->start(program);
