@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     app.setOrganizationDomain("fcinema.org");
     app.setApplicationName("Family Cinema");
 
+    engine.addImportPath("modules/");
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 
     return app.exec();
