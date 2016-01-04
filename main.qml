@@ -7,6 +7,7 @@ import QtQuick.Window 2.2
 import QtQuick.Dialogs 1.2
 import Qt.labs.settings 1.0
 
+
 ApplicationWindow {
     id: mainWindow
     visible: true
@@ -703,75 +704,6 @@ ApplicationWindow {
         }
     }
 
-// Help the user a bit with the calibration process
-    Dialog {
-        id: calibrate
-        width: 500
-        height: 200
-        title: qsTr("Calibración guiada")
-        standardButtons: StandardButton.Ok | StandardButton.Cancel
-        GridLayout {
-            columns: 1
-            Label{
-                id: user_instructions
-                text: qsTr( "Haz click cuando oigas" ) // + scenelistmodel.get(get_sync_scene_index).description + " ends"
-            }
-            Button {
-                text: qsTr("Velocidad x3")
-                tooltip: "Play at 3x speed"
-                id: b_rate
-                onClicked: player.execute.set_rate( 3 )
-            }
-            Button {
-                text: "Normal rate"
-                tooltip: "Play at 1x speed"
-                id: b_rate_normal
-                onClicked: player.execute.set_rate( 1 )
-            }
-            Button {
-                text: "Now it ends"
-                id: b_nowends
-                onClicked: {
-                    user_instructions.text = "Can you see the begining or the ending of the scene?"
-                    b_beg.visible = true
-                    b_end.visible = true
-                    visible = false
-                    player.execute.set_rate( 1 )
-                    var current_time = get_time()
-                    var i = get_sync_scene_index()
-                    var original_start = scenelistmodel.get(i).start
-                    apply_sync( current_time - original_start, sync.applied_speed, 0 )
-                }
-            }
-            Button {
-                id: b_beg
-                visible: false
-                text: "Begining"
-                onClicked: {
-                    apply_sync( sync.applied_offset + 0.1, sync.applied_speed, 0 )
-                    var i = get_sync_scene_index()
-                    preview_scene( scenelistmodel.get(i).start, scenelistmodel.get(i).stop )
-                }
-            }
-            Button {
-                id: b_end
-                visible: false
-                text: "Ending visible"
-                onClicked: {
-                    apply_sync( sync.applied_offset - 0.1, sync.applied_speed, 0 )
-                    var i = get_sync_scene_index()
-                    preview_scene( scenelistmodel.get(i).start, scenelistmodel.get(i).stop )
-                }
-            }
-        }
-        onAccepted: {
-            calibrate.visible = false
-            sync.confidence   = 2
-        }
-        onRejected: {
-            calibrate.visible = false
-        }
-    }
 
 
 /*-----------------------------------------------------------------------------------------*/
@@ -796,169 +728,81 @@ ApplicationWindow {
     }
 
     Connections {
-        target: Utils
-        onCalibDataReady: {
-            console.log("Calib data "+num+" ready");
-            var shot_str = num==1? "Shots" : "Shots2"
-            var shotsDiffs_str = num==1? "ShotsDiffs" : "ShotsDiffs2"
-
-        // Get data
-            try {
-                var data = JSON.parse( movie.data )
-            } catch(e){
-                // probably calib was faster than movie selection
-                if( sync.play_after_sync ) say_to_user( qsTr( "Error analizando película") )
-                sync.shot_sync_failed = true
-                sync.play_after_sync = false
-                return
-            }
-            var c_times = JSON.parse(times)
-            var c_diffs = JSON.parse(diffs)
-            if( c_times.length < 10 ){
-                console.log("Shot info "+num+" is incomplete")
-                if( sync.play_after_sync ) say_to_user( qsTr( "Error analizando película") )
-                sync.shot_sync_failed = true
-                sync.play_after_sync = false
-                return
-            }
-
-            var index = sync_info_hash_index(data,media.hash)
-
-
-        // If there is no shot info, add it
-            if( !data["SyncInfo"][index][shot_str] || !data["SyncInfo"][index][shotsDiffs_str] ){
-                data["SyncInfo"][index][shot_str]        = c_times
-                data["SyncInfo"][index][shotsDiffs_str]  = c_diffs
-                movie.data = JSON.stringify(data);
-                save_work( true )
-            }
-
-
-        // If movie is already on sync we are done
-            if( sync.confidence >= 2 ) return
-
-
-        // Try to sync. Find reference cuts and try to sync using them
-            var ref_times, ref_diffs, t_off, s_off
-            for( var i=0; i<data["SyncInfo"].length; ++i ){
-                console.log( data["SyncInfo"][i]["Hash"] !== media.hash, data["SyncInfo"][i][shot_str] !== undefined , data["SyncInfo"][i]["Confidence"] >= 2 )
-                if( data["SyncInfo"][i]["Hash"] !== media.hash && data["SyncInfo"][i][shot_str] && data["SyncInfo"][i]["Confidence"] >= 2 ){
-                    ref_times = data["SyncInfo"][i][shot_str]
-                    ref_diffs = data["SyncInfo"][i][shotsDiffs_str]
-                    t_off = data["SyncInfo"][index]["TimeOffset"]
-                    s_off = data["SyncInfo"][index]["SpeedFactor"]
-                    if( calibFromShots(c_times, c_diffs, ref_times, ref_diffs, t_off, s_off ) ){
-                        save_work( true )
-                        return
-                    }
-                }
-            }
-            if( sync.confidence == 0 ){
-                say_to_user("Error al analizar la película")
-                sync.shot_sync_failed = true
-                sync.play_after_sync = false
+        target: xcorr
+        //void corrResult(int status, float offset, float speed );
+        onCorrResult:{
+            if( status >= 1 ){
+                console.log("Xcorr calib ready")
+                apply_sync( offset, speed, status, 0.1 )
             }else{
-                save_work( true )
+                console.log("Xcorr calib is NOT ready ", status )
             }
-
-            //try_to_sync_from_sub()
         }
     }
 
-    function calibFromShots(c_times, c_diffs, r_times, r_diffs, t_off, s_off )
-    {
-        console.log("Calibrating form subs")
-
-        for( var step=0.1; step<3; step+=0.2 ){
-            for( var min = 0; min < 0.5; min+=0.05){
-                //for( var speed = 0.990; speed<1.010; speed+=0.005){
-                //for( var max = 5; max<15; max+=1){
-                    if( correlation(c_times,c_diffs,r_times,r_diffs, step, min, 10, t_off, s_off ) ) return true
-                //}
-            }
+    Connections {
+        target: xcorr
+        //void videoDataReady(QString timestamp, QString mean );
+        onVideoDataReady:{
+            addVideoDataToSyncInfo(timestamp,mean)
         }
-        console.log("No more correlations functions")
     }
 
-    function correlation(c_times, c_diffs, r_times, r_diffs, step, min, max, t_off, s_off )
-    {
-    // Correlation algorithm. For each time offset 'd' compare ref with current shots. Gives high value for similar scene change probability
-        var sum = []
-        var prod = []
-        var dif = []
-        for( var c=1; c<c_times.length; ++c ){
-            for( var r=1; r<r_times.length; ++r ){
-                if( c_diffs[c] < min || r_diffs[r] < min ) continue
-                var d = Math.round( ( c_times[c] - r_times[r] ) / step ) + 2500
-                if( !sum[d] || sum[d] === undefined ) {sum[d] = 0; prod[d] = 0; dif[d] = 0 }
-                var p = (c_diffs[c] * r_diffs[r])
-                var m = Math.abs(c_diffs[c] - r_diffs[r] )
-                dif[d]+= p/m > 10? 10 : p/m
-                prod[d]+= p
-                sum[d]+= 1/m > 10? 10 : 1/m
-            }
+
+    function addVideoDataToSyncInfo(s_time,s_mean){
+        console.log( "Adding video data to sync info" )
+        var time = JSON.parse(s_time)
+        var mean = JSON.parse(s_mean)
+
+        if( time[5] < 50e3 ){
+            var s_mean_index = "Mean1"
+            var s_time_index = "Time1"
+        }else{
+            s_mean_index = "Mean2"
+            s_time_index = "Time2"
         }
 
-        var cor = is_correlated( dif, "Dif", step, min, max )
-        if( cor === 2 ){
-            /*if( sync.confidence < 2 ){
-                var c_t_off = (index-2500)*step - t_off // Here we are ignoring speeds
-                apply_sync(c_t_off,1,2,step);
-            }*/
-            //say_to_user("Autocalib is amazing", "blue")
-            return true
-        }else if (cor === 1){
-            //if( sync.confidence < 1 ) apply_sync((index-2500)*step,1,1,step);
-            say_to_user("Autocalib is cool", "blue")
+    // Get data
+        try {
+            var data = JSON.parse( movie.data )
+        } catch(e){
+            // The data about the current movie is not ready
+            return
         }
-     }
 
-    function is_correlated( arr, met, step, min, speed )
-    {
-        var max = 0;    var max2 = 0;    var max3;
-        var index = 0;  var index2 = 0;  var index3;
-        var sum = 0;    var tot = 0;
-        for( var i=0; i<arr.length; i++ ){
-            if( ! arr[i] > 0 ) continue;
-            sum+= arr[i]
-            tot++
-            if( arr[i] > max ){
-                max3 = max2
-                index3 = index2
-                max2 = max
-                index2 = index
-                max = arr[i]
-                index = i
-            }else if(arr[i] > max2 ){
-                max3 = max2
-                index3 = index2
-                index2 = i
-                max2 = arr[i]
-            }else if( arr[i] > max3 ){
-                max3 = max2
-                index3 = index2
+        var index = sync_info_hash_index(data,media.hash)
+
+    // If there is no shot info, add it
+        if( !data["SyncInfo"][index][s_mean_index] || !data["SyncInfo"][index][s_time_index] ){
+            data["SyncInfo"][index][s_time_index]        = time
+            data["SyncInfo"][index][s_mean_index]    = mean
+            movie.data = JSON.stringify(data);
+            save_work( true )
+        }
+    }
+
+
+    function start_sync_process(data,hash){
+        console.log( "Starting sync process" )
+        // Get sync info index from data
+        var index = sync_info_hash_index(data,hash)
+
+        if( data["SyncInfo"][index]["Confidence"] >= 2 ) {
+            apply_sync(data["SyncInfo"][index]["TimeOffset"],data["SyncInfo"][index]["SpeedFactor"],data["SyncInfo"][index]["Confidence"])
+        }else{
+        // Give xcorr to parser
+            for( var i=0; i<data["SyncInfo"].length; ++i ){
+                if( data["SyncInfo"][i]["Confidence"] < 3 ) continue;
+                if( !data["SyncInfo"][i]["Mean1"] ) continue;
+                var ref_index = i
+                break
             }
+            console.log( ref_index, index )
+            var mean = data["SyncInfo"][ref_index]["Mean1"]
+            var time = data["SyncInfo"][ref_index]["Time1"]
+            xcorr.setRef(mean,time)
         }
-        //console.log( max +" / "+ max2)
-        var mratio  = max/max2
-        var mratio2 = max/max3
-        var dist    = Math.floor( Math.abs( (index-index2)*step )*10 ) / 10
-        var dist2   = Math.floor( Math.abs( (index-index3)*step )*10 ) / 10
-     // Case we are positive about sync
-        if( (mratio > 2 && dist < 1) || (mratio > 2.5 && dist < 2)  || (mratio > 3) ){
-            console.log( max +" with ratio: "+Math.floor(max/max2*10)/10+" step: "+Math.floor(step*10)/10+" min: "+Math.floor(1000*min)/1000+" at "+Math.floor((index-2500)*step*10)/10+" speed "+speed +" distance "+dist )
-            //var c_t_off = (index-2500)*step - t_off // Here we are ignoring speeds
-            say_to_user("Autocalib is amazing", "blue")
-            if( sync.confidence <= 2 ) apply_sync((index-2500)*step,1,2,step);
-            return 2
-        }
-     // Case we are not sure
-        if( (mratio > 1.5 && dist < 2 ) || (mratio > 2.5 && dist < 3 )  || (mratio > 3) || ( max/(sum/tot) > 10 && dist < 3 ) ){
-            console.log( "Not sure about: "+max +" with ratio: "+Math.floor(max/max2*10)/10+" step: "+Math.floor(step*10)/10+" min: "+Math.floor(1000*min)/1000+" at "+Math.floor((index-2500)*step*10)/10+" speed "+speed +" distance "+dist )
-            if( sync.confidence == 0 ) apply_sync((index-2500)*step,1,1,step);
-            return 1
-        }
-        return 0
+        //start_guessing_sync_from_subs()
     }
 
     function sync_info_hash_index( data, hash )
@@ -974,7 +818,7 @@ ApplicationWindow {
                 }
             }
         }
-    // data is an object, so is given as a reference and we can modify it globaly
+    // There is no sync info about this movie, create it!
         if( index == -1 ){
             index = data["SyncInfo"].length
             data["SyncInfo"][index] = {}
@@ -990,6 +834,9 @@ ApplicationWindow {
         }
         return index;
     }
+
+
+
 
 // Create new user on the db
     function new_user( str )
@@ -1129,8 +976,8 @@ ApplicationWindow {
         }
 
     // Format and share
-        var str = JSON.stringify( jsonObject, "", 2 );
-        console.log( str )
+        //var str = JSON.stringify( jsonObject, "", 2 );
+        var str = JSON.stringify( jsonObject );
         return str
     }
 

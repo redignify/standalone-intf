@@ -1,12 +1,14 @@
 TEMPLATE = app
 
 QT += qml quick widgets
+QT += core gui multimedia
 
 SOURCES += main.cpp \
     utils.cpp \
     vlc_tcp.cpp \
     vlc_console.cpp \
-    vlc_http.cpp
+    vlc_http.cpp \
+    xcorr.cpp
 
 RESOURCES += qml.qrc
 
@@ -33,7 +35,8 @@ HEADERS += \
     utils.h \
     vlc_tcp.h \
     vlc_console.h \
-    vlc_http.h
+    vlc_http.h \
+    xcorr.h
 
 OTHER_FILES +=
 
