@@ -159,20 +159,21 @@ Item {
 // A new input file has being selected, get hash and try to identify
     function parse_input_file()
     {
+    // Start computing sync information about the movie
+        console.log( "Starting xcorr!!")
+        xcorr.startParsing( media.url )
+
     // Get movie hash and bytesize
         movie.imdbcode = ""
         media.hash     = Utils.get_hash( media.url )
         media.bytesize = Utils.get_size( media.url )
-        // Perform some checks...
+        // Perform some checks... FIXME?
         if( media.hash === 'Error' ){ return }
         media.hash = pad(media.hash,16)
         console.log( "Computed hash is "+media.hash+" and bytesize is "+media.bytesize )
 
     // Ask the server about the movie
         search_movie()
-
-    // Start computing sync information about the movie
-        Utils.get_shots( media.url, settings.vlc_path )
     }
 
 
@@ -264,9 +265,7 @@ Item {
         }
 
     // Sync, or at least try to
-        var index = sync_info_hash_index(data,media.hash)        
-        apply_sync(data["SyncInfo"][index]["TimeOffset"],data["SyncInfo"][index]["SpeedFactor"],data["SyncInfo"][index]["Confidence"])
-        start_guessing_sync_from_subs()
+        start_sync_process(data,media.hash);
 
     // Apply filters
         loader.item.apply_all_filters()

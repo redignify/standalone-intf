@@ -13,11 +13,12 @@
 #include "vlc_tcp.h"
 #include "vlc_http.h"
 #include "utils.h"
+#include "xcorr.h"
 
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     QQmlApplicationEngine engine;
     QQmlContext *context = engine.rootContext();
 
@@ -33,7 +34,10 @@ int main(int argc, char *argv[])
     Utils o_utils;
     context->setContextProperty("Utils", &o_utils);
 
-    app.setOrganizationName("Fcinema");
+    xcorr o_xcorr;
+    context->setContextProperty("xcorr", &o_xcorr);
+
+    app.setOrganizationName("Family Cinema");
     app.setOrganizationDomain("fcinema.org");
     app.setApplicationName("Family Cinema");
 
@@ -43,6 +47,3 @@ int main(int argc, char *argv[])
     return app.exec();
 
 }
-
-
-
